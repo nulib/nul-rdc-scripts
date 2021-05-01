@@ -286,7 +286,7 @@ def image_main():
             if args.verify_metadata:
                 for i in image_dictionary['Images']['extension']:
                     #TO DO - This most likely is not the most efficient way to do this
-                    #move to image_handler?
+                    #this could probably be merged with related image handler steps
                     if file.endswith(i):
                         print("checking metadata for " + file)
                         exiftool_test(file, os.path.join(subdir, file), column_to_match, exifmetalist)
