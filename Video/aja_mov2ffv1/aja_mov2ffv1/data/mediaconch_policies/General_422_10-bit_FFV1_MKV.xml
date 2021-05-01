@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<policy type="and" name="General_422_10-bit_FFV1_MKV">
+  <description>Checks that video is 10 bit FFV1 MKV with 422 chroma subsampling.</description>
+  <rule name="General/UniqueID is 272965099970032002367102892016200283932" value="UniqueID" tracktype="General" occurrence="*" operator="exists">272965099970032002367102892016200283932</rule>
+  <rule name="General/VideoCount is 1" value="VideoCount" tracktype="General" occurrence="*" operator="=">1</rule>
+  <rule name="General/FileExtension is mkv" value="FileExtension" tracktype="General" occurrence="*" operator="=">mkv</rule>
+  <rule name="General/Format is Matroska" value="Format" tracktype="General" occurrence="*" operator="=">Matroska</rule>
+  <rule name="General/Format_Version is 4" value="Format_Version" tracktype="General" occurrence="*" operator="=">4</rule>
+  <rule name="General/IsStreamable is Yes" value="IsStreamable" tracktype="General" occurrence="*" operator="=">Yes</rule>
+  <rule name="General/Encoded_Application is Lavf58.45.100" value="Encoded_Application" tracktype="General" occurrence="*" operator="starts with">Lavf</rule>
+  <rule name="General/Encoded_Library is Lavf58.45.100" value="Encoded_Library" tracktype="General" occurrence="*" operator="starts with">Lavf</rule>
+  <rule name="Video/StreamOrder is 0" value="StreamOrder" tracktype="Video" occurrence="*" operator="=">0</rule>
+  <rule name="Video/ID is 1" value="ID" tracktype="Video" occurrence="*" operator="=">1</rule>
+  <rule name="Video/UniqueID is 5880933815206116409" value="UniqueID" tracktype="Video" occurrence="*" operator="exists">5880933815206116409</rule>
+  <rule name="Video/Format is FFV1" value="Format" tracktype="Video" occurrence="*" operator="=">FFV1</rule>
+  <rule name="Video/Format_Version is 3.4" value="Format_Version" tracktype="Video" occurrence="*" operator="=">3.4</rule>
+  <rule name="Video/Format_Settings_GOP is N=1" value="Format_Settings_GOP" tracktype="Video" occurrence="*" operator="=">N=1</rule>
+  <rule name="Video/CodecID is V_MS/VFW/FOURCC / FFV1" value="CodecID" tracktype="Video" occurrence="*" operator="=">V_MS/VFW/FOURCC / FFV1</rule>
+  <rule name="Video/FrameRate_Mode is CFR" value="FrameRate_Mode" tracktype="Video" occurrence="*" operator="=">CFR</rule>
+  <rule name="Video/ColorSpace is YUV" value="ColorSpace" tracktype="Video" occurrence="*" operator="=">YUV</rule>
+  <rule name="Video/ChromaSubsampling is 4:2:2" value="ChromaSubsampling" tracktype="Video" occurrence="*" operator="=">4:2:2</rule>
+  <rule name="Video/BitDepth is 10" value="BitDepth" tracktype="Video" occurrence="*" operator="=">10</rule>
+  <rule name="Video/ScanType is Progressive" value="ScanType" tracktype="Video" occurrence="*" operator="=">Progressive</rule>
+  <rule name="Video/Compression_Mode is Lossless" value="Compression_Mode" tracktype="Video" occurrence="*" operator="=">Lossless</rule>
+  <rule name="Video/Language is en" value="Language" tracktype="Video" occurrence="*" operator="=">en</rule>
+  <rule name="Video/Default is Yes" value="Default" tracktype="Video" occurrence="*" operator="=">Yes</rule>
+  <rule name="Video/Forced is No" value="Forced" tracktype="Video" occurrence="*" operator="=">No</rule>
+  <rule name="Video/colour_description_present is Yes" value="colour_description_present" tracktype="Video" occurrence="*" operator="=">Yes</rule>
+</policy>

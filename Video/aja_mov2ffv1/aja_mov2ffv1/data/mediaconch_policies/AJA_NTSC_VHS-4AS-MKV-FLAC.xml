@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<policy type="and" name="AJA_NTSC_VHS-4AS-MKV-FLAC">
+  <description>FFV1/MKV files transcoded from AJA v210/MOV captures from SD NTSC source material with 4 FLAC audio streams.</description>
+  <rule name="General/UniqueID is 75622755780112083530478167794510261102" value="UniqueID" tracktype="General" occurrence="*" operator="exists">75622755780112083530478167794510261102</rule>
+  <rule name="General/VideoCount is 1" value="VideoCount" tracktype="General" occurrence="*" operator="=">1</rule>
+  <rule name="General/AudioCount is 4" value="AudioCount" tracktype="General" occurrence="*" operator="=">4</rule>
+  <rule name="General/FileExtension is mkv" value="FileExtension" tracktype="General" occurrence="*" operator="=">mkv</rule>
+  <rule name="General/Format is Matroska" value="Format" tracktype="General" occurrence="*" operator="=">Matroska</rule>
+  <rule name="General/Format_Version is 4" value="Format_Version" tracktype="General" occurrence="*" operator="=">4</rule>
+  <rule name="General/OverallBitRate_Mode is VBR" value="OverallBitRate_Mode" tracktype="General" occurrence="*" operator="=">VBR</rule>
+  <rule name="General/FrameRate is 29.970" value="FrameRate" tracktype="General" occurrence="*" operator="=">29.970</rule>
+  <rule name="General/IsStreamable is Yes" value="IsStreamable" tracktype="General" occurrence="*" operator="=">Yes</rule>
+  <rule name="General/Encoded_Application is Lavf58.45.100" value="Encoded_Application" tracktype="General" occurrence="*" operator="starts with">Lavf</rule>
+  <rule name="General/Encoded_Library is Lavf58.45.100" value="Encoded_Library" tracktype="General" occurrence="*" operator="starts with">Lavf</rule>
+  <rule name="Video/StreamOrder is 0" value="StreamOrder" tracktype="Video" occurrence="*" operator="=">0</rule>
+  <rule name="Video/ID is 1" value="ID" tracktype="Video" occurrence="*" operator="=">1</rule>
+  <rule name="Video/UniqueID is 6399168892546267987" value="UniqueID" tracktype="Video" occurrence="*" operator="exists">6399168892546267987</rule>
+  <rule name="Video/Format is FFV1" value="Format" tracktype="Video" occurrence="*" operator="=">FFV1</rule>
+  <rule name="Video/Format_Version is 3.4" value="Format_Version" tracktype="Video" occurrence="*" operator="=">3.4</rule>
+  <rule name="Video/Format_Settings_GOP is N=1" value="Format_Settings_GOP" tracktype="Video" occurrence="*" operator="=">N=1</rule>
+  <rule name="Video/CodecID is V_MS/VFW/FOURCC / FFV1" value="CodecID" tracktype="Video" occurrence="*" operator="=">V_MS/VFW/FOURCC / FFV1</rule>
+  <rule name="Video/Width is 720" value="Width" tracktype="Video" occurrence="*" operator="=">720</rule>
+  <rule name="Video/Height is 486" value="Height" tracktype="Video" occurrence="*" operator="=">486</rule>
+  <rule name="Video/PixelAspectRatio is 0.909" value="PixelAspectRatio" tracktype="Video" occurrence="*" operator="=">0.909</rule>
+  <rule name="Video/DisplayAspectRatio is 1.347" value="DisplayAspectRatio" tracktype="Video" occurrence="*" operator="=">1.347</rule>
+  <rule name="Video/FrameRate_Mode is CFR" value="FrameRate_Mode" tracktype="Video" occurrence="*" operator="=">CFR</rule>
+  <rule name="Video/FrameRate is 29.970" value="FrameRate" tracktype="Video" occurrence="*" operator="=">29.970</rule>
+  <rule name="Video/Standard is NTSC" value="Standard" tracktype="Video" occurrence="*" operator="=">NTSC</rule>
+  <rule name="Video/ColorSpace is YUV" value="ColorSpace" tracktype="Video" occurrence="*" operator="=">YUV</rule>
+  <rule name="Video/ChromaSubsampling is 4:2:2" value="ChromaSubsampling" tracktype="Video" occurrence="*" operator="=">4:2:2</rule>
+  <rule name="Video/BitDepth is 10" value="BitDepth" tracktype="Video" occurrence="*" operator="=">10</rule>
+  <rule name="Video/ScanType is Interlaced" value="ScanType" tracktype="Video" occurrence="*" operator="=">Interlaced</rule>
+  <rule name="Video/ScanOrder is BFF" value="ScanOrder" tracktype="Video" occurrence="*" operator="=">BFF</rule>
+  <rule name="Video/Compression_Mode is Lossless" value="Compression_Mode" tracktype="Video" occurrence="*" operator="=">Lossless</rule>
+  <rule name="Video/TimeCode_FirstFrame is 00:00:00:00" value="TimeCode_FirstFrame" tracktype="Video" occurrence="*" operator="=">00:00:00:00</rule>
+  <rule name="Video/TimeCode_Source is Matroska tags" value="TimeCode_Source" tracktype="Video" occurrence="*" operator="=">Matroska tags</rule>
+  <rule name="Video/Encoded_Library is Lavc58.91.100 ffv1" value="Encoded_Library" tracktype="Video" occurrence="*" operator="starts with">Lavc</rule>
+  <rule name="Video/Language is en" value="Language" tracktype="Video" occurrence="*" operator="=">en</rule>
+  <rule name="Video/Default is Yes" value="Default" tracktype="Video" occurrence="*" operator="=">Yes</rule>
+  <rule name="Video/Forced is No" value="Forced" tracktype="Video" occurrence="*" operator="=">No</rule>
+  <rule name="Video/colour_description_present is Yes" value="colour_description_present" tracktype="Video" occurrence="*" operator="=">Yes</rule>
+  <rule name="Video/colour_primaries is BT.601 NTSC" value="colour_primaries" tracktype="Video" occurrence="*" operator="=">BT.601 NTSC</rule>
+  <rule name="Video/transfer_characteristics is BT.709" value="transfer_characteristics" tracktype="Video" occurrence="*" operator="=">BT.709</rule>
+  <rule name="Video/matrix_coefficients is BT.601" value="matrix_coefficients" tracktype="Video" occurrence="*" operator="=">BT.601</rule>
+  <rule name="Audio/StreamOrder is 1" value="StreamOrder" tracktype="Audio" occurrence="*" operator="=">1</rule>
+  <rule name="Audio/ID is 2" value="ID" tracktype="Audio" occurrence="*" operator="=">2</rule>
+  <rule name="Audio/UniqueID is 1290155818447732193" value="UniqueID" tracktype="Audio" occurrence="*" operator="exists">1290155818447732193</rule>
+  <rule name="Audio/Format is FLAC" value="Format" tracktype="Audio" occurrence="*" operator="=">FLAC</rule>
+  <rule name="Audio/CodecID is A_FLAC" value="CodecID" tracktype="Audio" occurrence="*" operator="=">A_FLAC</rule>
+  <rule name="Audio/BitRate_Mode is VBR" value="BitRate_Mode" tracktype="Audio" occurrence="*" operator="=">VBR</rule>
+  <rule name="Audio/Channels is 1" value="Channels" tracktype="Audio" occurrence="*" operator="=">1</rule>
+  <rule name="Audio/ChannelPositions is Front: C" value="ChannelPositions" tracktype="Audio" occurrence="*" operator="=">Front: C</rule>
+  <rule name="Audio/SamplingRate is 48000" value="SamplingRate" tracktype="Audio" occurrence="*" operator="=">48000</rule>
+  <rule name="Audio/BitDepth is 24" value="BitDepth" tracktype="Audio" occurrence="*" operator="=">24</rule>
+  <rule name="Audio/Delay_Source is Container" value="Delay_Source" tracktype="Audio" occurrence="*" operator="=">Container</rule>
+  <rule name="Audio/Encoded_Library is Lavc58.91.100 flac" value="Encoded_Library" tracktype="Audio" occurrence="*" operator="starts with">Lavc</rule>
+  <rule name="Audio/Language is en" value="Language" tracktype="Audio" occurrence="*" operator="=">en</rule>
+  <rule name="Audio/Default is Yes" value="Default" tracktype="Audio" occurrence="*" operator="=">Yes</rule>
+  <rule name="Audio/Forced is No" value="Forced" tracktype="Audio" occurrence="*" operator="=">No</rule>
+  <rule name="Audio/StreamOrder is 2" value="StreamOrder" tracktype="Audio" occurrence="*" operator="=">2</rule>
+  <rule name="Audio/ID is 3" value="ID" tracktype="Audio" occurrence="*" operator="=">3</rule>
+  <rule name="Audio/UniqueID is 17286183543442779156" value="UniqueID" tracktype="Audio" occurrence="*" operator="exists">17286183543442779156</rule>
+  <rule name="Audio/Format is FLAC" value="Format" tracktype="Audio" occurrence="*" operator="=">FLAC</rule>
+  <rule name="Audio/CodecID is A_FLAC" value="CodecID" tracktype="Audio" occurrence="*" operator="=">A_FLAC</rule>
+  <rule name="Audio/BitRate_Mode is VBR" value="BitRate_Mode" tracktype="Audio" occurrence="*" operator="=">VBR</rule>
+  <rule name="Audio/Channels is 1" value="Channels" tracktype="Audio" occurrence="*" operator="=">1</rule>
+  <rule name="Audio/ChannelPositions is Front: C" value="ChannelPositions" tracktype="Audio" occurrence="*" operator="=">Front: C</rule>
+  <rule name="Audio/SamplingRate is 48000" value="SamplingRate" tracktype="Audio" occurrence="*" operator="=">48000</rule>
+  <rule name="Audio/BitDepth is 24" value="BitDepth" tracktype="Audio" occurrence="*" operator="=">24</rule>
+  <rule name="Audio/Delay_Source is Container" value="Delay_Source" tracktype="Audio" occurrence="*" operator="=">Container</rule>
+  <rule name="Audio/Encoded_Library is Lavc58.91.100 flac" value="Encoded_Library" tracktype="Audio" occurrence="*" operator="starts with">Lavc</rule>
+  <rule name="Audio/Language is en" value="Language" tracktype="Audio" occurrence="*" operator="=">en</rule>
+  <rule name="Audio/Default is No" value="Default" tracktype="Audio" occurrence="*" operator="=">No</rule>
+  <rule name="Audio/Forced is No" value="Forced" tracktype="Audio" occurrence="*" operator="=">No</rule>
+  <rule name="Audio/StreamOrder is 3" value="StreamOrder" tracktype="Audio" occurrence="*" operator="=">3</rule>
+  <rule name="Audio/ID is 4" value="ID" tracktype="Audio" occurrence="*" operator="=">4</rule>
+  <rule name="Audio/UniqueID is 17248763264081861884" value="UniqueID" tracktype="Audio" occurrence="*" operator="exists">17248763264081861884</rule>
+  <rule name="Audio/Format is FLAC" value="Format" tracktype="Audio" occurrence="*" operator="=">FLAC</rule>
+  <rule name="Audio/CodecID is A_FLAC" value="CodecID" tracktype="Audio" occurrence="*" operator="=">A_FLAC</rule>
+  <rule name="Audio/BitRate_Mode is VBR" value="BitRate_Mode" tracktype="Audio" occurrence="*" operator="=">VBR</rule>
+  <rule name="Audio/Channels is 1" value="Channels" tracktype="Audio" occurrence="*" operator="=">1</rule>
+  <rule name="Audio/ChannelPositions is Front: C" value="ChannelPositions" tracktype="Audio" occurrence="*" operator="=">Front: C</rule>
+  <rule name="Audio/SamplingRate is 48000" value="SamplingRate" tracktype="Audio" occurrence="*" operator="=">48000</rule>
+  <rule name="Audio/BitDepth is 24" value="BitDepth" tracktype="Audio" occurrence="*" operator="=">24</rule>
+  <rule name="Audio/Delay_Source is Container" value="Delay_Source" tracktype="Audio" occurrence="*" operator="=">Container</rule>
+  <rule name="Audio/Encoded_Library is Lavc58.91.100 flac" value="Encoded_Library" tracktype="Audio" occurrence="*" operator="starts with">Lavc</rule>
+  <rule name="Audio/Language is en" value="Language" tracktype="Audio" occurrence="*" operator="=">en</rule>
+  <rule name="Audio/Default is No" value="Default" tracktype="Audio" occurrence="*" operator="=">No</rule>
+  <rule name="Audio/Forced is No" value="Forced" tracktype="Audio" occurrence="*" operator="=">No</rule>
+  <rule name="Audio/StreamOrder is 4" value="StreamOrder" tracktype="Audio" occurrence="*" operator="=">4</rule>
+  <rule name="Audio/ID is 5" value="ID" tracktype="Audio" occurrence="*" operator="=">5</rule>
+  <rule name="Audio/UniqueID is 8765854060549309248" value="UniqueID" tracktype="Audio" occurrence="*" operator="exists">8765854060549309248</rule>
+  <rule name="Audio/Format is FLAC" value="Format" tracktype="Audio" occurrence="*" operator="=">FLAC</rule>
+  <rule name="Audio/CodecID is A_FLAC" value="CodecID" tracktype="Audio" occurrence="*" operator="=">A_FLAC</rule>
+  <rule name="Audio/BitRate_Mode is VBR" value="BitRate_Mode" tracktype="Audio" occurrence="*" operator="=">VBR</rule>
+  <rule name="Audio/Channels is 1" value="Channels" tracktype="Audio" occurrence="*" operator="=">1</rule>
+  <rule name="Audio/ChannelPositions is Front: C" value="ChannelPositions" tracktype="Audio" occurrence="*" operator="=">Front: C</rule>
+  <rule name="Audio/SamplingRate is 48000" value="SamplingRate" tracktype="Audio" occurrence="*" operator="=">48000</rule>
+  <rule name="Audio/BitDepth is 24" value="BitDepth" tracktype="Audio" occurrence="*" operator="=">24</rule>
+  <rule name="Audio/Delay_Source is Container" value="Delay_Source" tracktype="Audio" occurrence="*" operator="=">Container</rule>
+  <rule name="Audio/Encoded_Library is Lavc58.91.100 flac" value="Encoded_Library" tracktype="Audio" occurrence="*" operator="starts with">Lavc</rule>
+  <rule name="Audio/Language is en" value="Language" tracktype="Audio" occurrence="*" operator="=">en</rule>
+  <rule name="Audio/Default is No" value="Default" tracktype="Audio" occurrence="*" operator="=">No</rule>
+  <rule name="Audio/Forced is No" value="Forced" tracktype="Audio" occurrence="*" operator="=">No</rule>
+</policy>

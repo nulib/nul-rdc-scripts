@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<policy type="and" name="inu-archevents_pm_1931_reunion.mov">
+  <rule name="General/VideoCount is 1" value="VideoCount" tracktype="General" occurrence="*" operator="=">1</rule>
+  <rule name="General/OtherCount is 1" value="OtherCount" tracktype="General" occurrence="*" operator="=">1</rule>
+  <rule name="General/FileExtension is mov" value="FileExtension" tracktype="General" occurrence="*" operator="=">mov</rule>
+  <rule name="General/Format is QuickTime" value="Format" tracktype="General" occurrence="*" operator="=">QuickTime</rule>
+  <rule name="General/HeaderSize is 0" value="HeaderSize" tracktype="General" occurrence="*" operator="=">0</rule>
+  <rule name="General/IsStreamable is No" value="IsStreamable" tracktype="General" occurrence="*" operator="=">No</rule>
+  <rule name="General/Encoded_Library is Apple QuickTime" value="Encoded_Library" tracktype="General" occurrence="*" operator="=">Apple QuickTime</rule>
+  <rule name="General/Encoded_Library_Name is Apple QuickTime" value="Encoded_Library_Name" tracktype="General" occurrence="*" operator="=">Apple QuickTime</rule>
+  <rule name="Video/StreamOrder is 0" value="StreamOrder" tracktype="Video" occurrence="*" operator="=">0</rule>
+  <rule name="Video/ID is 1" value="ID" tracktype="Video" occurrence="*" operator="=">1</rule>
+  <rule name="Video/Format is YUV" value="Format" tracktype="Video" occurrence="*" operator="=">YUV</rule>
+  <rule name="Video/CodecID is v210" value="CodecID" tracktype="Video" occurrence="*" operator="=">v210</rule>
+  <rule name="Video/BitRate_Mode is CBR" value="BitRate_Mode" tracktype="Video" occurrence="*" operator="=">CBR</rule>
+  <rule name="Video/Rotation is 0.000" value="Rotation" tracktype="Video" occurrence="*" operator="=">0.000</rule>
+  <rule name="Video/FrameRate_Mode is CFR" value="FrameRate_Mode" tracktype="Video" occurrence="*" operator="=">CFR</rule>
+  <rule name="Video/ColorSpace is YUV" value="ColorSpace" tracktype="Video" occurrence="*" operator="=">YUV</rule>
+  <rule name="Video/ChromaSubsampling is 4:2:2" value="ChromaSubsampling" tracktype="Video" occurrence="*" operator="=">4:2:2</rule>
+  <rule name="Video/BitDepth is 10" value="BitDepth" tracktype="Video" occurrence="*" operator="=">10</rule>
+  <rule name="Video/Compression_Mode is Lossless" value="Compression_Mode" tracktype="Video" occurrence="*" operator="=">Lossless</rule>
+  <rule name="Video/Language is en" value="Language" tracktype="Video" occurrence="*" operator="=">en</rule>
+  <rule name="Video/colour_description_present is Yes" value="colour_description_present" tracktype="Video" occurrence="*" operator="=">Yes</rule>
+  <rule name="Other/StreamOrder is 1" value="StreamOrder" tracktype="Other" occurrence="*" operator="=">1</rule>
+</policy>
