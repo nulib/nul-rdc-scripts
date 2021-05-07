@@ -20,6 +20,15 @@ Scripts for running various automated QC functions on image projects.
 -ExifTool can be installed from the ExifTool website: https://exiftool.org/ 
 -If on Windows, make sure that ExifTool is in your PATH or that you specify the path to the ExifTool executable using `--exiftool` when running the script. <br/>
 
+### Installation <br/>
+- Download the latest release from the releases page. <br/>
+- The release will be a .zip folder. <br/>
+- To install the script open the command line or terminal, cd to the folder containing the zipped folder and run `pip install iqc.zip`. <br/>
+
+### Updating <br/>
+-To update the script, follow the same process as installing, but run `pip install -U iqc.zip`. <br/>
+-You can check the version of iqc that you have installed by running `pip show iqc`. <br/>
+
 ### Usage <br/>
 - Run the Command using the run.py script located in pandas_testing/image_processing <br/>
 - You may need to make the script executable first. In order to do so, type `chmod 755` into the command line on a mac followed by a space, then drag and drop the run.py file into the command line and press return. The full command should look something like `chmod 755 path/to/git/folder/pandas_testing/image_processing/run.py` <br/>

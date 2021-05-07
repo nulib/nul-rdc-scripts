@@ -8,7 +8,7 @@ def _read(path):
 
 setup (
 	name ='iqc',
-	version=0.8,
+	version='0.8.1',
 	license='MIT',
 	description='IQC is an automation tool for checking image folder contents against inventories, verifying checksums, and checking metadata.',
 	long_description=_read('README.md'),
