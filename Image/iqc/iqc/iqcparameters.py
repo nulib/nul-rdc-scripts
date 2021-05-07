@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 '''
-Argument parser for dpx to ffv1/mkv script
+Argument parser for iqc script
 '''
 
 import argparse

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#TO DO - Organize functions
+#TO DO - Organize functions better
 #TO DO - add a way to handle checksum files with path information in them
 
 import json
@@ -9,12 +9,12 @@ from datetime import datetime
 import sys
 import os
 import glob
-from image_processing.imageparameters import args
 import pandas as pd
 from functools import reduce
 import hashlib
 import subprocess
 from PIL import Image
+from iqc.iqcparameters import args
 
 def input_check():
     '''Checks if input was provided and if it is a directory that exists'''
@@ -54,6 +54,7 @@ def generate_checksums(filename, file, checksum_type):
     return checksum_output
 
 def interpret_checksum_command():
+    '''checks if argument used with verify_checksums is valid'''
     checksum_list = ['md5', 'sha1']
     for i in args.verify_checksums:
         if not i in checksum_list:
@@ -61,6 +62,8 @@ def interpret_checksum_command():
             quit()
 
 def output_check():
+    '''Checks that output is valid'''
+    #TO DO - have this command try creating the file early to check if output can be written first
     output = args.output_path
     if not output.endswith('.json'):
         print("--- ERROR: Output must be a JSON file ---")
@@ -99,12 +102,13 @@ def image_handler(file, subdir, cleanSubdir, parameter_dict, inventorydf, column
             parameter_dict['Images']['dictionary'].update(fileAttributes)
 
 def checksum_handler(file, subdir, cleanSubdir, parameter_dict):
+    '''pull information out of checksum files'''
     for i in parameter_dict.keys():
         if file.endswith(parameter_dict[i]['extension']):
             parameter_dict[i]['row_counter'] += 1
             rowNumber = "row_" + str(parameter_dict[i]['row_counter'])
             name = Path(file).stem
-            #remove double stem if present (i.e. .tif.md5)
+            '''remove double stem if present (i.e. .tif.md5)'''
             if '.' in name:
                 name = Path(name).stem
             with open(os.path.join(subdir, file)) as f:
@@ -141,7 +145,8 @@ def exiftool_check():
         quit()
 
 def exiftool_test(filename, filepath, column_to_match, exifmetalist):
-    #chance this so that it only grabs the IPTC metadata fields
+    '''Run exiftool to get IPTC metadata'''
+    #TO DO - change this so that it only grabs the IPTC metadata fields
     exiftool_command = [args.exiftool_path, '-j', filepath]
     exifdata = subprocess.check_output(exiftool_command)
     exifdata = json.loads(exifdata)
@@ -184,7 +189,8 @@ def get_size_format(b, factor=1024, suffix="B"):
     return f"{b:.2f}Y{suffix}"
 
 def is_grayscale(img_path):
-    #set max_image_pixels to a reasonable limit?
+    '''check if image is grayscale. Return true/false'''
+    #TO DO - set max_image_pixels to a reasonable limit?
     Image.MAX_IMAGE_PIXELS = None
     img = Image.open(img_path).convert('RGB')
     MAX_SIZE = (500, 500)
@@ -222,7 +228,7 @@ def get_tech_metadata(filepath):
     exifdata = exifdata[0]
     return exifdata
 
-def image_main():
+def iqc_main():
     column_to_match = 'filename'
     indir = args.input_path
     input_check()
@@ -272,6 +278,7 @@ def image_main():
 
     #create dictionaries containing the formats we want to process
     image_dictionary = {'Images' : { 'extension' : ['.tif'], 'row_counter' : 0, 'dictionary' : {}}}
+    #TO DO - review/update checksum implementation now that script has been changed to only check one type at a time
     checksum_sidecar_dictionary = {'MD5' : { 'extension' : '.md5', 'row_counter' : 0, 'dictionary' : {}}, 'SHA1' : { 'extension' : '.sha1', 'row_counter' : 0, 'dictionary' : {}}}
 
     #search input and process specified files
@@ -281,6 +288,7 @@ def image_main():
         files = [f for f in files if not f[0] == '.']
         dirs[:] = [d for d in dirs if not d[0] == '.']
         for file in files:
+            #TO DO - reduce the number of variables getting passed around
             image_handler(file, subdir, cleanSubdir, image_dictionary, inventorydf, column_to_match)
             checksum_handler(file, subdir, cleanSubdir, checksum_sidecar_dictionary)
             if args.verify_metadata:
@@ -304,7 +312,6 @@ def image_main():
             image_columns += [column_name]
     if args.techdata:
         image_columns += ["Bit Depth Check", "Color Profile Check"]
-    #print(image_columns)
 
     imagedf = pd.DataFrame.from_dict(image_dictionary['Images']['dictionary'], orient='index', columns=image_columns)
     md5df = pd.DataFrame.from_dict(checksum_sidecar_dictionary['MD5']['dictionary'], orient='index', columns=['base filename', 'md5 filename', 'md5 path', 'filename in md5 checksum', 'md5 checksum value'])
@@ -320,9 +327,6 @@ def image_main():
     #returns df of inventory entries with no tif file
     df4 = imagedf.merge(inventorydf, how='right', on=column_to_match, indicator="Status").query('Status == "right_only"')
 
-    #Note - this is a simpler way to merge multiple data frames if they all have a common field
-    #dfList = [inventorydf, tifdf, jpgdf]
-    #df_merged = reduce(lambda  left,right: pd.merge(left,right, on=[column_to_match], how='left'), dfList)
     df_merged = inventorydf.merge(imagedf, how='left', on=column_to_match)
     if args.verify_metadata:
         df_merged = df_merged.merge(exifdf, how='left', on=column_to_match)
@@ -332,7 +336,7 @@ def image_main():
         if args.strict:
             metadf_failures = pd.merge(clean_exifdf, inventorydf, left_on=[column_to_match, 'By-line', 'Headline', 'Source', 'CopyrightNotice'], right_on=[column_to_match, 'Creator', 'Headline', 'Source', 'Copyright Notice'], how='outer', indicator='metamatch').query("metamatch == 'left_only'")
         else:
-            #should probably remove a bunch of the unnecessary information from DFs in this part to make the results cleaner
+            #TO DO - should probably remove a bunch of the unnecessary information from DFs in this part to make the results cleaner
             copyright_pattern = '|'.join(r"{}".format(x) for x in exifdf['CopyrightNotice'])
             inventorydf['copyright_pattern_match'] = inventorydf['Copyright Notice'].str.extract('('+ copyright_pattern +')', expand=False)
             copyright_partial_match = pd.merge(clean_exifdf, inventorydf, left_on=[column_to_match, 'CopyrightNotice'], right_on=[column_to_match, 'copyright_pattern_match'], how='outer', indicator="copyright_metadata_status").query("copyright_metadata_status == 'left_only'")
@@ -349,9 +353,11 @@ def image_main():
             inventorydf['source_pattern_match'] = inventorydf['Source'].str.extract('('+ source_pattern +')', expand=False)
             source_partial_match = pd.merge(clean_exifdf, inventorydf, left_on=[column_to_match, 'Source'], right_on=[column_to_match, 'source_pattern_match'], how='outer', indicator="source_metadata_status").query("source_metadata_status == 'left_only'")
             metadf_list = [copyright_partial_match, headline_partial_match, byline_partial_match, source_partial_match]
+            #merge all metadata dataframes
             metadf_failures = reduce(lambda left,right: pd.merge(left,right,on=[column_to_match], how='outer'), metadf_list)
 
     if args.verify_checksums:
+        #TO DO - Make this more generic (autofill md5/sha1 based on command)
         if 'md5' in args.verify_checksums and not md5df.empty:
             #TO DO should be a check if the filename in the checksum file matches the checksum base name
             df_merged = df_merged.merge(md5df, how='left', left_on=column_to_match, right_on='filename in md5 checksum')
@@ -367,7 +373,7 @@ def image_main():
             failed_sha1_df = failed_sha1_df.loc[failed_sha1_df['checksum_match'] == False]
 
     if args.techdata:
-        #TO DO - functionally cleandf is equivalent to clean_exifdf and could probably be created earlier and used instead of that df
+        #TO DO - cleandf is essentially equivalent to clean_exifdf and could probably be created earlier and used instead of that df
         #Create a df of files that are present in both the inventory and as TIFF files
         cleandf = pd.merge(imagedf, df3[column_to_match], on=column_to_match, how='outer', indicator='present').query("present == 'left_only'")
         bitdepthdf = cleandf.loc[cleandf['Bit Depth Check'] == "FAIL"]
@@ -404,7 +410,6 @@ def image_main():
             print ('+++ WARNING: Unable to verify ' + i + ' checksums. No ' + i + ' checksums were found +++')
             print()
             checksum_results = "Unable to verify md5 checksums. No md5 checksums were found."
-            #checksum_failures.append(md5_fail_dict)
         elif 'md5' in args.verify_checksums:
             md5_failures = failed_md5_df[column_to_match].tolist()
             md5_missing = missing_md5_df[column_to_match].tolist()
@@ -416,12 +421,10 @@ def image_main():
                 checksum_results = [{"MD5 Checksum Failures" : md5_failures, "Inventory Entries with No Matching MD5 File" : md5_missing}]
             else:
                 checksum_results = "PASS"
-            #checksum_failures.append(md5_fail_dict)
         if sha1df.empty and 'sha1' in args.verify_checksums:
             print ('+++ WARNING: Unable to verify sha1 checksums. No sha1 checksums were found +++')
             print()
             checksum_results = "Unable to verify sha1 checksums. No sha1 checksums were found."
-            #checksum_failures.append(sha1_fail_dict)
         elif 'sha1' in args.verify_checksums:
             sha1_failures =failed_sha1_df[column_to_match].tolist()
             sha1_missing = missing_sha1_df[column_to_match].tolist()
@@ -431,7 +434,6 @@ def image_main():
             print()
             if sha1_failures or sha1_missing:
                 checksum_results = [{"SHA1 Checksum Failures" : sha1_failures, "Inventory Entries with No Matching SHA1 File" : sha1_missing}]
-                #checksum_failures.append(sha1_fail_dict)
             else:
                 checksum_results = "PASS"
     if args.verify_metadata:
@@ -471,7 +473,7 @@ def image_main():
     "Bit Depth Check" : profile_results
     }
     output_report[base_folder_name].append(report_data)
-    #Write merged inventory to output specified in command
+    #Write report data to output file
     if args.output_path:
         print ("Writing report to:" + args.output_path)
         with open(args.output_path, 'w', newline='\n') as outfile:
