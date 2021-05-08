@@ -1,15 +1,6 @@
 # IQC - Image Quality Checker <br/>
 Python tools for running various automated QC functions on NUL RDC image projects. <br/>
 
-## Commands <br/>
-**-i**, **--input**   This should be the full path to a project folder. If one or more inventory csv files are placed in the base folder of your input and you do not use the `--inventory` command to specify a different csv file or directory, those inventories will be used for processing the files. <br/>
-**-o**, **--output**   This should be the full path, including file name, to a csv file for writing an output csv to. If the output already exists it will be overwritten. Example - /user/my_documents/my_csv.csv <br/>
-**--exiftool**  Used to specify a custom path to ExifTool. This should generally not be needed. <br/>
-**--inventory**   This should be the full path to a folder containing inventory csv files. Inventories should be left in their original formatting at the moment. If the folder contains multiple inventories the script will try to combine them. <br/>
-**--verify_checksums**  This will try to verify existing checksums. It should be followed by the specific type of checksum file to verify (i.e. `--verify_checksums md5` or `--verify_checksums md5 sha1`). Currently the only supported formats are `md5` and `sha1`. Checksum files are expected to end with the specified text (sha1 files should end with .sha1). <br/>
-**--verify_metadata**  This will run ExifTool on each TIFF file and check whether the IPTC fields By-line, Headline, Source, and CopyrightNotice match the listed information in the inventory (the Creator, Headline, Source, and Copyright Notice columns). By default this command will only check if the inventory field contains the text found in the file so that truncated metadata will also be matched (i.e. a file with IPTC metadata "Northwestern Uni" would pass even if the inventory metadata is "Northwestern University"). <br/>
-**--strict**  When used with `--verify_metadata` this enforces exact matches when checking metadata (i.e. a file with IPTC metadata "Northwestern Uni" would fail if the inventory metadata is "Northwestern University"). <br/>
-
 ## Dependencies - CHECK BEFORE TRYING TO RUN THE SCRIPT <br/>
 - This script requires ExifTool and Python 3 with the Pandas and Pillow libraries. <br/>
 - Install python from the Python website if it is not already installed. If you aren't sure whether or not python is installed, try typing `python -h` in the command line. If installing Python on Windows make sure to check the box to add python to your PATH during installation. <br/>
@@ -29,6 +20,17 @@ Python tools for running various automated QC functions on NUL RDC image project
 -You can check the version of iqc that you have installed by running `pip show iqc`. <br/>
 
 ## Usage <br/>
+### Commands <br/>
+**-i**, **--input**   This should be the full path to a project folder. If one or more inventory csv files are placed in the base folder of your input and you do not use the `--inventory` command to specify a different csv file or directory, those inventories will be used for processing the files. <br/>
+**-o**, **--output**   This should be the full path, including file name, to a csv file for writing an output csv to. If the output already exists it will be overwritten. Example - /user/my_documents/my_csv.csv <br/>
+**--exiftool**  Used to specify a custom path to ExifTool. This should generally not be needed. <br/>
+**--inventory**   This should be the full path to a folder containing inventory csv files. Inventories should be left in their original formatting at the moment. If the folder contains multiple inventories the script will try to combine them. <br/>
+**--verify_checksums**, **-c**  This will try to verify existing checksums. It should be followed by the specific type of checksum file to verify (i.e. `--verify_checksums md5` or `--verify_checksums md5 sha1`). Currently the only supported formats are `md5` and `sha1`. Checksum files are expected to end with the specified text (sha1 files should end with .sha1). <br/>
+**--verify_metadata**, **-m**  This will run ExifTool on each TIFF file and check whether the IPTC fields By-line, Headline, Source, and CopyrightNotice match the listed information in the inventory (the Creator, Headline, Source, and Copyright Notice columns). By default this command will only check if the inventory field contains the text found in the file so that truncated metadata will also be matched (i.e. a file with IPTC metadata "Northwestern Uni" would pass even if the inventory metadata is "Northwestern University"). <br/>
+**--strict**  When used with `--verify_metadata` this enforces exact matches when checking metadata (i.e. a file with IPTC metadata "Northwestern Uni" would fail if the inventory metadata is "Northwestern University"). <br/>
+**--verify_techdata**, **-t** This will use ExifTool to check the bit depth and color profile of images and compare them against expected Access and Preservation file specifications used by RDC. <br/>
+**--all**, **-a** This is equivalent to using the commands `--verify_metadata --verify_techdata --verify_checksums md5`. <br/>
+### Examples <br/>
 - Run the Command using the run.py script located in pandas_testing/image_processing <br/>
 - You may need to make the script executable first. In order to do so, type `chmod 755` into the command line on a mac followed by a space, then drag and drop the run.py file into the command line and press return. The full command should look something like `chmod 755 path/to/git/folder/pandas_testing/image_processing/run.py` <br/>
 - You can check if the script is executable by trying to bring up the help text `run.py -h` <br/>
