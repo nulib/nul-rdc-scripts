@@ -3,11 +3,11 @@ Python tools for running various automated QC functions on NUL RDC image project
 
 ## Dependencies - CHECK BEFORE TRYING TO RUN THE SCRIPT <br/>
 - This script requires ExifTool and Python 3 with the Pandas and Pillow libraries. <br/>
-- Install python from the Python website if it is not already installed. If you aren't sure whether or not python is installed, try typing `python -h` in the command line. If installing Python on Windows make sure to check the box to add python to your PATH during installation. <br/>
+- Install Python from the Python website if it is not already installed. If you aren't sure whether or not Python is installed, try typing `python -h` in the command line. If installing Python on Windows make sure to check the box to add Python to your PATH during installation. <br/>
 - If installing an iqc release using pip, it should automatically install Pandas and Pillow. <br/>
 - ExifTool can be installed from the ExifTool website: https://exiftool.org/ <br/>
 - If on Windows, make sure that ExifTool is in your PATH or that you specify the path to the ExifTool executable using `--exiftool` when running the script. <br/>
--If you need to manually install the pandas and Pillow libraries follow the instructions on their respective websites. <br/>
+- If you need to manually install the pandas and Pillow libraries follow the instructions on their respective websites. <br/>
 
 
 ## Installation <br/>
@@ -16,8 +16,8 @@ Python tools for running various automated QC functions on NUL RDC image project
 - To install the script open the command line or terminal, cd to the folder containing the zipped folder and run `pip install iqc.zip`. <br/>
 
 ## Updating <br/>
--To update the script, follow the same process as installing, but run `pip install -U iqc.zip`. <br/>
--You can check the version of iqc that you have installed by running `pip show iqc`. <br/>
+- To update the script, follow the same process as installing, but run `pip install -U iqc.zip`. <br/>
+- You can check the version of iqc that you have installed by running `pip show iqc`. <br/>
 
 ## Usage <br/>
 ### Commands <br/>
@@ -31,9 +31,9 @@ Python tools for running various automated QC functions on NUL RDC image project
 **--verify_techdata**, **-t** This will use ExifTool to check the bit depth and color profile of images and compare them against expected Access and Preservation file specifications used by RDC. <br/>
 **--all**, **-a** This is equivalent to using the commands `--verify_metadata --verify_techdata --verify_checksums md5`. <br/>
 ### Examples <br/>
-- Run the Command using the run.py script located in pandas_testing/image_processing <br/>
-- You may need to make the script executable first. In order to do so, type `chmod 755` into the command line on a mac followed by a space, then drag and drop the run.py file into the command line and press return. The full command should look something like `chmod 755 path/to/git/folder/pandas_testing/image_processing/run.py` <br/>
-- You can check if the script is executable by trying to bring up the help text `run.py -h` <br/>
+- The script can be run without installing using the run.py script located in the base iqc directory. <br/>
+- You may need to make the script executable first. In order to do so, type `chmod 755` into the command line on a Mac followed by a space, then drag and drop the run.py file into the command line and press return. The full command should look something like `chmod 755 path/to/git/folder/iqc/run.py` <br/>
+- You can check if the script is executable by trying to bring up the help text `path/to/git/folder/iqc/run.py -h` <br/>
 - Once the script is executable, you can run it by setting the correct inputs and outputs: `path/to/git/folder/pandas_testing/image_processing/run.py -i path/to/input/folder -o path/to/csv/mycsv.csv --inventory path/to/inventory/folders` <br/>
 - The commands can be included in any order as long as each is followed by the correct path (i.e. `--inventory` should always have the path to a csv file after it regardless of where it is in the command). <br/>
 
