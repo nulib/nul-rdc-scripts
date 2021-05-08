@@ -1,9 +1,7 @@
-# Image-Processing <br/>
-Scripts for running various automated QC functions on image projects.
+# IQC - Image Quality Checker <br/>
+Python tools for running various automated QC functions on NUL RDC image projects. <br/>
 
-## INSTRUCTIONS FOR TESTING <br/>
-
-### Commands <br/>
+## Commands <br/>
 **-i**, **--input**   This should be the full path to a project folder. If one or more inventory csv files are placed in the base folder of your input and you do not use the `--inventory` command to specify a different csv file or directory, those inventories will be used for processing the files. <br/>
 **-o**, **--output**   This should be the full path, including file name, to a csv file for writing an output csv to. If the output already exists it will be overwritten. Example - /user/my_documents/my_csv.csv <br/>
 **--exiftool**  Used to specify a custom path to ExifTool. This should generally not be needed. <br/>
@@ -12,24 +10,25 @@ Scripts for running various automated QC functions on image projects.
 **--verify_metadata**  This will run ExifTool on each TIFF file and check whether the IPTC fields By-line, Headline, Source, and CopyrightNotice match the listed information in the inventory (the Creator, Headline, Source, and Copyright Notice columns). By default this command will only check if the inventory field contains the text found in the file so that truncated metadata will also be matched (i.e. a file with IPTC metadata "Northwestern Uni" would pass even if the inventory metadata is "Northwestern University"). <br/>
 **--strict**  When used with `--verify_metadata` this enforces exact matches when checking metadata (i.e. a file with IPTC metadata "Northwestern Uni" would fail if the inventory metadata is "Northwestern University"). <br/>
 
-### Dependencies - CHECK BEFORE TRYING TO RUN THE SCRIPT <br/>
-- Before running the command you will need a recent version of Python, the Pandas and Pillow modules, and Exiftool installed. <br/>
+## Dependencies - CHECK BEFORE TRYING TO RUN THE SCRIPT <br/>
+- This script requires ExifTool and Python 3 with the Pandas and Pillow libraries. <br/>
 - Install python from the Python website if it is not already installed. If you aren't sure whether or not python is installed, try typing `python -h` in the command line. If installing Python on Windows make sure to check the box to add python to your PATH during installation. <br/>
-- You can install Pandas module by typing `pip install pandas` in the command line when you have python installed (specifically install for python 3+ using `pip3 install pandas`).
-- You can install Pillow using the command `python3 -m pip install --upgrade Pillow`
--ExifTool can be installed from the ExifTool website: https://exiftool.org/ 
--If on Windows, make sure that ExifTool is in your PATH or that you specify the path to the ExifTool executable using `--exiftool` when running the script. <br/>
+- If installing an iqc release using pip, it should automatically install Pandas and Pillow. <br/>
+- ExifTool can be installed from the ExifTool website: https://exiftool.org/ <br/>
+- If on Windows, make sure that ExifTool is in your PATH or that you specify the path to the ExifTool executable using `--exiftool` when running the script. <br/>
+-If you need to manually install the pandas and Pillow libraries follow the instructions on their respective websites. <br/>
 
-### Installation <br/>
+
+## Installation <br/>
 - Download the latest release from the releases page. <br/>
 - The release will be a .zip folder. <br/>
 - To install the script open the command line or terminal, cd to the folder containing the zipped folder and run `pip install iqc.zip`. <br/>
 
-### Updating <br/>
+## Updating <br/>
 -To update the script, follow the same process as installing, but run `pip install -U iqc.zip`. <br/>
 -You can check the version of iqc that you have installed by running `pip show iqc`. <br/>
 
-### Usage <br/>
+## Usage <br/>
 - Run the Command using the run.py script located in pandas_testing/image_processing <br/>
 - You may need to make the script executable first. In order to do so, type `chmod 755` into the command line on a mac followed by a space, then drag and drop the run.py file into the command line and press return. The full command should look something like `chmod 755 path/to/git/folder/pandas_testing/image_processing/run.py` <br/>
 - You can check if the script is executable by trying to bring up the help text `run.py -h` <br/>

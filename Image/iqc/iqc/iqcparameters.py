@@ -17,8 +17,7 @@ parser.add_argument('--verify_metadata', '-m', required='--strict' in sys.argv, 
 parser.add_argument('--exiftool', action='store', dest='exiftool_path', default='exiftool', type=str, help='For setting a custom exiftool path')
 parser.add_argument('--strict', '-s', required=False, action='store_true', help='Use with --verify_metadata to enforce exact metadata matching. Will cause truncated IPTC fields to fail')
 parser.add_argument('--verify_techdata', '-t', required=False, action='store_true', dest='techdata', help='Verify technical metadata. This will check the bit depth and color profile of TIFF images.')
-parser.add_argument('--all', '-a', required=False, action='store_true', dest='all', help='')
-#parser.add_argument('--filter_list', action='store', dest='filter_list', help='Provide a text file with a list of files. Not implemented yet')
+parser.add_argument('--all', '-a', required=False, action='store_true', dest='all', help='This is equivalent to including the commands --verify_metadata --verify_techdata --verify checksums md5')
 
 args = parser.parse_args()
 
