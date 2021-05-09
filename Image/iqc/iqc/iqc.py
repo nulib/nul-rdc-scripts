@@ -240,15 +240,14 @@ def iqc_main():
     indir = args.input_path
     input_check()
     base_folder_name = os.path.basename(indir)
-    #script will default to writing json report in input file if using --all and not specifying an output
+    #script will default to writing json report in input folder if using --all and not specifying an output
     if args.all and not args.output_path:
-        args.output_path = os.path.join(indir, base_folder_name + '_report.json')
+        args.output_path = os.path.join(indir, base_folder_name + '-iqc_report.json')
     if args.output_path:
         output_check()
     if args.verify_metadata:
         exiftool_check()
         exifmetalist = []
-
     if args.verify_checksums:
         interpret_checksum_command()
     #get the input folder size
@@ -400,6 +399,7 @@ def iqc_main():
     #Consider only printing a report in terminal if an output file is NOT specified?
     output_report = {}
     output_report[base_folder_name] = []
+    iqc_version = args.version
     checksum_results = "Not Checked"
     metadata_results = "Not Checked"
     bit_depth_results = "Not Checked"
@@ -407,6 +407,7 @@ def iqc_main():
     print("\n--------------- RESULTS ---------------\n")
     report_date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
     print("REPORT DATE:", report_date)
+    print("IQC VERSION:", iqc_version)
     print("INPUT FOLDER SIZE:", input_folder_size + "\n")
     print("Number of items in inventory: " + str(inventory_count))
     print("Number of TIFF images in input: " + str(image_count))
@@ -464,6 +465,7 @@ def iqc_main():
 
     report_data = {
     "Report Date" : report_date,
+    "IQC Version" : iqc_version,
     "Input Folder Size" : input_folder_size,
     "Inventory Item Count" : inventory_count,
     "TIFF File Count" : image_count,

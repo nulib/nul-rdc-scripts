@@ -29,7 +29,7 @@ Python tools for running various automated QC functions on NUL RDC image project
 **--verify_metadata**, **-m**  This will run ExifTool on each TIFF file and check whether the IPTC fields By-line, Headline, Source, and CopyrightNotice match the listed information in the inventory (the Creator, Headline, Source, and Copyright Notice columns). By default this command will only check if the inventory field contains the text found in the file so that truncated metadata will also be matched (i.e. a file with IPTC metadata "Northwestern Uni" would pass even if the inventory metadata is "Northwestern University"). <br/>
 **--strict**  When used with `--verify_metadata` this enforces exact matches when checking metadata (i.e. a file with IPTC metadata "Northwestern Uni" would fail if the inventory metadata is "Northwestern University"). <br/>
 **--verify_techdata**, **-t** This will use ExifTool to check the bit depth and color profile of images and compare them against expected Access and Preservation file specifications used by RDC. <br/>
-**--all**, **-a** This is equivalent to using the commands `--verify_metadata --verify_techdata --verify_checksums md5 -o /path/to/output/project_folder/project_folder_report.json`. The output path will default to the base folder of your input. Using the `-o` command and specifying an output in addition to using `-a` will output the report to the specified output rather than the default `-a` one. <br/>
+**--all**, **-a** This is equivalent to using the commands `--verify_metadata --verify_techdata --verify_checksums md5 -o /path/to/input/input-iqc_report.json`. The output path will default to the base folder of your input. Using the `-o` command and specifying an output in addition to using `-a` will output the report to the specified output rather than the default `-a` one. <br/>
 ### Examples <br/>
 - Basic usage where you have a csv inventory in your project folder and want to check that there are TIFF files for all of the files in the inventory. This will output a short report in the terminal/command line: <br/>
 ```
@@ -48,7 +48,7 @@ Python tools for running various automated QC functions on NUL RDC image project
 - You can check if the script is executable by trying to bring up the help text `path/to/git/folder/iqc/run.py -h` <br/>
 - Once the script is executable, you can run it by setting the correct inputs and outputs: <br/>
 ```
-  path/to/git/folder/pandas_testing/image_processing/run.py -i path/to/input/folder -o path/to/csv/my_report.json --inventory path/to/inventory/folders
+  path/to/git/folder/iqc/run.py -i path/to/project/folder -o path/to/report/folder/my_report.json --inventory path/to/inventory/file.csv
 ```
 - The commands can be included in any order as long as each is followed by the correct path (i.e. `--inventory` should always have the path to a csv file after it regardless of where it is in the command). <br/>
 
