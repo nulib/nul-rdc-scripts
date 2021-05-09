@@ -58,16 +58,23 @@ def interpret_checksum_command():
     checksum_list = ['md5', 'sha1']
     for i in args.verify_checksums:
         if not i in checksum_list:
-            print(i + ' is not a valid checksum input')
+            print('\n---ERROR: ' + i + ' is not a valid checksum input ---\n')
             quit()
 
 def output_check():
     '''Checks that output is valid'''
-    #TO DO - have this command try creating the file early to check if output can be written first
     output = args.output_path
     if not output.endswith('.json'):
-        print("--- ERROR: Output must be a JSON file ---")
+        print("\n--- ERROR: Output must be a JSON file ---\n")
         quit()
+    #print("Checking output path")
+    try:
+        with open(output, 'w', newline='\n') as outfile:
+            outfile.close
+    except OSError:
+        print("\n--- ERROR: Unable to create output file", output + ' ---\n')
+        quit()
+
 
 def image_handler(file, subdir, cleanSubdir, parameter_dict, inventorydf, column_to_match):
     '''create dictionary that forms the basis for dataframes for found images'''
@@ -83,8 +90,8 @@ def image_handler(file, subdir, cleanSubdir, parameter_dict, inventorydf, column
                     sumtype = a + 'sum'
                     sumtype = [generate_checksums(filepath, file, a)]
                     attribute_list += sumtype
-            #print(attribute_list)
             if args.techdata:
+                print("checking technical metadata for " + file)
                 techresults = []
                 isgrayscale = is_grayscale(filepath)
                 profile = load_profile(file, inventorydf, column_to_match, isgrayscale)
@@ -144,10 +151,10 @@ def exiftool_check():
         print("Error locating exiftool")
         quit()
 
-def exiftool_test(filename, filepath, column_to_match, exifmetalist):
+def get_iptc_metadata(filename, filepath, column_to_match, exifmetalist):
     '''Run exiftool to get IPTC metadata'''
-    #TO DO - change this so that it only grabs the IPTC metadata fields
-    exiftool_command = [args.exiftool_path, '-j', filepath]
+    #TO DO - Feed this a list of exiftool fields to check rather than hard coding them in the command?
+    exiftool_command = [args.exiftool_path, '-headline', '-by-line', '-source', '-copyrightnotice', '-j', filepath]
     exifdata = subprocess.check_output(exiftool_command)
     exifdata = json.loads(exifdata)
     exifdata[0][column_to_match] = filename
@@ -232,12 +239,16 @@ def iqc_main():
     column_to_match = 'filename'
     indir = args.input_path
     input_check()
-    #TO DO - enable writing output file as default or have -a command?
+    base_folder_name = os.path.basename(indir)
+    #script will default to writing json report in input file if using --all and not specifying an output
+    if args.all and not args.output_path:
+        args.output_path = os.path.join(indir, base_folder_name + '_report.json')
     if args.output_path:
         output_check()
     if args.verify_metadata:
         exiftool_check()
         exifmetalist = []
+
     if args.verify_checksums:
         interpret_checksum_command()
     #get the input folder size
@@ -249,11 +260,11 @@ def iqc_main():
         if os.path.isdir(inventoryPath):
             inventories = glob.glob(os.path.join(inventoryPath, "*.csv"))
             if not inventories:
-                print("\n--- ERROR: No inventory found. Either specify your inventories or place them in the base folder of your input directory ---")
+                print("\n--- ERROR: No inventory found. Either specify your inventories or place them in the base folder of your input directory ---\n")
                 quit()
             inventorydf = pd.concat([pd.read_csv(inv, skiprows=0, header=0) for inv in inventories])
         else:
-            print('--- ERROR: Inventory path is not valid ---')
+            print('\n--- ERROR: Inventory path is not valid ---\n')
             quit()
     else:
         inventoryPath = args.inventory_path
@@ -261,19 +272,19 @@ def iqc_main():
             if os.path.isfile(inventoryPath):
                 inventorydf =  pd.read_csv(inventoryPath, skiprows=0, header=0)
             else:
-                print('--- ERROR: Supplied inventory path is not valid ---')
+                print('\n--- ERROR: Supplied inventory path is not valid ---\n')
                 quit()
         else:
             if os.path.isdir(inventoryPath):
                 inventories = glob.glob(os.path.join(inventoryPath, "*.csv"))
                 if not inventories:
-                    print("\n--- ERROR: The specified inventory folder does not contain any CSV files ---")
+                    print("\n--- ERROR: The specified inventory folder does not contain any CSV files ---\n")
                     quit()
                 #Note - header=1 is used to grab the second row of the spreadsheet as the header row
                 #use header=0 for csv files where the first row is the header row
                 inventorydf = pd.concat([pd.read_csv(inv, skiprows=0, header=0) for inv in inventories])
             else:
-                print('--- ERROR: Supplied inventory path is not valid ---')
+                print('\n--- ERROR: Supplied inventory path is not valid ---\n')
                 quit()
 
     #create dictionaries containing the formats we want to process
@@ -294,10 +305,10 @@ def iqc_main():
             if args.verify_metadata:
                 for i in image_dictionary['Images']['extension']:
                     #TO DO - This most likely is not the most efficient way to do this
-                    #this could probably be merged with related image handler steps
+                    #try merging with related image handler steps instead
                     if file.endswith(i):
-                        print("checking metadata for " + file)
-                        exiftool_test(file, os.path.join(subdir, file), column_to_match, exifmetalist)
+                        print("checking IPTC metadata for " + file)
+                        get_iptc_metadata(file, os.path.join(subdir, file), column_to_match, exifmetalist)
 
     #test if these can be grabbed using something like exiftool -By-line -a image?
     if args.verify_metadata:
@@ -322,21 +333,28 @@ def iqc_main():
     #count the number of images
     image_count = len(imagedf.index)
 
+    #returns a df of just the target files
+    targetdf = imagedf[imagedf[column_to_match].str.contains("_target.tif", na=False)]
+    #count the number of target files found
+    target_count = len(targetdf.index)
+
+    #filter out targets from imagedf using the inverse of the target filter
+    imagedf = imagedf[~imagedf[column_to_match].str.contains("_target.tif", na=False)]
     #returns df of images not found in inventory
     df3 = imagedf.merge(inventorydf, how='left', on=column_to_match, indicator="Status").query('Status == "left_only"')
     #returns df of inventory entries with no tif file
     df4 = imagedf.merge(inventorydf, how='right', on=column_to_match, indicator="Status").query('Status == "right_only"')
-
+    #creates DF of combined inventory and file DFs
     df_merged = inventorydf.merge(imagedf, how='left', on=column_to_match)
+
     if args.verify_metadata:
         df_merged = df_merged.merge(exifdf, how='left', on=column_to_match)
-        #remove instances where there is no file/inventory entry to match
-        # TO DO - create the clean dataframe outside of this if statement so that the same df can be used by tech metadata check
+        #remove target files and instances where there is no file/inventory entry to match
         clean_exifdf = pd.merge(exifdf, df3[column_to_match], on=column_to_match, how='outer', indicator='exifdfmatch').query("exifdfmatch == 'left_only'")
+        clean_exifdf = clean_exifdf[~clean_exifdf[column_to_match].str.contains("_target.tif", na=False)]
         if args.strict:
             metadf_failures = pd.merge(clean_exifdf, inventorydf, left_on=[column_to_match, 'By-line', 'Headline', 'Source', 'CopyrightNotice'], right_on=[column_to_match, 'Creator', 'Headline', 'Source', 'Copyright Notice'], how='outer', indicator='metamatch').query("metamatch == 'left_only'")
         else:
-            #TO DO - should probably remove a bunch of the unnecessary information from DFs in this part to make the results cleaner
             copyright_pattern = '|'.join(r"{}".format(x) for x in exifdf['CopyrightNotice'])
             inventorydf['copyright_pattern_match'] = inventorydf['Copyright Notice'].str.extract('('+ copyright_pattern +')', expand=False)
             copyright_partial_match = pd.merge(clean_exifdf, inventorydf, left_on=[column_to_match, 'CopyrightNotice'], right_on=[column_to_match, 'copyright_pattern_match'], how='outer', indicator="copyright_metadata_status").query("copyright_metadata_status == 'left_only'")
@@ -373,37 +391,29 @@ def iqc_main():
             failed_sha1_df = failed_sha1_df.loc[failed_sha1_df['checksum_match'] == False]
 
     if args.techdata:
-        #TO DO - cleandf is essentially equivalent to clean_exifdf and could probably be created earlier and used instead of that df
-        #Create a df of files that are present in both the inventory and as TIFF files
         cleandf = pd.merge(imagedf, df3[column_to_match], on=column_to_match, how='outer', indicator='present').query("present == 'left_only'")
         bitdepthdf = cleandf.loc[cleandf['Bit Depth Check'] == "FAIL"]
         profiledf = cleandf.loc[cleandf['Color Profile Check'] == "FAIL"]
 
     #presentation related stuff for reporting
-    #TO DO organize this better to reduce repeated and dispersed info - create json dict first, then just pull from it
-    #TO DO remove blank print lines and add as carriage returns to ends of lines instead
-    #Consider only printing a report in terminal if an output file is NOT specified
-    base_folder_name = os.path.basename(indir)
+    #TO DO organize this better to reduce repeated and dispersed info - create json dict first, then just pull from it or update values
+    #Consider only printing a report in terminal if an output file is NOT specified?
     output_report = {}
     output_report[base_folder_name] = []
     checksum_results = "Not Checked"
     metadata_results = "Not Checked"
     bit_depth_results = "Not Checked"
     profile_results = "Not Checked"
-    print()
-    print("--------------- RESULTS ---------------")
-    print()
+    print("\n--------------- RESULTS ---------------\n")
     report_date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
     print("REPORT DATE:", report_date)
-    print("INPUT FOLDER SIZE:", input_folder_size)
-    print()
+    print("INPUT FOLDER SIZE:", input_folder_size + "\n")
     print("Number of items in inventory: " + str(inventory_count))
     print("Number of TIFF images in input: " + str(image_count))
-    print()
-    print("**TIFF FILES NOT FOUND IN INVENTORY: " + str(df3[column_to_match].tolist()))
-    print()
-    print("**INVENTORY ENTRIES WITH NO MATCHING TIFF FILE: " + str(df4[column_to_match].tolist()))
-    print()
+    print("Number of target files in input: " + str(target_count))
+    print("\n**TARGET FILES FOUND IN INPUT: " + str(targetdf[column_to_match].tolist()))
+    print("\n**TIFF FILES NOT FOUND IN INVENTORY: " + str(df3[column_to_match].tolist()))
+    print("\n**INVENTORY ENTRIES WITH NO MATCHING TIFF FILE: " + str(df4[column_to_match].tolist()) + "\n")
     if args.verify_checksums:
         #more elegant way to format this?
         if md5df.empty and 'md5' in args.verify_checksums:
@@ -414,32 +424,26 @@ def iqc_main():
             md5_failures = failed_md5_df[column_to_match].tolist()
             md5_missing = missing_md5_df[column_to_match].tolist()
             print("**MD5 CHECKSUM FAILURES: " + str(md5_failures))
-            print()
-            print("**INVENTORY ENTRIES WITH NO MATCHING MD5 FILE: " + str(md5_missing))
-            print()
+            print("\n**INVENTORY ENTRIES WITH NO MATCHING MD5 FILE: " + str(md5_missing) + "\n")
             if md5_failures or md5_missing:
                 checksum_results = [{"MD5 Checksum Failures" : md5_failures, "Inventory Entries with No Matching MD5 File" : md5_missing}]
             else:
                 checksum_results = "PASS"
         if sha1df.empty and 'sha1' in args.verify_checksums:
-            print ('+++ WARNING: Unable to verify sha1 checksums. No sha1 checksums were found +++')
-            print()
+            print ("+++ WARNING: Unable to verify sha1 checksums. No sha1 checksums were found +++\n")
             checksum_results = "Unable to verify sha1 checksums. No sha1 checksums were found."
         elif 'sha1' in args.verify_checksums:
             sha1_failures =failed_sha1_df[column_to_match].tolist()
             sha1_missing = missing_sha1_df[column_to_match].tolist()
             print("**SHA1 CHECKSUM FAILURES: " + str(sha1_failures))
-            print()
-            print("**INVENTORY ENTRIES WITH NO MATCHING SHA1 FILE: " + str(sha1_missing))
-            print()
+            print("\n**INVENTORY ENTRIES WITH NO MATCHING SHA1 FILE: " + str(sha1_missing) + "\n")
             if sha1_failures or sha1_missing:
                 checksum_results = [{"SHA1 Checksum Failures" : sha1_failures, "Inventory Entries with No Matching SHA1 File" : sha1_missing}]
             else:
                 checksum_results = "PASS"
     if args.verify_metadata:
         metadata_failures = metadf_failures[column_to_match].tolist()
-        print("**METADATA FAILURES: " + str(metadata_failures))
-        print()
+        print("**IPTC METADATA FAILURES: " + str(metadata_failures) + "\n")
         if metadata_failures:
             metadata_results = metadata_failures
         else:
@@ -448,9 +452,7 @@ def iqc_main():
         bit_depth_failures = bitdepthdf[column_to_match].tolist()
         profile_failures = profiledf[column_to_match].tolist()
         print("**BIT DEPTH FAILURES: " + str(bit_depth_failures))
-        print()
-        print("**COLOR PROFILE FAILURES: " + str(profile_failures))
-        print()
+        print("\n**COLOR PROFILE FAILURES: " + str(profile_failures) + "\n")
         if bit_depth_failures:
             bit_depth_results = bit_depth_failures
         else:
@@ -462,13 +464,15 @@ def iqc_main():
 
     report_data = {
     "Report Date" : report_date,
-    "TIFF File Count" : inventory_count,
-    "Inventory Item Count" : image_count,
     "Input Folder Size" : input_folder_size,
+    "Inventory Item Count" : inventory_count,
+    "TIFF File Count" : image_count,
+    "Target File Count" : target_count,
+    "Target Files" : targetdf[column_to_match].tolist(),
     "TIFF Files Not Found in Inventory" : df3[column_to_match].tolist(),
     "Inventory Files Not Found in TIFF Files" : df4[column_to_match].tolist(),
     "Checksum Verification" : checksum_results,
-    "Metadata Verification" : metadata_results,
+    "IPTC Metadata Verification" : metadata_results,
     "Color Profile Check" : bit_depth_results,
     "Bit Depth Check" : profile_results
     }
