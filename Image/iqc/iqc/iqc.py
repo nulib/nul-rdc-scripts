@@ -3,6 +3,7 @@
 #TO DO - Organize functions better
 #TO DO - add a way to handle checksum files with path information in them
 
+import csv
 import json
 from pathlib import Path
 from datetime import datetime
@@ -215,7 +216,11 @@ def load_profile(filename, inventorydf, column_to_match, isgrayscale):
     p_techmetadata = {"Bit Depth": "16 16 16", "Profile Description": ["ProPhoto"]}
     a_techmetadata = {"Color": {"Bit Depth": "8 8 8", "Profile Description": ["Adobe RGB (1998)"]}, "Grayscale": {"Bit Depth": "8", "Profile Description": ["Gray Gamma 2.2"]}}
     empty_techmetadata = {"Bit Depth": "", "Profile Description": ""}
-    role = ''.join(inventorydf.loc[inventorydf[column_to_match] == filename]['role'].values)
+    try:
+        role = ''.join(inventorydf.loc[inventorydf[column_to_match] == filename]['role'].values)
+    except:
+        role = None
+        print("WARNING: There may be a problem with the 'role' column in your inventory!")
     if not role:
         profile = empty_techmetadata
     elif role == 'P':
@@ -234,6 +239,65 @@ def get_tech_metadata(filepath):
     exifdata = json.loads(exifdata)
     exifdata = exifdata[0]
     return exifdata
+
+def check_for_csv_iptc(inventorydf):
+    #with open(csvInventory, encoding='utf-8')as f:
+    #    csv_content = csv.DictReader(f, delimiter=',')
+    iptc_column_list = ['Copyright Notice', 'Headline', 'Creator', 'Source']
+    missing_columns = [i for i in iptc_column_list if not i in inventorydf.columns]
+    if missing_columns:
+        print("\nWARNING: Your inventory does not contain the following columns\n")
+        print(", ".join([str(i) for i in missing_columns]))
+        print("\nCONTINUE WITHOUT CHECKING IPTC METADATA? (y/n)")
+        yes = {'yes','y', 'ye', ''}
+        no = {'no','n'}
+        choice = input().lower()
+        if choice in yes:
+            print()
+            args.verify_metadata = False
+        else:
+            print("\nPlease update your inventory and try again\n")
+            quit()
+    else:
+        pass
+
+def check_for_checksum_files(indir):
+    checksum_type = " ".join([str(i) for i in args.verify_checksums])
+    checksum_files = list(Path(indir).rglob(os.path.join("*." + checksum_type)))
+    #[f for f in os.listdir(indir) if f.endswith(checksum_type)]
+    if not checksum_files:
+        print("\nWARNING: Your input directory does not contain any " + checksum_type + " files")
+        print("\nCONTINUE WITHOUT VERIFYING CHECKSUMS? (y/n)")
+        yes = {'yes','y', 'ye', ''}
+        no = {'no','n'}
+        choice = input().lower()
+        if choice in yes:
+            print()
+            args.verify_checksums = False
+        else:
+            print()
+            quit()
+
+def check_for_meadow_columns(inventory):
+    meadow_columns = ['filename']
+    if args.techdata:
+        meadow_columns += ['role']
+    with open(inventory, encoding='utf-8')as f:
+        reader = csv.DictReader(f, delimiter=',')
+        missing_columns = [i for i in meadow_columns if not i in reader.fieldnames]
+        if missing_columns:
+            print("WARNING: " + inventory + "is missing the following columns\n")
+            print(", ".join([str(i) for i in missing_columns]))
+            print("\nCONTINUE WITHOUT CHECKING TECHNICAL METADATA? (y/n)")
+            yes = {'yes','y', 'ye', ''}
+            no = {'no','n'}
+            choice = input().lower()
+            if choice in yes:
+                print()
+                args.techdata = False
+            else:
+                print("\nPlease update your inventory and try again\n")
+                quit()
 
 def iqc_main():
     column_to_match = 'filename'
@@ -268,6 +332,7 @@ def iqc_main():
     else:
         inventoryPath = args.inventory_path
         if inventoryPath.endswith('.csv'):
+            inventories = [inventoryPath]
             if os.path.isfile(inventoryPath):
                 inventorydf =  pd.read_csv(inventoryPath, skiprows=0, header=0)
             else:
@@ -286,11 +351,20 @@ def iqc_main():
                 print('\n--- ERROR: Supplied inventory path is not valid ---\n')
                 quit()
 
+    #pre-run checks of inventories and input files
+    for inv in inventories:
+        check_for_meadow_columns(inv)
+    if args.verify_metadata:
+        check_for_csv_iptc(inventorydf)
+    if args.verify_checksums:
+        check_for_checksum_files(indir)
+
     #create dictionaries containing the formats we want to process
     image_dictionary = {'Images' : { 'extension' : ['.tif'], 'row_counter' : 0, 'dictionary' : {}}}
     #TO DO - review/update checksum implementation now that script has been changed to only check one type at a time
     checksum_sidecar_dictionary = {'MD5' : { 'extension' : '.md5', 'row_counter' : 0, 'dictionary' : {}}, 'SHA1' : { 'extension' : '.sha1', 'row_counter' : 0, 'dictionary' : {}}}
 
+    print("\nSearching input for files...")
     #search input and process specified files
     for subdir, dirs, files in os.walk(indir):
         cleanSubdir = (subdir.replace(indir, ''))
@@ -326,16 +400,17 @@ def iqc_main():
     imagedf = pd.DataFrame.from_dict(image_dictionary['Images']['dictionary'], orient='index', columns=image_columns)
     md5df = pd.DataFrame.from_dict(checksum_sidecar_dictionary['MD5']['dictionary'], orient='index', columns=['base filename', 'md5 filename', 'md5 path', 'filename in md5 checksum', 'md5 checksum value'])
     sha1df = pd.DataFrame.from_dict(checksum_sidecar_dictionary['SHA1']['dictionary'], orient='index', columns=['base filename', 'sha1 filename', 'sha1 path', 'filename in sha1 checksum', 'sha1 checksum value'])
+    #returns a df of just the target files
+    targetdf = imagedf[imagedf[column_to_match].str.contains("_target.tif", na=False)]
 
     #count the number of items in inventory
     inventory_count = len(inventorydf.index)
     #count the number of images
     image_count = len(imagedf.index)
-
-    #returns a df of just the target files
-    targetdf = imagedf[imagedf[column_to_match].str.contains("_target.tif", na=False)]
     #count the number of target files found
     target_count = len(targetdf.index)
+    #subtract the target file count from the image count
+    image_count = image_count - target_count
 
     #filter out targets from imagedf using the inverse of the target filter
     imagedf = imagedf[~imagedf[column_to_match].str.contains("_target.tif", na=False)]
@@ -400,10 +475,10 @@ def iqc_main():
     output_report = {}
     output_report[base_folder_name] = []
     iqc_version = args.version
-    checksum_results = "Not Checked"
-    metadata_results = "Not Checked"
-    bit_depth_results = "Not Checked"
-    profile_results = "Not Checked"
+    checksum_results = "SKIPPED"
+    metadata_results = "SKIPPED"
+    bit_depth_results = "SKIPPED"
+    profile_results = "SKIPPED"
     print("\n--------------- RESULTS ---------------\n")
     report_date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
     print("REPORT DATE:", report_date)
