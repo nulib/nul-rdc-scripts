@@ -215,7 +215,7 @@ def load_profile(filename, inventorydf, column_to_match, isgrayscale):
     #probably better to store these in an external json file in a data folder so they'll be easier to edit
     p_techmetadata = {"Bit Depth": "16 16 16", "Profile Description": ["ProPhoto"]}
     a_techmetadata = {"Color": {"Bit Depth": "8 8 8", "Profile Description": ["Adobe RGB (1998)"]}, "Grayscale": {"Bit Depth": "8", "Profile Description": ["Gray Gamma 2.2"]}}
-    empty_techmetadata = {"Bit Depth": "", "Profile Description": ""}
+    empty_techmetadata = {"Bit Depth": "None", "Profile Description": ["None"]}
     try:
         role = ''.join(inventorydf.loc[inventorydf[column_to_match] == filename]['role'].values)
     except:
@@ -286,7 +286,7 @@ def check_for_meadow_columns(inventory):
         reader = csv.DictReader(f, delimiter=',')
         missing_columns = [i for i in meadow_columns if not i in reader.fieldnames]
         if missing_columns:
-            print("WARNING: " + inventory + "is missing the following columns\n")
+            print("\nWARNING: " + inventory + " is missing the following columns\n")
             print(", ".join([str(i) for i in missing_columns]))
             print("\nCONTINUE WITHOUT CHECKING TECHNICAL METADATA? (y/n)")
             yes = {'yes','y', 'ye', ''}
