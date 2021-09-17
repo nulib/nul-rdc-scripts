@@ -155,7 +155,8 @@ def exiftool_check():
 def get_iptc_metadata(filename, filepath, column_to_match, exifmetalist):
     '''Run exiftool to get IPTC metadata'''
     #TO DO - Feed this a list of exiftool fields to check rather than hard coding them in the command?
-    exiftool_command = [args.exiftool_path, '-headline', '-by-line', '-source', '-copyrightnotice', '-j', filepath]
+    exiftool_command = [args.exiftool_path, '-by-line', '-source', '-copyrightnotice', '-j', filepath]
+    #exiftool_command = [args.exiftool_path, '-headline', '-by-line', '-source', '-copyrightnotice', '-j', filepath]
     exifdata = subprocess.check_output(exiftool_command)
     exifdata = json.loads(exifdata)
     exifdata[0][column_to_match] = filename
@@ -243,7 +244,8 @@ def get_tech_metadata(filepath):
 def check_for_csv_iptc(inventorydf):
     #with open(csvInventory, encoding='utf-8')as f:
     #    csv_content = csv.DictReader(f, delimiter=',')
-    iptc_column_list = ['Copyright Notice', 'Headline', 'Creator', 'Source']
+    iptc_column_list = ['Copyright Notice', 'Creator', 'Source']
+    #iptc_column_list = ['Copyright Notice', 'Headline', 'Creator', 'Source']
     missing_columns = [i for i in iptc_column_list if not i in inventorydf.columns]
     if missing_columns:
         print("\nWARNING: Your inventory does not contain the following columns\n")
@@ -386,7 +388,8 @@ def iqc_main():
     #test if these can be grabbed using something like exiftool -By-line -a image?
     if args.verify_metadata:
         exifdf = pd.DataFrame.from_records(exifmetalist)
-        exifdf = exifdf[[column_to_match, 'By-line', 'Headline', 'Source', 'CopyrightNotice']]
+        #exifdf = exifdf[[column_to_match, 'By-line', 'Headline', 'Source', 'CopyrightNotice']]
+        exifdf = exifdf[[column_to_match, 'By-line', 'Source', 'CopyrightNotice']]
 
     '''determine column headers for image dataframe based on arguments used'''
     image_columns = [column_to_match, 'base filename', 'file path', 'extension']
@@ -427,16 +430,17 @@ def iqc_main():
         clean_exifdf = pd.merge(exifdf, df3[column_to_match], on=column_to_match, how='outer', indicator='exifdfmatch').query("exifdfmatch == 'left_only'")
         clean_exifdf = clean_exifdf[~clean_exifdf[column_to_match].str.contains("_target.tif", na=False)]
         if args.strict:
-            metadf_failures = pd.merge(clean_exifdf, inventorydf, left_on=[column_to_match, 'By-line', 'Headline', 'Source', 'CopyrightNotice'], right_on=[column_to_match, 'Creator', 'Headline', 'Source', 'Copyright Notice'], how='outer', indicator='metamatch').query("metamatch == 'left_only'")
+            metadf_failures = pd.merge(clean_exifdf, inventorydf, left_on=[column_to_match, 'By-line', 'Source', 'CopyrightNotice'], right_on=[column_to_match, 'Creator', 'Source', 'Copyright Notice'], how='outer', indicator='metamatch').query("metamatch == 'left_only'")
+            #metadf_failures = pd.merge(clean_exifdf, inventorydf, left_on=[column_to_match, 'By-line', 'Headline', 'Source', 'CopyrightNotice'], right_on=[column_to_match, 'Creator', 'Headline', 'Source', 'Copyright Notice'], how='outer', indicator='metamatch').query("metamatch == 'left_only'")
         else:
             copyright_pattern = '|'.join(r"{}".format(x) for x in exifdf['CopyrightNotice'])
             inventorydf['copyright_pattern_match'] = inventorydf['Copyright Notice'].str.extract('('+ copyright_pattern +')', expand=False)
             copyright_partial_match = pd.merge(clean_exifdf, inventorydf, left_on=[column_to_match, 'CopyrightNotice'], right_on=[column_to_match, 'copyright_pattern_match'], how='outer', indicator="copyright_metadata_status").query("copyright_metadata_status == 'left_only'")
-
+            '''
             headline_pattern = '|'.join(r"{}".format(x) for x in exifdf['Headline'])
             inventorydf['headline_pattern_match'] = inventorydf['Headline'].str.extract('('+ headline_pattern +')', expand=False)
             headline_partial_match = pd.merge(clean_exifdf, inventorydf, left_on=[column_to_match, 'Headline'], right_on=[column_to_match, 'headline_pattern_match'], how='outer', indicator="headline_metadata_status").query("headline_metadata_status == 'left_only'")
-
+            '''
             byline_pattern = '|'.join(r"{}".format(x) for x in exifdf['By-line'])
             inventorydf['byline_pattern_match'] = inventorydf['Creator'].str.extract('('+ byline_pattern +')', expand=False)
             byline_partial_match = pd.merge(clean_exifdf, inventorydf, left_on=[column_to_match, 'By-line'], right_on=[column_to_match, 'byline_pattern_match'], how='outer', indicator="byline_metadata_status").query("byline_metadata_status == 'left_only'")
@@ -444,7 +448,8 @@ def iqc_main():
             source_pattern = '|'.join(r"{}".format(x) for x in exifdf['Source'])
             inventorydf['source_pattern_match'] = inventorydf['Source'].str.extract('('+ source_pattern +')', expand=False)
             source_partial_match = pd.merge(clean_exifdf, inventorydf, left_on=[column_to_match, 'Source'], right_on=[column_to_match, 'source_pattern_match'], how='outer', indicator="source_metadata_status").query("source_metadata_status == 'left_only'")
-            metadf_list = [copyright_partial_match, headline_partial_match, byline_partial_match, source_partial_match]
+            metadf_list = [copyright_partial_match, byline_partial_match, source_partial_match]
+            #metadf_list = [copyright_partial_match, headline_partial_match, byline_partial_match, source_partial_match]
             #merge all metadata dataframes
             metadf_failures = reduce(lambda left,right: pd.merge(left,right,on=[column_to_match], how='outer'), metadf_list)
 
