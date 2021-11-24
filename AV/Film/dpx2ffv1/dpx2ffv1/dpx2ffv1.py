@@ -24,9 +24,12 @@ outdir = corefuncs.output_check()
 #TO DO: allow running without subfolder identifier to support having the dpx files directly in the title folder?
 #set the subfolder_identifier. Defaults to 'pm' if not specified
 if not args.subfolder_identifier:
-    subfolder_identifier = 'pm'
+    subfolder_identifier = 'p'
 else:
     subfolder_identifier = args.subfolder_identifier
+
+access_file_identifier = 'a'
+access_file_extension = '.mov'
 
 #set a limit so that the command only runs on title folders containing the string specified
 limit = dpx2ffv1supportfuncs.assign_limit()
@@ -95,6 +98,10 @@ for title in title_list:
             'transcode end time': tftime
             }}
 
+            if 'Reversability was checked, no issue detected.' in rawcooked_results:
+                lossless_pass_fail = 'PASS'
+            else:
+                lossless_pass_fail = 'FAIL; ' + rawcooked_results
             attachments = dpx2ffv1supportfuncs.list_mkv_attachments(mkv_abspath)
             format_metadict = dpx2ffv1supportfuncs.get_mkv_format_metadata(mkv_abspath)
             video_metadict = dpx2ffv1supportfuncs.get_mkv_video_metadata(mkv_abspath)
@@ -104,6 +111,18 @@ for title in title_list:
             #log ffv1 (folder) size
             mkvsize = dpx2ffv1supportfuncs.get_folder_size(outpathfull)
             pm_runtime = format_metadict.get('format')['duration']
+            if args.check_runtime:
+                ac_runtime = dpx2ffv1supportfuncs.grab_runtime(title_abspath, access_file_identifier, access_file_extension)
+            else:
+                ac_runtime = None
+            if ac_runtime:
+                runtime_dif = abs(float(ac_runtime) - float(pm_runtime))
+                if runtime_dif < 0.2:
+                    runtime_pass_fail = 'PASS'
+                else:
+                    runtime_pass_fail = 'FAIL, p runtime = ' + pm_runtime + "; a runtime = " + ac_runtime
+            else:
+                runtime_pass_fail = 'Not Checked'
             post_transcode_dict = { 'post-transcode metadata': {
             'filename': ffv1_name,
             'md5 checksum': mkvhash,
@@ -130,50 +149,36 @@ for title in title_list:
             data_dict = {'data': {
             'attachments': attachments
             }}
+            QC_dict = {'QC': {
+            'Runtime Check' : runtime_pass_fail,
+            'Lossless Check' : lossless_pass_fail
+            #'MediaConch Results'
+            }}
             output_technical_metadata = {'technical metadata': [video_dict, audio_dict, data_dict]}
             post_transcode_dict.update(output_technical_metadata)
             metadict.update(post_transcode_dict)
+            metadict.update(QC_dict)
             data[title].append(metadict)
-            with open(os.path.join(outpathfull, title + '_pm.json'), 'w', newline='\n') as outfile:
+            with open(os.path.join(outpathfull, title + '_p.json'), 'w', newline='\n') as outfile:
                 json.dump(data, outfile, indent=4)
-
-            #compare runtimes between the ac and pm files
-            #TO DO - write to csv file in base output directory rather than txt file
-            if args.check_runtime:
-                #It may be a good idea to format the runtime outputs as sets or lists
-                ac_runtime = dpx2ffv1supportfuncs.grab_runtime(title_abspath, 'ac', 'mp4')
-                #pm_runtime = dpx2ffv1supportfuncs.grab_runtime(outpathbase, subfolder_identifier, 'mkv')
-
-                with open(os.path.join(indir, os.path.join(outpathfull, 'verification_log.txt')), 'a',  newline='\n') as f:
-                    print(rawcooked_results, file=f)
-                    print('\n'"Access Copy Runtime:", file=f)
-                    print(ac_runtime, file=f)
-                    print('\n'"Preservation Master Runtime:", file=f)
-                    print(pm_runtime, file=f)
-
-        elif not os.path.isdir(os.path.join(indir, title, 'pm')):
-            print('no pm folder in input directory')
+        else:
+            print('no preservation folder in input directory')
     elif limit and not (limit) in title:
         print(title, 'does not contain ', limit)
-
-#TO DO - replace verification check with simply writing PASS/FAIL outputs to a CSV file
-if checklist:
-    print("* * * * * * * * * * * * * * * * *" + '\n' + "Checking verification log results" + '\n' + "* * * * * * * * * * * * * * * * *")
-    for i in checklist:
-        dpx2ffv1supportfuncs.verification_check(i)
 
 #if args.verifylossless:
     #for *.mkv run ffprobe to check if file contains a rawcooked reversibility file
     #if so, funnel into rawcooked decode pathway
 
-#TO DO - move this to supportfuncs and rewrite it for the new version of rawcooked
+#TODO - move this to supportfuncs and rewrite it for the new version of rawcooked
+'''
 if args.decodeffv1:
     indir = corefuncs.input_check()
     outdir = corefuncs.output_check()
     limit = dpx2ffv1supportfuncs.assign_limit()
     corefuncs.input_check(indir)
 
-    #TO DO: make sure terminology is consistent across script (i.e. title vs object_folder)
+    #TODO: make sure terminology is consistent across script (i.e. title vs object_folder)
     for object_folder in os.listdir(indir):
         dpxverifolder = os.path.join(outdir, object_folder, object_folder + '_dpx')
         #TO DO: add check for more than one mkv file
@@ -198,3 +203,4 @@ if args.decodeffv1:
                     print ("More than 1 mkv file found in", os.path.join(indir, object_folder))
         elif limit and not (limit) in object_folder:
             print("Skipped", object_folder)
+'''

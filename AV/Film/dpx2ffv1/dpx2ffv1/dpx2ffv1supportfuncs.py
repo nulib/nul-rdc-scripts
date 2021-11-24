@@ -137,7 +137,7 @@ def grab_runtime(folder, subfolder_identifier, filetype):
     '''
     itemfolder = os.path.join(folder, subfolder_identifier)
     if os.path.isdir(itemfolder):
-        videofile = glob.glob1(itemfolder, '*.' + filetype)
+        videofile = glob.glob1(itemfolder, '*' + filetype)
         filecounter = len(videofile)
         if filecounter == 1:
             for i in videofile:
@@ -145,7 +145,7 @@ def grab_runtime(folder, subfolder_identifier, filetype):
                 runtime = subprocess.check_output([args.ffprobe_path, '-v', 'error', file_abspath, '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1']).decode("ascii").rstrip()
                 #this returns the total runtime in seconds
         elif filecounter < 1:
-            runtime = "no " + filetype + "files found in " + itemfolder
+            runtime = "no " + filetype + " files found in " + itemfolder
         elif filecounter > 1:
             runtime = "more than 1 file found with extension " + filetype
     else:
