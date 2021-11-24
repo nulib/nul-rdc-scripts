@@ -4,8 +4,8 @@ When you add a script please be sure to add documentation and make sure to comme
 
 ## Core Tools <br/>
 [Image Quality Checker](https://github.com/nulib/nul-rdc-scripts/tree/main/Image/iqc) <br/>
-[mov2ffv1 Video Transcoder](https://github.com/nulib/nul-rdc-scripts/tree/main/Video) <br/>
-[dpx2ffv1 Film Transcoder](https://github.com/nulib/nul-rdc-scripts/tree/main/Film/rawcooked) <br/>
+[mov2ffv1 Video Transcoder](https://github.com/nulib/nul-rdc-scripts/tree/main/AV/Video) <br/>
+[dpx2ffv1 Film Transcoder](https://github.com/nulib/nul-rdc-scripts/tree/main/AV/Film/dpx2ffv1) <br/>
 
 ## Additional Tools <br/>
 [Meadow CSV Converter](https://github.com/nulib/nul-rdc-scripts/tree/main/Misc/meadow_csv_script) <br/>
