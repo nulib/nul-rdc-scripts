@@ -86,8 +86,9 @@ def label_creator(filename, inventory_label):
         #convert findall results to string
         filename_regex_string = "".join(filename_regex)
         filename_labels = parse_filename_label(filename_regex_string, pattern_dict)
-    #Append side string to Label string (add comma + space if Label already exists)
-    label_list.extend(filename_labels)
+    #Append side string to Label string
+    if filename_labels:
+        label_list.extend(filename_labels)
     label = " ".join(i for i in label_list if i)
     if not label:
         label = filename
