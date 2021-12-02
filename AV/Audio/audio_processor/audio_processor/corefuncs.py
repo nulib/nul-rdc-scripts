@@ -2,7 +2,7 @@
 
 '''
 Functions that will be in multiple scripts
-Handle things like: 
+Handle things like:
 input, output, checksumming, checking that software exists, etc.
 '''
 
@@ -37,7 +37,7 @@ def output_check():
     else:
         print('Output not specified. Using input directory as Output directory')
         outdir = args.input_path
-    
+
     if not os.path.isdir(outdir):
         print('output is not a directory')
         quit()
@@ -76,7 +76,7 @@ def mediaconch_policy_exists(policy_path):
         print("unable to find mediaconch policy:", policy_path)
         print("Check if file exists before running")
         quit()
-  
+
 def ffprobe_check():
     '''
     checks that ffprobe exists by running its -version command
@@ -92,7 +92,7 @@ def ffprobe_check():
 def mediaconch_check():
     '''
     checks that mediaconch exists by running its -v command
-    ''' 
+    '''
     try:
         subprocess.check_output([
             args.mediaconch_path, '-v'
@@ -109,7 +109,12 @@ def get_ffmpeg_version():
     try:
         ffmpeg_version = subprocess.check_output([
             args.ffmpeg_path, '-version'
-        ]).decode("ascii").rstrip().splitlines()[0].split()[2]
+        ]).decode("ascii").rstrip()
+        if not '--enable-libsoxr' in ffmpeg_version:
+            print('WARNING: ffmpeg is not configured with libsoxr. Exiting')
+            quit()
+        else:
+            ffmpeg_version = ffmpeg_version.splitlines()[0].split()[2]
     except:
         print ("Error getting ffmpeg version")
         quit()

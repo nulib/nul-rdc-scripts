@@ -32,11 +32,9 @@ def audio_processor_main():
     indir = corefuncs.input_check()
     #check that required programs are present
     corefuncs.mediaconch_check()
-    #use sox for spectrograms and getting metadata?
-    '''
     corefuncs.ffprobe_check()
     ffvers = corefuncs.get_ffmpeg_version()
-    '''
+
     #verify that mediaconch policies are present
     '''
     corefuncs.mediaconch_policy_exists(movPolicy)

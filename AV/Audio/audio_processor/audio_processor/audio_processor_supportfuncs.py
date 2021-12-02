@@ -40,26 +40,6 @@ def delete_files(list):
             print ("unable to delete " + i)
             print ("File not found")
 
-def checksum_streams(input, audioStreamCounter):
-    '''
-    Gets the stream md5 of a file
-    Uses both video and all audio streams if audio is present
-    '''
-    stream_sum=[]
-    stream_sum_command = [args.ffmpeg_path, '-loglevel', 'error', '-i', input, '-map', '0:v', '-an']
-
-    stream_sum_command.extend(('-f', 'md5', '-'))
-    video_stream_sum = subprocess.check_output(stream_sum_command).decode("ascii").rstrip()
-    stream_sum.append(video_stream_sum.replace('MD5=', ''))
-    for i in range(audioStreamCounter):
-        audio_sum_command = [args.ffmpeg_path]
-        audio_sum_command += ['-loglevel', 'error', '-y', '-i', input]
-        audio_sum_command += ['-vn', '-map', '0:a:%(a)s' % {"a" : i}]
-        audio_sum_command += ['-c:a', 'pcm_s24le', '-f', 'md5', '-']
-        audio_stream_sum = subprocess.check_output(audio_sum_command).decode("ascii").rstrip()
-        stream_sum.append(audio_stream_sum.replace('MD5=', ''))
-    return stream_sum
-
 def generate_spectrogram(input, channel_layout_list, outputFolder, outputName):
     '''
     Creates a spectrogram for each audio track in the input
