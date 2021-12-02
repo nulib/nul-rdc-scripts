@@ -21,7 +21,7 @@ def create_transcode_output_folders(baseOutput, outputFolderList):
     else:
         print (baseOutput, "already exists")
         print ('Proceeding')
-        
+
     for folder in outputFolderList:
         if not os.path.isdir(folder):
             try:
@@ -31,14 +31,14 @@ def create_transcode_output_folders(baseOutput, outputFolderList):
                 quit()
         else:
             print ("using existing folder", folder, "as output")
-    
+
 def check_mixdown_arg():
     mixdown_list = ['copy', '4to3', '4to2']
     #TO DO add swap as an option to allow switching tracks 3&4 with tracks 1&2
     if not args.mixdown in mixdown_list:
         print("The selected audio mixdown is not a valid value")
         print ("please use one of: copy, swap, 4to3, 4to2")
-        quit()  
+        quit()
 
 def ffprobe_report(filename, input_file_abspath):
     '''
@@ -49,14 +49,14 @@ def ffprobe_report(filename, input_file_abspath):
     format_output = json.loads(subprocess.check_output([args.ffprobe_path, '-v', 'error', '-show_entries', 'format=duration,size,nb_streams', input_file_abspath, '-of', 'json']).decode("ascii").rstrip())
     data_output = json.loads(subprocess.check_output([args.ffprobe_path, '-v', 'error', '-select_streams', 'd', '-show_entries', 'stream=codec_tag_string', input_file_abspath, '-of', 'json']).decode("ascii").rstrip())
     attachment_output = json.loads(subprocess.check_output([args.ffprobe_path, '-v', 'error', '-select_streams', 't', '-show_entries', 'stream_tags=filename', input_file_abspath, '-of', 'json']).decode("ascii").rstrip())
-    
+
     #cleaning up attachment output
     tags = [streams.get('tags') for streams in (attachment_output['streams'])]
     attachment_list = []
     for i in tags:
         attachmentFilename = [i.get('filename')]
         attachment_list.extend(attachmentFilename)
-    
+
     #parse ffprobe metadata lists
     video_codec_name_list = [stream.get('codec_name') for stream in (video_output['streams'])]
     audio_codec_name_list = [stream.get('codec_long_name') for stream in (audio_output['streams'])]
@@ -75,7 +75,7 @@ def ffprobe_report(filename, input_file_abspath):
     audio_sample_rate = [stream.get('sample_rate') for stream in (audio_output['streams'])]
     audio_channels = [stream.get('channels') for stream in (audio_output['streams'])]
     audio_stream_count = len(audio_codec_name_list)
-    
+
     file_metadata = {
     'filename' : filename,
     'file size' : format_output.get('format')['size'],
@@ -86,7 +86,7 @@ def ffprobe_report(filename, input_file_abspath):
     'data streams' : data_streams,
     'attachments' : attachment_list
     }
-    
+
     techMetaV = {
     'width' : width,
     'height' : height,
@@ -99,16 +99,16 @@ def ffprobe_report(filename, input_file_abspath):
     'color primaries' : color_primaries,
     'color transfer' : color_transfer
     }
-    
+
     techMetaA = {
     'audio stream count' : audio_stream_count,
     'audio bitrate' : audio_bitrate,
     'audio sample rate' : audio_sample_rate,
     'channels' : audio_channels
     }
-    
+
     ffprobe_metadata = {'file metadata' : file_metadata, 'techMetaV' : techMetaV, 'techMetaA' : techMetaA}
-    
+
     return ffprobe_metadata
 
 def ffv1_lossless_transcode(input_metadata, transcode_nameDict, audioStreamCounter):
@@ -118,7 +118,7 @@ def ffv1_lossless_transcode(input_metadata, transcode_nameDict, audioStreamCount
     framemd5AbsPath = transcode_nameDict.get('framemd5AbsPath')
     outputAbsPath = transcode_nameDict.get('outputAbsPath')
     framemd5File = transcode_nameDict.get('framemd5File')
-    
+
     #create ffmpeg command
     ffmpeg_command = [args.ffmpeg_path]
     if not args.verbose:
@@ -140,7 +140,7 @@ def ffv1_lossless_transcode(input_metadata, transcode_nameDict, audioStreamCount
 
     #remux to attach framemd5
     if args.embed_framemd5:
-        add_attachment = [args.ffmpeg_path, '-loglevel', 'error', '-i', tempMasterFile, '-c', 'copy', '-map', '0', '-attach', framemd5AbsPath, '-metadata:s:t:0', 'mimetype=application/octet-stream', '-metadata:s:t:0', 'filename=' + framemd5File, outputAbsPath]    
+        add_attachment = [args.ffmpeg_path, '-loglevel', 'error', '-i', tempMasterFile, '-c', 'copy', '-map', '0', '-attach', framemd5AbsPath, '-metadata:s:t:0', 'mimetype=application/octet-stream', '-metadata:s:t:0', 'filename=' + framemd5File, outputAbsPath]
         if os.path.isfile(tempMasterFile):
             subprocess.call(add_attachment)
             filesToDelete = [tempMasterFile, framemd5AbsPath]
@@ -166,7 +166,7 @@ def checksum_streams(input, audioStreamCounter):
     '''
     stream_sum=[]
     stream_sum_command = [args.ffmpeg_path, '-loglevel', 'error', '-i', input, '-map', '0:v', '-an']
-    
+
     stream_sum_command.extend(('-f', 'md5', '-'))
     video_stream_sum = subprocess.check_output(stream_sum_command).decode("ascii").rstrip()
     stream_sum.append(video_stream_sum.replace('MD5=', ''))
@@ -189,7 +189,7 @@ def two_pass_h264_encoding(audioStreamCounter, outputAbsPath, acAbsPath):
         pass1 += ['-loglevel', 'error']
     pass1 += ['-y', '-i', outputAbsPath, '-c:v', 'libx264', '-preset', 'medium', '-b:v', '8000k', '-pix_fmt', 'yuv420p', '-pass', '1']
     if audioStreamCounter > 0:
-        if args.mixdown == 'copy':    
+        if args.mixdown == 'copy':
             pass1 += ['-c:a', 'aac', '-b:a', '128k']
         if args.mixdown == '4to3' and audioStreamCounter == 4:
             pass1 += ['-filter_complex', '[0:a:0][0:a:1]amerge=inputs=2[a]', '-map', '0:v', '-map', '[a]', '-map', '0:a:2', '-map', '0:a:3']
@@ -215,7 +215,7 @@ def generate_spectrogram(input, channel_layout_list, outputFolder, outputName):
     '''
     Creates a spectrogram for each audio track in the input
     '''
-    spectrogram_resolution = "1928x1080"
+    spectrogram_resolution = "1920x1080"
     for index, item in enumerate(channel_layout_list):
         output = os.path.join(outputFolder, outputName + '_0a' + str(index) + '.png')
         spectrogram_args = [args.ffmpeg_path]
@@ -306,7 +306,7 @@ def generate_coding_history(coding_history, hardware, append_list):
     else:
         pass
     return coding_history
-    
+
 def import_csv(csvInventory):
     csvDict = {}
     try:
@@ -411,7 +411,7 @@ def create_json(jsonAbsPath, systemInfo, input_metadata, mov_stream_sum, mkvHash
     output_techMetaV = output_metadata.get('techMetaV')
     output_techMetaA = output_metadata.get('techMetaA')
     output_file_metadata = output_metadata.get('file metadata')
-     
+
     #create dictionary for json output
     data = {}
     data[baseFilename] = []
@@ -426,7 +426,7 @@ def create_json(jsonAbsPath, systemInfo, input_metadata, mov_stream_sum, mkvHash
     output_file_metadata = {**output_file_metadata, **ffv1_md5_dict}
     ffv1_file_meta = {'post-transcode metadata' : output_file_metadata}
     mov_file_meta = {'pre-transcode metadata' : input_file_metadata}
-    
+
     #gather technical metadata for json output
     techdata = {}
     video_techdata = {}
@@ -436,16 +436,16 @@ def create_json(jsonAbsPath, systemInfo, input_metadata, mov_stream_sum, mkvHash
     audio_techdata = {'audio' : input_techMetaA}
     techdata['technical metadata'].append(video_techdata)
     techdata['technical metadata'].append(audio_techdata)
-    
+
     #gather metadata from csv dictionary as capture metadata
     csv_metadata = {'inventory metadata' : item_csvDict}
-    
+
     system_info = {'system information' : systemInfo}
-    
+
     data[baseFilename].append(csv_metadata)
     data[baseFilename].append(system_info)
     data[baseFilename].append(ffv1_file_meta)
-    data[baseFilename].append(mov_file_meta)        
+    data[baseFilename].append(mov_file_meta)
     data[baseFilename].append(techdata)
     data[baseFilename].append(qcResults)
     with open(jsonAbsPath, 'w', newline='\n') as outfile:

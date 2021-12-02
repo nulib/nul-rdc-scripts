@@ -119,3 +119,31 @@ def get_ffmpeg_version():
         print ("Error getting ffmpeg version")
         quit()
     return ffmpeg_version
+
+def get_bwf_metaedit_version():
+    '''
+    Returns the version of BWF Metaedit by running the --Version command
+    '''
+    metaedit_version = 'bwf metaedit'
+    try:
+        metaedit_version = subprocess.check_output([
+            args.metaedit_path, '--Version'
+        ]).decode("ascii").rstrip().splitlines()[0].split()[2]
+    except:
+        print("Error getting BWF Metaedit version")
+        quit()
+    return metaedit_version
+
+def get_sox_version():
+    '''
+    Returns the version of sox
+    '''
+    sox_version = 'sox'
+    try:
+        sox_version = subprocess.check_output([
+            args.sox_path, '--version'
+        ]).decode("ascii").rstrip().splitlines()[0].split()[4]
+    except:
+        print("Error getting sox version")
+        quit()
+    return sox_version

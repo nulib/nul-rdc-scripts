@@ -1,8 +1,6 @@
 {
-  "FileName" : "",
-  "Originator" : "Northwestern University",
-  "IARL" : "Northwestern University",
-  "CodingHistory" : "",
-  "ICRF" : "",
-  "MD5Stored" : ""
+  "Originator" : {"command" : "--Originator=", "write" : "Northwestern University"},
+  "IARL" : {"command" : "--IARL=", "write" : "Northwestern University"},
+  "CodingHistory" : {"command" : "--History=", "write" : ""},
+  "ICRF" : {"command" : "--ICRF=", "write" : ""}
 }

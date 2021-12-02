@@ -18,16 +18,15 @@ def get_immediate_subdirectories(folder):
     return [name for name in os.listdir(folder)
         if os.path.isdir(os.path.join(folder, name))]
 
-def create_output_folders(outputFolderList):
-    for folder in outputFolderList:
-        if not os.path.isdir(folder):
-            try:
-                os.mkdir(folder)
-            except:
-                print ("unable to create output folder:", folder)
-                quit()
-        else:
-            print ("using existing folder", folder, "as output")
+def create_output_folder(folder):
+    if not os.path.isdir(folder):
+        try:
+            os.mkdir(folder)
+        except:
+            print ("unable to create output folder:", folder)
+            quit()
+    else:
+        print ("using existing folder", folder, "as output")
 
 def delete_files(list):
     '''
@@ -40,22 +39,51 @@ def delete_files(list):
             print ("unable to delete " + i)
             print ("File not found")
 
-def generate_spectrogram(input, channel_layout_list, outputFolder, outputName):
+def ffprobe_report(filename, input_file_abspath):
+    '''
+    returns nested dictionary with ffprobe metadata
+    '''
+    audio_output = json.loads(subprocess.check_output([args.ffprobe_path, '-v', 'error', '-select_streams', 'a', '-show_entries', 'stream=codec_long_name,bits_per_raw_sample,sample_rate,channels', input_file_abspath, '-of', 'json']).decode("ascii").rstrip())
+    format_output = json.loads(subprocess.check_output([args.ffprobe_path, '-v', 'error', '-show_entries', 'format=duration,size,nb_streams', input_file_abspath, '-of', 'json']).decode("ascii").rstrip())
+
+    audio_codec_name_list = [stream.get('codec_long_name') for stream in (audio_output['streams'])][0]
+    audio_bitrate = [stream.get('bits_per_raw_sample') for stream in (audio_output['streams'])][0]
+    audio_sample_rate = [stream.get('sample_rate') for stream in (audio_output['streams'])][0]
+    audio_channels = [stream.get('channels') for stream in (audio_output['streams'])][0]
+
+    file_metadata = {
+    'filename' : filename,
+    'file size' : format_output.get('format')['size'],
+    'duration' : format_output.get('format')['duration'],
+    'streams' : format_output.get('format')['nb_streams'],
+    'audio streams' : audio_codec_name_list
+    }
+
+    techMetaA = {
+    'audio bitrate' : audio_bitrate,
+    'audio sample rate' : audio_sample_rate,
+    'channels' : audio_channels
+    }
+
+    ffprobe_metadata = {'file metadata' : file_metadata, 'techMetaA' : techMetaA}
+
+    return ffprobe_metadata
+
+def generate_spectrogram(input, channel_layout, outputFolder, outputName):
     '''
     Creates a spectrogram for each audio track in the input
     '''
     spectrogram_resolution = "1928x1080"
-    for index, item in enumerate(channel_layout_list):
-        output = os.path.join(outputFolder, outputName + '_0a' + str(index) + '.png')
-        spectrogram_args = [args.ffmpeg_path]
-        spectrogram_args += ['-loglevel', 'error', '-y']
-        spectrogram_args += ['-i', input, '-lavfi']
-        if item > 1:
-            spectrogram_args += ['[0:a:%(a)s]showspectrumpic=mode=separate:s=%(b)s' % {"a" : index, "b" : spectrogram_resolution}]
-        else:
-            spectrogram_args += ['[0:a:%(a)s]showspectrumpic=s=%(b)s' % {"a" : index, "b" : spectrogram_resolution}]
-        spectrogram_args += [output]
-        subprocess.run(spectrogram_args)
+    output = os.path.join(outputFolder, outputName + '_0a0' + '-spectrogram' + '.png')
+    spectrogram_args = [args.ffmpeg_path]
+    spectrogram_args += ['-loglevel', 'error', '-y']
+    spectrogram_args += ['-i', input, '-lavfi']
+    if channel_layout > 1:
+        spectrogram_args += ['[0:a:%(a)s]showspectrumpic=mode=separate:s=%(b)s' % {"a" : '0', "b" : spectrogram_resolution}]
+    else:
+        spectrogram_args += ['[0:a:%(a)s]showspectrumpic=s=%(b)s' % {"a" : '0', "b" : spectrogram_resolution}]
+    spectrogram_args += [output]
+    subprocess.run(spectrogram_args)
 
 def mediaconch_policy_check(input, policy):
     mediaconchResults = subprocess.check_output([args.mediaconch_path, '--policy=' + policy, input]).decode("ascii").rstrip().split()[0]

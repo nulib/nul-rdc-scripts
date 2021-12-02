@@ -6,6 +6,7 @@ import os
 import glob
 import subprocess
 import datetime
+import json
 from audio_processor.audio_processor_parameters import args
 from audio_processor import audio_processor_supportfuncs
 from audio_processor import corefuncs
@@ -34,6 +35,8 @@ def audio_processor_main():
     corefuncs.mediaconch_check()
     corefuncs.ffprobe_check()
     ffvers = corefuncs.get_ffmpeg_version()
+    metaedit_version = corefuncs.get_bwf_metaedit_version()
+    sox_version = corefuncs.get_sox_version()
 
     #verify that mediaconch policies are present
     '''
@@ -47,20 +50,22 @@ def audio_processor_main():
     csvHeaderList = [
     "Shot Sheet Check",
     "Date",
-    "PM Lossless Transcoding",
-    "Date",
     "File Format & Metadata Verification",
     "Date",
     "File Inspection",
     "Date",
-    "QC Notes",
-    "AC Filename",
-    "PM Filename",
-    "Runtime"
+    "QC Notes"
     ]
     print ("***STARTING PROCESS***")
 
     object_list = audio_processor_supportfuncs.get_immediate_subdirectories(indir)
+
+    #load bwf metadata into dictionary
+    if args.write_bwf_metadata:
+        #TODO check that bwf_metaedit is installed
+        bwf_file = os.path.join(os.path.dirname(__file__), 'data/bwf_metadata.json')
+        with open(bwf_file) as standard_metadata:
+            bwf_dict = json.load(standard_metadata)
 
     for object in object_list:
         object_folder_abspath = os.path.join(indir, object)
@@ -68,7 +73,12 @@ def audio_processor_main():
             pm_folder_abspath = os.path.join(object_folder_abspath, pm_identifier)
             for file in glob.glob1(pm_folder_abspath, "*" + preservation_extension):
                 pm_file_abspath = os.path.join(pm_folder_abspath, file)
-                base_filename = file.replace(pm_identifier + preservation_extension, '')
+                if not file.endswith(pm_identifier + preservation_extension):
+                    print('WARNING: Error processing preservation files')
+                    print('Your input files do not end with the expected identifier or have a different extension than was expected')
+                    quit()
+                else:
+                    base_filename = file.replace(pm_identifier + preservation_extension, '')
                 ac_folder_abspath = os.path.join(object_folder_abspath, ac_identifier)
                 ac_file_abspath = os.path.join(ac_folder_abspath, base_filename + ac_identifier + access_extension)
                 meta_folder_abspath = os.path.join(object_folder_abspath, metadata_identifier)
@@ -76,20 +86,50 @@ def audio_processor_main():
                 pm_md5_abspath = pm_file_abspath.replace(preservation_extension, '.md5')
                 ac_md5_abspath = ac_file_abspath.replace(access_extension, '.md5')
                 #TODO find matching file in inventory
-                #TODO create a set of filenames from inventory, check if input matches anything in the set and then remove item from set at end of for loop?
-                #generate ffprobe metadata from input
-                #input_metadata = mov2ffv1supportfuncs.ffprobe_report(movFilename, inputAbsPath)
 
-                #TODO have defualt processing path just be QC?
-                #create a list of needed output folders and make them
-                if args.qc:
-                    outFolders = [meta_folder_abspath]
-                else:
-                    outFolders = [ac_folder_abspath, meta_folder_abspath]
-                audio_processor_supportfuncs.create_output_folders(outFolders)
+                #generate ffprobe metadata from input
+                input_metadata = audio_processor_supportfuncs.ffprobe_report(file, pm_file_abspath)
+
+                #embed BWF metadata
+                if args.write_bwf_metadata:
+                    bwf_command = [args.metaedit_path, pm_file_abspath, '--MD5-Embed']
+                    for key in bwf_dict:
+                        if bwf_dict[key]['write']:
+                            bwf_command += [bwf_dict[key]['command'] + bwf_dict[key]['write']]
+                    print(bwf_command)
+
+                #create folder for metadata if it doesn't already exist
+                audio_processor_supportfuncs.create_output_folder(meta_folder_abspath)
+
+                if args.transcode:
+                    audio_processor_supportfuncs.create_output_folder(ac_folder_abspath)
+                    ffmpeg_command = [args.ffmpeg_path, '-loglevel', 'error', '-i', pm_file_abspath]
+                    ffmpeg_command += ['-af', 'aresample=resampler=soxr', '-ar', '44100', '-c:a', 'pcm_s16le', '-write_bext', '1', ac_file_abspath]
+                    #sox_command = [args.sox_path, pm_file_abspath, '-b', '16', ac_file_abspath, 'rate', '44100']
+                    subprocess.run(ffmpeg_command)
+                    #generate md5 for access file
+                    acHash = corefuncs.hashlib_md5(ac_file_abspath)
+                    with open (os.path.join(ac_md5_abspath), 'w',  newline='\n') as f:
+                        print(acHash, '*' + base_filename + ac_identifier + access_extension, file=f)
+                '''
+                #TODO only create md5 if one doesn't already exist?
+                #create checksum sidecar file for preservation master
+                print ("*creating checksum*")
+                pm_hash = corefuncs.hashlib_md5(pm_file_abspath)
+                with open (pm_md5_abspath, 'w',  newline='\n') as f:
+                    print(pm_hash, '*' + file, file=f)
+                '''
+
+                #create spectrogram for pm audio channels
+                if not args.skip_spectrogram:
+                    print ("*generating QC spectrograms*")
+                    sox_spectrogram_command = [args.sox_path, pm_file_abspath, '-n', 'spectrogram', '-Y', '1080', '-x', '1920', '-o', os.path.join(meta_folder_abspath, base_filename + 'spectrogram' + '.png')]
+                    subprocess.run(sox_spectrogram_command)
+                    #channel_layout = input_metadata['techMetaA']['channels']
+                    #audio_processor_supportfuncs.generate_spectrogram(pm_file_abspath, channel_layout, meta_folder_abspath, base_filename)
 
                 print(file)
-                #TODO use ffmpeg with sox resampler? ffmpeg -i file -af aresample=resampler=soxr -ar 44100 -c:a pcm_s16le output
+                #TODO use ffmpeg with sox resampler? ffmpeg -i file -af aresample=resampler=soxr -ar 44100 -c:a pcm_s16le -write_bext 1 output
                 #would need a to check ffmpeg configuration for '--enable-libsoxr'
                 quit()
                 '''
@@ -101,22 +141,9 @@ def audio_processor_main():
                 inventoryCheck = mov2ffv1passfail_checks.inventory_check(item_csvDict)
                 '''
                 '''
-                #losslessly transcode with ffmpeg
-                transcode_nameDict = {
-                'inputAbsPath' : inputAbsPath,
-                'tempMasterFile' : tempMasterFile,
-                'framemd5AbsPath' : framemd5AbsPath,
-                'outputAbsPath' : outputAbsPath,
-                'framemd5File' : framemd5File
-                }
                 audioStreamCounter = input_metadata['techMetaA']['audio stream count']
                 '''
-                #TODO only create md5 if one doesn't already exist?
-                #create checksum sidecar file for preservation master
-                print ("*creating checksum*")
-                pm_hash = corefuncs.hashlib_md5(pm_file_abspath)
-                with open (pm_md5_abspath, 'w',  newline='\n') as f:
-                    print(pm_hash, '*' + file, file=f)
+
                 '''
                 #create a dictionary with the mediaconch results from the MOV and MKV files
                 mediaconchResults_dict = {
@@ -134,15 +161,6 @@ def audio_processor_main():
                 #TO DO: combine checksums into a single dictionary to reduce variables needed here
                 mov2ffv1supportfuncs.create_json(jsonAbsPath, systemInfo, input_metadata, mov_stream_sum, mkvHash, mkv_stream_sum, baseFilename, output_metadata, item_csvDict, qcResults)
                 '''
-                if not args.skip_ac:
-                    #create access copy
-                    print ('*transcoding access copy*')
-                    mov2ffv1supportfuncs.two_pass_h264_encoding(audioStreamCounter, outputAbsPath, acAbsPath)
-
-                    #create checksum sidecar file for access copy
-                    acHash = corefuncs.hashlib_md5(acAbsPath)
-                    with open (os.path.join(acOutputFolder, baseFilename + '-' + ac_identifier + '.md5'), 'w',  newline='\n') as f:
-                        print(acHash, '*' + baseFilename + '-' + ac_identifier + '.mp4', file=f)
 
                 #get current date for logging when QC happned
                 qcDate = str(datetime.datetime.today().strftime('%Y-%m-%d'))
@@ -167,11 +185,6 @@ def audio_processor_main():
                 #Add QC results to QC log csv file
                 mov2ffv1supportfuncs.write_output_csv(outdir, csvHeaderList, csvWriteList, output_metadata, qcResults)
 
-                #create spectrogram for pm audio channels
-                if audioStreamCounter > 0 and not args.skip_spectrogram:
-                    print ("*generating QC spectrograms*")
-                    channel_layout_list = input_metadata['techMetaA']['channels']
-                    mov2ffv1supportfuncs.generate_spectrogram(outputAbsPath, channel_layout_list, metaOutputFolder, baseFilename)
 
             else:
                 print ('No file in output folder.  Skipping file processing')
