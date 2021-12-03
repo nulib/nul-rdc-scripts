@@ -39,13 +39,22 @@ def delete_files(list):
             print ("unable to delete " + i)
             print ("File not found")
 
-def load_inventory_reference(inventory_reference_file):
-    d = {}
-    with open(inventory_reference_file, "r") as f:
+def load_reference_inventory(reference_inventory_file):
+    reference_inventory_fieldnames = []
+    with open(reference_inventory_file, "r") as f:
         reader = csv.DictReader(f, delimiter=',')
-        for row in reader:
-            d.update(row)
-    return(d)
+        reference_inventory_fieldnames.extend(reader.fieldnames)
+    return(reference_inventory_fieldnames)
+
+def load_item_metadata(file, source_inventory_dict):
+    loaded_metadata = None
+    for item in source_inventory_dict:
+        if item in file:
+            loaded_metadata = source_inventory_dict[item]
+    if not loaded_metadata:
+        print("ERROR: Unable to find matching file for " + file)
+        quit()
+    return loaded_metadata
 
 def ffprobe_report(filename, input_file_abspath):
     '''
@@ -138,11 +147,23 @@ def guess_date(string):
             continue
     raise ValueError(string)
 
-def generate_coding_history(coding_history, hardware, append_list):
+def verify_csv_exists(csv_file):
+    '''
+    TODO add doctest
+    '''
+    if csv_file.endswith('.csv'):
+        if not os.path.isfile(csv_file):
+            print("ERROR: Unable to locate " + csv_file)
+            quit()
+    else:
+        print("ERROR: " + csv_file + " is not a CSV file")
+        quit()
+
+def generate_coding_history(coding_history, hardware, sound, append_list):
     '''
     Formats hardware into BWF style coding history. Takes a piece of hardware (formatted: 'model; serial No.'), splits it at ';' and then searches the equipment dictionary for that piece of hardware. Then iterates through a list of other fields to append in the free text section. If the hardware is not found in the equipment dictionary this will just pull the info from the csv file and leave out some of the BWF formatting.
     '''
-    equipmentDict = equipment_dict.equipment_dict()
+    equipmentDict = audio_equipment_dict.equipment_dict()
     if hardware.split(';')[0] in equipmentDict.keys():
         hardware_history = equipmentDict[hardware.split(';')[0]]['Coding Algorithm'] + ',' + 'T=' + hardware
         for i in append_list:
@@ -165,106 +186,61 @@ def generate_coding_history(coding_history, hardware, append_list):
         pass
     return coding_history
 
-def import_inventories(source_inventories, reference_inventory_dict):
-    missing_fieldnames = False
-    reference_headers = [i for i in reference_inventory_dict]
-    source_inventory_dictlist = []
-    for i in source_inventories:
-        if i.endswith('.csv'):
-            if os.path.isfile(i):
-                csvDict = []
-                with open(i, encoding='utf-8')as f:
-                    reader = csv.DictReader(f, delimiter=',')
-                    missing_fieldnames = [i for i in reference_headers if not i in reader.fieldnames]
-                    if missing_fieldnames:
-                        print("WARNING: Your inventory seems to be missing the following columns")
-                        print(missing_fieldnames)
-                        quit()
-                    #for row in reader:
-        pass
-    quit()
-
-def import_csv(csvInventory):
+def import_inventories(source_inventories, reference_inventory_list):
     csvDict = {}
-    try:
-        with open(csvInventory, encoding='utf-8')as f:
+    for i in source_inventories:
+        verify_csv_exists(i)
+        with open(i, encoding='utf-8')as f:
             reader = csv.DictReader(f, delimiter=',')
-            #video_fieldnames_list = ['File name', 'Accession number/Call number', 'ALMA number/Finding Aid', 'Barcode', 'Title', 'Record Date/Time', 'Housing/Container/Cassette Markings', 'Description', 'Condition', 'Format', 'Capture Date', 'Digitization Operator', 'VTR', 'VTR Output Used', 'Tape Brand', 'Tape Record Mode', 'TBC', 'TBC Output Used', 'ADC', 'Capture Card', 'Sound', 'Region', 'Capture notes']
-            missing_fieldnames = [i for i in video_fieldnames_list if not i in reader.fieldnames]
-            if not missing_fieldnames:
-                for row in reader:
-                    name = row['File name']
-                    id1 = row['Accession number/Call number']
-                    id2 = row['ALMA number/Finding Aid']
-                    id3 = row['Barcode']
-                    title = row['Title']
-                    record_date = row['Record Date/Time']
-                    container_markings = row['Housing/Container/Cassette Markings']
-                    container_markings = container_markings.split('\n')
-                    description = row['Description']
-                    condition_notes = row['Condition']
-                    format = row['Format']
-                    captureDate = row['Capture Date']
-                    #try to format date as yyyy-mm-dd if not formatted correctly
-                    if captureDate:
-                        captureDate = str(guess_date(captureDate))
-                    digitizationOperator = row['Digitization Operator']
-                    vtr = row['VTR']
-                    vtrOut = row['VTR Output Used']
-                    tapeBrand = row['Tape Brand']
-                    recordMode = row['Tape Record Mode']
-                    tbc = row['TBC']
-                    tbcOut = row['TBC Output Used']
-                    adc = row['ADC']
-                    dio = row['Capture Card']
-                    sound = row['Sound']
-                    sound = sound.split('\n')
-                    region = row['Region']
-                    capture_notes = row['Capture notes']
-                    coding_history = []
-                    coding_history = generate_coding_history(coding_history, vtr, [tapeBrand, recordMode, region, vtrOut])
-                    coding_history = generate_coding_history(coding_history, tbc, [tbcOut])
-                    coding_history = generate_coding_history(coding_history, adc, [None])
-                    coding_history = generate_coding_history(coding_history, dio, [None])
-                    csvData = {
-                    'Accession number/Call number' : id1,
-                    'ALMA number/Finding Aid' : id2,
-                    'Barcode' : id3,
-                    'Title' : title,
-                    'Record Date' : record_date,
-                    'Container Markings' : container_markings,
-                    'Description' : description,
-                    'Condition Notes' : condition_notes,
-                    'Format' : format,
-                    'Digitization Operator' : digitizationOperator,
-                    'Capture Date' : captureDate,
-                    'Coding History' : coding_history,
-                    'Sound Note' : sound,
-                    'Capture Notes' : capture_notes
-                    }
-                    csvDict.update({name : csvData})
-            elif not 'File name' in missing_fieldnames:
-                print("WARNING: Unable to find all column names in csv file")
-                print("File name column found. Interpreting csv file as file list")
-                print("CONTINUE? (y/n)")
-                yes = {'yes','y', 'ye', ''}
-                no = {'no','n'}
-                choice = input().lower()
-                if choice in yes:
-                   for row in reader:
-                        name = row['File name']
-                        csvData = {}
-                        csvDict.update({name : csvData})
-                elif choice in no:
-                   quit()
-                else:
-                   sys.stdout.write("Please respond with 'yes' or 'no'")
-                   quit()
-            else:
-                print("No matching column names found in csv file")
-            #print(csvDict)
-    except FileNotFoundError:
-        print("Issue importing csv file")
+            missing_fieldnames = [i for i in reference_inventory_list if not i in reader.fieldnames]
+            extra_fieldnames = [i for i in reader.fieldnames if not i in reference_inventory_list]
+            if missing_fieldnames:
+                print("WARNING: Your inventory seems to be missing the following columns")
+                print(missing_fieldnames)
+                quit()
+            if extra_fieldnames:
+                print("WARNING: Your inventory contains the following extra columns")
+                print(extra_fieldnames)
+                quit()
+            for row in reader:
+                name = row['filename']
+                record_date = row['Record Date/Time']
+                container_markings = row['Housing/Container Markings']
+                container_markings = container_markings.split('\n')
+                format = row['Format']
+                captureDate = row['Capture Date']
+                #try to format date as yyyy-mm-dd if not formatted correctly
+                if captureDate:
+                    captureDate = str(guess_date(captureDate))
+                tapeBrand = row['Tape Brand']
+                pbdeck = row['Playback Deck']
+                sproc = row['Additional Signal Processing']
+                adc = row['ADC'] + "; A/D"
+                dio = row['DIO'] + "; DIO"
+                sound = row['Sound (Mono/Stereo)']
+                type = row['Tape Type (Cassette)']
+                coding_history = []
+                coding_history = generate_coding_history(coding_history, pbdeck, sound, [format, tapeBrand])
+                coding_history = generate_coding_history(coding_history, sproc, sound, [None])
+                coding_history = generate_coding_history(coding_history, adc, sound, [None])
+                coding_history = generate_coding_history(coding_history, dio, sound, [None])
+                csvData = {
+                'Work Accession Number' : row['work_accession_number'],
+                'Box/Folder/Alma Number' : row['Box/Folder\nAlma number'],
+                'Barcode' : row['Barcode'],
+                'Inventory Title' : row['inventory_title'],
+                'Record Date' : record_date,
+                'Container Markings' : container_markings,
+                'Condition Notes' : row['Condition Notes'],
+                'Format' : format,
+                'Digitization Operator' : row['Digitizer'],
+                'Capture Date' : captureDate,
+                'Coding History' : coding_history,
+                'Sound Note' : sound,
+                'Sides' : '',
+                'Capture Notes' : row['Digitizer Notes']
+                }
+                csvDict.update({name : csvData})
     return csvDict
 
 def convert_runtime(duration):

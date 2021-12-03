@@ -11,8 +11,8 @@
     "command" : "--History=",
     "write" : ""
   },
-  "ICRF" : {
-    "command" : "--ICRF=",
+  "ISRF" : {
+    "command" : "--ISRF=",
     "write" : ""
   },
   "ICOP" : {

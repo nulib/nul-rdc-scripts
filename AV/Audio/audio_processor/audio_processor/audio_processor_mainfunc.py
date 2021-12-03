@@ -47,8 +47,8 @@ def audio_processor_main():
     metaedit_version = corefuncs.get_bwf_metaedit_version()
     sox_version = corefuncs.get_sox_version()
 
-    inventory_reference_file = os.path.join(os.path.dirname(__file__), 'data/inventory_reference.csv')
-    reference_inventory_dict = audio_processor_supportfuncs.load_inventory_reference(inventory_reference_file)
+    reference_inventory_file = os.path.join(os.path.dirname(__file__), 'data/inventory_reference.csv')
+    reference_inventory_list = audio_processor_supportfuncs.load_reference_inventory(reference_inventory_file)
     #verify that mediaconch policies are present
     '''
     corefuncs.mediaconch_policy_exists(movPolicy)
@@ -67,7 +67,6 @@ def audio_processor_main():
     else:
         print('\n*** Checking input directory for CSV files ***')
         source_inventories = glob.glob(os.path.join(indir, "*.csv"))
-        #skip auto-generated meadow ingest csv if it already exists
         source_inventories = [i for i in source_inventories if not '-QC_results.csv' in i]
         if not source_inventories:
             print("\n+++ WARNING: Unable to CSV inventory file +++")
@@ -76,7 +75,7 @@ def audio_processor_main():
             no = {'no','n'}
             choice = input().lower()
             if choice in yes:
-                source_inventory_dictlist = [{}]
+                source_inventory_dict = {}
             elif choice in no:
                 quit()
             else:
@@ -85,9 +84,8 @@ def audio_processor_main():
             #rather than quitting - prompt user to choose whether or not to continue
         else:
             print("Inventories found\n")
-            source_inventory_dictlist = audio_processor_supportfuncs.import_inventories(source_inventories, reference_inventory_dict)
-    print(source_inventory)
-    quit()
+            source_inventory_dict = audio_processor_supportfuncs.import_inventories(source_inventories, reference_inventory_list)
+
     csvHeaderList = [
     "Shot Sheet Check",
     "Date",
@@ -126,13 +124,17 @@ def audio_processor_main():
                 json_file_abspath = os.path.join(meta_folder_abspath, base_filename + metadata_identifier + '.json')
                 pm_md5_abspath = pm_file_abspath.replace(preservation_extension, '.md5')
                 ac_md5_abspath = ac_file_abspath.replace(access_extension, '.md5')
-                #TODO find matching file in inventory
+
+                #load inventory metadata related to the file
+                loaded_metadata = audio_processor_supportfuncs.load_item_metadata(file, source_inventory_dict)
 
                 #generate ffprobe metadata from input
                 input_metadata = audio_processor_supportfuncs.ffprobe_report(file, pm_file_abspath)
 
                 #embed BWF metadata
                 if args.write_bwf_metadata:
+                    source_format = loaded_metadata['Format'].lower()
+                    bwf_dict['ISRF']['write'] = source_format
                     bwf_command = [args.metaedit_path, pm_file_abspath, '--MD5-Embed']
                     for key in bwf_dict:
                         if bwf_dict[key]['write']:
