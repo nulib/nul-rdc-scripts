@@ -27,21 +27,11 @@ def input_check():
         quit()
     return indir
 
-def output_check():
-    '''
-    Checks if output was provided and if it is a directory that exists
-    If no output is provided, output folder will default to input
-    '''
-    if args.output_path:
-        outdir = args.output_path
-    else:
-        print('Output not specified. Using input directory as Output directory')
-        outdir = args.input_path
-
-    if not os.path.isdir(outdir):
-        print('output is not a directory')
+def output_check(output):
+    '''Checks that output is valid'''
+    if not output.endswith('.csv'):
+        print("\n--- ERROR: Output must be a CSV file ---\n")
         quit()
-    return (outdir)
 
 def hashlib_md5(filename):
     '''

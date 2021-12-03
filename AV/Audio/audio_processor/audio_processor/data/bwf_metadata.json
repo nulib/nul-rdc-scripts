@@ -1,6 +1,22 @@
 {
-  "Originator" : {"command" : "--Originator=", "write" : "Northwestern University"},
-  "IARL" : {"command" : "--IARL=", "write" : "Northwestern University"},
-  "CodingHistory" : {"command" : "--History=", "write" : ""},
-  "ICRF" : {"command" : "--ICRF=", "write" : ""}
+  "Originator" : {
+    "command" : "--Originator=",
+    "write" : "Northwestern University"
+  },
+  "IARL" : {
+    "command" : "--IARL=",
+    "write" : "Northwestern University"
+  },
+  "CodingHistory" : {
+    "command" : "--History=",
+    "write" : ""
+  },
+  "ICRF" : {
+    "command" : "--ICRF=",
+    "write" : ""
+  },
+  "ICOP" : {
+    "command" : "",
+    "write" : "For rights and usage information please contact Northwestern University Libraries"
+  }
 }

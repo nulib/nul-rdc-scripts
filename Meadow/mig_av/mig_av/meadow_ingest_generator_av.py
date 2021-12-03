@@ -160,7 +160,7 @@ else:
     #skip auto-generated meadow ingest csv if it already exists
     source_inventories = [i for i in source_inventories if not '-meadow_ingest_inventory.csv' in i]
     if not source_inventories:
-        print("\n+++ WARNING: Unable to find all column names in csv file +++")
+        print("\n+++ WARNING: Unable to find CSV inventory file +++")
         print("CONTINUE? (y/n)")
         yes = {'yes','y', 'ye', ''}
         no = {'no','n'}

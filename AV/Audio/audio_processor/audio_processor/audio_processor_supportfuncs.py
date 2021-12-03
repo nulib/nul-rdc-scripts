@@ -39,6 +39,14 @@ def delete_files(list):
             print ("unable to delete " + i)
             print ("File not found")
 
+def load_inventory_reference(inventory_reference_file):
+    d = {}
+    with open(inventory_reference_file, "r") as f:
+        reader = csv.DictReader(f, delimiter=',')
+        for row in reader:
+            d.update(row)
+    return(d)
+
 def ffprobe_report(filename, input_file_abspath):
     '''
     returns nested dictionary with ffprobe metadata
@@ -157,12 +165,31 @@ def generate_coding_history(coding_history, hardware, append_list):
         pass
     return coding_history
 
+def import_inventories(source_inventories, reference_inventory_dict):
+    missing_fieldnames = False
+    reference_headers = [i for i in reference_inventory_dict]
+    source_inventory_dictlist = []
+    for i in source_inventories:
+        if i.endswith('.csv'):
+            if os.path.isfile(i):
+                csvDict = []
+                with open(i, encoding='utf-8')as f:
+                    reader = csv.DictReader(f, delimiter=',')
+                    missing_fieldnames = [i for i in reference_headers if not i in reader.fieldnames]
+                    if missing_fieldnames:
+                        print("WARNING: Your inventory seems to be missing the following columns")
+                        print(missing_fieldnames)
+                        quit()
+                    #for row in reader:
+        pass
+    quit()
+
 def import_csv(csvInventory):
     csvDict = {}
     try:
         with open(csvInventory, encoding='utf-8')as f:
             reader = csv.DictReader(f, delimiter=',')
-            video_fieldnames_list = ['File name', 'Accession number/Call number', 'ALMA number/Finding Aid', 'Barcode', 'Title', 'Record Date/Time', 'Housing/Container/Cassette Markings', 'Description', 'Condition', 'Format', 'Capture Date', 'Digitization Operator', 'VTR', 'VTR Output Used', 'Tape Brand', 'Tape Record Mode', 'TBC', 'TBC Output Used', 'ADC', 'Capture Card', 'Sound', 'Region', 'Capture notes']
+            #video_fieldnames_list = ['File name', 'Accession number/Call number', 'ALMA number/Finding Aid', 'Barcode', 'Title', 'Record Date/Time', 'Housing/Container/Cassette Markings', 'Description', 'Condition', 'Format', 'Capture Date', 'Digitization Operator', 'VTR', 'VTR Output Used', 'Tape Brand', 'Tape Record Mode', 'TBC', 'TBC Output Used', 'ADC', 'Capture Card', 'Sound', 'Region', 'Capture notes']
             missing_fieldnames = [i for i in video_fieldnames_list if not i in reader.fieldnames]
             if not missing_fieldnames:
                 for row in reader:

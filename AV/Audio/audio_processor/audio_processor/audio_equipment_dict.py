@@ -14,10 +14,10 @@ def equipment_dict():
     ADCs
     '''
     mh_lio8 = {
-    'Coding Algorithm' : 'A=',
-    'Hardware Type' : 'A/D'
+    'Coding Algorithm' : 'A=PCM',
+    'Hardware Type' : ['A/D', 'DIO']
     }
-        
+
     equipment_dict = {
     }
 

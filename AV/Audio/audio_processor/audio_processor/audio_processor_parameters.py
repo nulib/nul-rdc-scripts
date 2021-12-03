@@ -10,7 +10,8 @@ import sys
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--input', '-i', action='store', dest='input_path', type=str, help='full path to input folder')
-parser.add_argument('--output', '-o', action='store', dest='output_path', type=str, help='full path to output folder')
+parser.add_argument('--output', '-o', action='store', dest='output_path', type=str, help='full path to output csv file for QC results. If not specified this will default to creating a file in the input directory')
+parser.add_argument('--load_inventory', '-l', required=False, nargs='*', action='store', dest='source_inventory', help='Use to specify a CSV inventory. If not specified the script will look in the base folder of the input for CSV inventories. If no inventories are found the script will leave some fields blank.')
 parser.add_argument('--sox', action='store', dest='sox_path', default='sox', type=str, help='For setting a custom sox path')
 parser.add_argument('--bwfmetaedit', action='store', dest='metaedit_path', default='bwfmetaedit', type=str, help='For setting a custom BWF Metaedit path')
 parser.add_argument('--ffmpeg', action='store', dest='ffmpeg_path', default='ffmpeg', type=str, help='For setting a custom ffmpeg path')

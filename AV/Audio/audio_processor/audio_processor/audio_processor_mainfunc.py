@@ -18,6 +18,7 @@ def audio_processor_main():
     preservation_extension = '.wav'
     access_extension = '.wav'
     inventoryName = 'transcode_inventory.csv'
+
     #assign mediaconch policies to use
     '''
     if not args.input_policy:
@@ -29,8 +30,16 @@ def audio_processor_main():
     else:
         mkvPolicy = args.output_policy
     '''
-    #assign input directory and output directory
+
+    #assign input and output
     indir = corefuncs.input_check()
+    if args.output_path:
+        meadow_csv_file = args.output_path
+    else:
+        base_folder_name = os.path.basename(indir)
+        qc_csv_file = os.path.join(indir, base_folder_name + '-QC_results.csv')
+    corefuncs.output_check(qc_csv_file)
+
     #check that required programs are present
     corefuncs.mediaconch_check()
     corefuncs.ffprobe_check()
@@ -38,15 +47,47 @@ def audio_processor_main():
     metaedit_version = corefuncs.get_bwf_metaedit_version()
     sox_version = corefuncs.get_sox_version()
 
+    inventory_reference_file = os.path.join(os.path.dirname(__file__), 'data/inventory_reference.csv')
+    reference_inventory_dict = audio_processor_supportfuncs.load_inventory_reference(inventory_reference_file)
     #verify that mediaconch policies are present
     '''
     corefuncs.mediaconch_policy_exists(movPolicy)
     corefuncs.mediaconch_policy_exists(mkvPolicy)
     '''
-    #csvInventory = os.path.join(indir, inventoryName)
+
+    csvInventory = os.path.join(indir, inventoryName)
     #TO DO: separate out csv and json related functions that are currently in supportfuncs into dedicated csv or json related py files
     #csvDict = audio_processor_supportfuncs.import_csv(csvInventory)
     #create the list of csv headers that will go in the qc log csv file
+
+    #importing inventories
+    if args.source_inventory:
+        source_inventories = args.source_inventory
+        source_inventory_dictlist = audio_processor_supportfuncs.import_inventories(source_inventories, reference_inventory_dict)
+    else:
+        print('\n*** Checking input directory for CSV files ***')
+        source_inventories = glob.glob(os.path.join(indir, "*.csv"))
+        #skip auto-generated meadow ingest csv if it already exists
+        source_inventories = [i for i in source_inventories if not '-QC_results.csv' in i]
+        if not source_inventories:
+            print("\n+++ WARNING: Unable to CSV inventory file +++")
+            print("CONTINUE? (y/n)")
+            yes = {'yes','y', 'ye', ''}
+            no = {'no','n'}
+            choice = input().lower()
+            if choice in yes:
+                source_inventory_dictlist = [{}]
+            elif choice in no:
+                quit()
+            else:
+                sys.stdout.write("Please respond with 'yes' or 'no'")
+                quit()
+            #rather than quitting - prompt user to choose whether or not to continue
+        else:
+            print("Inventories found\n")
+            source_inventory_dictlist = audio_processor_supportfuncs.import_inventories(source_inventories, reference_inventory_dict)
+    print(source_inventory)
+    quit()
     csvHeaderList = [
     "Shot Sheet Check",
     "Date",
