@@ -303,7 +303,7 @@ for subdir, dirs, files in os.walk(indir):
 
 #TODO final check that all ihidden files and folderstems from filename list are accounted for in the final inventory
 
-with open(meadow_csv_file, 'w') as f:
+with open(meadow_csv_file, 'w', newline='', encoding='utf-8') as f:
     writer = csv.DictWriter(f, fieldnames = header_names)
     writer.writeheader()
     for item in meadow_full_dict:
