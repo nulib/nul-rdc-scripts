@@ -8,7 +8,6 @@ import json
 import csv
 import datetime
 import time
-from audio_processor import audio_equipment_dict
 from audio_processor.audio_processor_parameters import args
 
 def get_immediate_subdirectories(folder):
@@ -159,51 +158,31 @@ def verify_csv_exists(csv_file):
         print("ERROR: " + csv_file + " is not a CSV file")
         quit()
 
-def generate_coding_history(coding_history, hardware, append_list):
+def group_lists(original_list):
     '''
-    Formats hardware into BWF style coding history. Takes a piece of hardware (formatted: 'model; serial No.'), splits it at ';' and then searches the equipment dictionary for that piece of hardware. Then iterates through a list of other fields to append in the free text section. If the hardware is not found in the equipment dictionary this will just pull the info from the csv file and leave out some of the BWF formatting.
+    groups list items by the number found in them
     '''
-    equipmentDict = audio_equipment_dict.equipment_dict()
-    if hardware.split(';')[0] in equipmentDict.keys():
-        hardware_history = equipmentDict[hardware.split(';')[0]]['Coding Algorithm'] + ',' + 'T=' + hardware
-        for i in append_list:
-            if i:
-                hardware_history += '; '
-                hardware_history += i
-        if 'Hardware Type' in equipmentDict.get(hardware.split(';')[0]):
-            hardware_history += '; '
-            hardware_history += equipmentDict[hardware.split(';')[0]]['Hardware Type']
-        coding_history.append(hardware_history)
-    #handle case where equipment is not in the equipmentDict using a more general format
-    elif hardware and not hardware.split(';')[0] in equipmentDict.keys():
-        hardware_history = hardware
-        for i in append_list:
-            if i:
-                hardware_history += '; '
-                hardware_history += i
-        coding_history.append(hardware_history)
-    else:
-        pass
-    return coding_history
+    grouped_lists = []
+    for value in original_list:
+        numeric_string = "".join(filter(str.isdigit, value))
+        if grouped_lists and "".join(filter(str.isdigit, grouped_lists[-1][0])) == numeric_string:
+            grouped_lists[-1].append(value)
+        else:
+            grouped_lists.append([value])
+    return grouped_lists
 
-def create_coding_history(row, encoding_chain_fields):
+def create_coding_history(row, encoding_chain_fields, append_list):
     #separates out just the number from the encoding chain field
     #then compares that to the previous entry in the list so that same numbers are grouped
-    new_list = []
+    grouped_field_list = group_lists(encoding_chain_fields)
     coding_history_dict = {}
-    for value in encoding_chain_fields:
-        numeric_string = "".join(filter(str.isdigit, value))
-        if new_list and "".join(filter(str.isdigit, new_list[-1][0])) == numeric_string:
-            new_list[-1].append(value)
-        else:
-            new_list.append([value])
     coding_history = []
 
-    for encoding_chain in new_list:
+    for encoding_chain in grouped_field_list:
         coding_history_dict = {
             'primary fields' : {
                 'coding algorithm' : None,
-                'sampling rate' : None,
+                'sample rate' : None,
                 'word length' : None,
                 'sound mode' : None,
             },
@@ -233,16 +212,32 @@ def create_coding_history(row, encoding_chain_fields):
                     print("ERROR: Encoding chain digital characteristics does not follow expected formatting")
                 coding_history_dict['primary fields']['sample rate'] = "F=" + hardware_parser[0]
                 coding_history_dict['primary fields']['word length'] = "W=" +hardware_parser[1]
-            if i.lower().endswith("hardware type") and row[i].lower == "playback deck":
-                pass
+            if i.lower().endswith("hardware type") and row[i].lower() == "playback deck":
+                clean_list = []
+                for field in append_list:
+                    if field:
+                        clean_list.append(field)
+                if clean_list:
+                    append_fields = '; '.join(clean_list)
                 #convert append list to string
-                #coding_history_dict['freetext']['append fields'] = append_list
-            else:
+                coding_history_dict['freetext']['append fields'] = append_fields
+            elif i.lower().endswith("hardware type"):
                 coding_history_dict['freetext']['ad type'] = row[i]
-        print(coding_history_dict)
-        #primary_fields [coding_algorithm, sampling_rate, word_length, sound_mode,]
-        #notes {join with ;} [device, id, append_list, AD type]
-        #if value exists, write it to coding history list in specific order
+        primary_fields = []
+        freetext = []
+        for key in coding_history_dict['primary fields']:
+            if coding_history_dict['primary fields'][key]:
+                primary_fields.append(coding_history_dict['primary fields'][key])
+        for key in coding_history_dict['freetext']:
+            if coding_history_dict['freetext'][key]:
+                freetext.append(coding_history_dict['freetext'][key])
+        if primary_fields and freetext:
+            coding_history_p = ','.join(primary_fields)
+            coding_history_t = '; '.join(freetext)
+            coding_history_component = coding_history_p + ',' + coding_history_t
+            coding_history.append(coding_history_component)
+    coding_history = '\r\n'.join(coding_history)
+    return(coding_history)
 
 def import_inventories(source_inventories, reference_inventory_list):
     csvDict = {}
@@ -276,18 +271,12 @@ def import_inventories(source_inventories, reference_inventory_list):
                 if captureDate:
                     captureDate = str(guess_date(captureDate))
                 tapeBrand = row['Tape Brand']
-                create_coding_history(row, encoding_chain_fields)
-                quit()
-                sound = row['Sound (Mono/Stereo)']
+                sound = row['Sound']
                 type = row['Tape Type (Cassette)']
                 nr = row['Noise Reduction']
                 speed = row['Speed IPS']
+                coding_history = create_coding_history(row, encoding_chain_fields, [tapeBrand, type, speed, nr])
                 #TODO make a more generic expandable coding history builder
-                coding_history = []
-                coding_history = generate_coding_history(coding_history, pbdeck, [format, type, tapeBrand, speed, nr])
-                coding_history = generate_coding_history(coding_history, sproc, [None])
-                coding_history = generate_coding_history(coding_history, adc, [None])
-                coding_history = generate_coding_history(coding_history, dio, [None])
                 csvData = {
                 'Work Accession Number' : row['work_accession_number'],
                 'Box/Folder/Alma Number' : row['Box/Folder\nAlma number'],

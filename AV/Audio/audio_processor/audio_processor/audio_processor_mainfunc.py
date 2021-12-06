@@ -135,9 +135,18 @@ def audio_processor_main():
                 if args.write_bwf_metadata:
                     source_format = loaded_metadata['Format'].lower()
                     bwf_dict['ISRF']['write'] = source_format
-                    coding_history = '\r\n'.join(loaded_metadata['Coding History'])
+                    coding_history = loaded_metadata['Coding History']
+                    if input_metadata['techMetaA']['channels'] == 1:
+                        file_sound_mode = 'mono'
+                    elif input_metadata['techMetaA']['channels'] == 2:
+                        file_sound_mode = 'stereo'
+                    else:
+                        #TODO prompt user to enter a sound mode for the file manually?
+                        pass
+                    coding_history_update = 'A=PCM,F=' + input_metadata['techMetaA']['audio sample rate'] + ',W=' + input_metadata['techMetaA']['audio bitrate'] + ',M=' + file_sound_mode + ',T=BWFMetaEdit ' + metaedit_version
+                    coding_history = coding_history + '\r\n' + coding_history_update
                     bwf_dict['CodingHistory']['write'] = coding_history
-                    bwf_command = [args.metaedit_path, pm_file_abspath, '--MD5-Embed']
+                    bwf_command = [args.metaedit_path, pm_file_abspath, '--MD5-Embed', '--BextVersion=1']
                     for key in bwf_dict:
                         if bwf_dict[key]['write']:
                             bwf_command += [bwf_dict[key]['command'] + bwf_dict[key]['write']]
@@ -146,6 +155,12 @@ def audio_processor_main():
                     #subprocess.run(bwf_command)
                     print(bwf_command)
                     quit()
+
+                    #create checksum sidecar file for preservation master
+                    print ("*creating checksum*")
+                    pm_hash = corefuncs.hashlib_md5(pm_file_abspath)
+                    with open (pm_md5_abspath, 'w',  newline='\n') as f:
+                        print(pm_hash, '*' + file, file=f)
 
                 #create folder for metadata if it doesn't already exist
                 audio_processor_supportfuncs.create_output_folder(meta_folder_abspath)
@@ -160,14 +175,6 @@ def audio_processor_main():
                     acHash = corefuncs.hashlib_md5(ac_file_abspath)
                     with open (os.path.join(ac_md5_abspath), 'w',  newline='\n') as f:
                         print(acHash, '*' + base_filename + ac_identifier + access_extension, file=f)
-                '''
-                #TODO only create md5 if one doesn't already exist?
-                #create checksum sidecar file for preservation master
-                print ("*creating checksum*")
-                pm_hash = corefuncs.hashlib_md5(pm_file_abspath)
-                with open (pm_md5_abspath, 'w',  newline='\n') as f:
-                    print(pm_hash, '*' + file, file=f)
-                '''
 
                 #create spectrogram for pm audio channels
                 if not args.skip_spectrogram:
@@ -189,12 +196,9 @@ def audio_processor_main():
                 #PASS/FAIL - was the file found in the inventory
                 inventoryCheck = mov2ffv1passfail_checks.inventory_check(item_csvDict)
                 '''
-                '''
-                audioStreamCounter = input_metadata['techMetaA']['audio stream count']
-                '''
 
                 '''
-                #create a dictionary with the mediaconch results from the MOV and MKV files
+                #create a dictionary with the mediaconch results
                 mediaconchResults_dict = {
                 'MOV Mediaconch Policy': mov2ffv1supportfuncs.mediaconch_policy_check(inputAbsPath, movPolicy),
                 'MKV Implementation':  mov2ffv1supportfuncs.mediaconch_implementation_check(outputAbsPath),
