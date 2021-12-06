@@ -16,7 +16,7 @@
     "write" : ""
   },
   "ICOP" : {
-    "command" : "",
+    "command" : "--ICOP=",
     "write" : "For rights and usage information please contact Northwestern University Libraries"
   }
 }

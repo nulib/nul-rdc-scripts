@@ -159,7 +159,7 @@ def verify_csv_exists(csv_file):
         print("ERROR: " + csv_file + " is not a CSV file")
         quit()
 
-def generate_coding_history(coding_history, hardware, sound, append_list):
+def generate_coding_history(coding_history, hardware, append_list):
     '''
     Formats hardware into BWF style coding history. Takes a piece of hardware (formatted: 'model; serial No.'), splits it at ';' and then searches the equipment dictionary for that piece of hardware. Then iterates through a list of other fields to append in the free text section. If the hardware is not found in the equipment dictionary this will just pull the info from the csv file and leave out some of the BWF formatting.
     '''
@@ -186,14 +186,74 @@ def generate_coding_history(coding_history, hardware, sound, append_list):
         pass
     return coding_history
 
+def create_coding_history(row, encoding_chain_fields):
+    #separates out just the number from the encoding chain field
+    #then compares that to the previous entry in the list so that same numbers are grouped
+    new_list = []
+    coding_history_dict = {}
+    for value in encoding_chain_fields:
+        numeric_string = "".join(filter(str.isdigit, value))
+        if new_list and "".join(filter(str.isdigit, new_list[-1][0])) == numeric_string:
+            new_list[-1].append(value)
+        else:
+            new_list.append([value])
+    coding_history = []
+
+    for encoding_chain in new_list:
+        coding_history_dict = {
+            'primary fields' : {
+                'coding algorithm' : None,
+                'sampling rate' : None,
+                'word length' : None,
+                'sound mode' : None,
+            },
+            'freetext': {
+                'device' : None,
+                'id' : None,
+                'append fields' : None,
+                'ad type' : None
+            }
+        }
+        for i in encoding_chain:
+            if i.lower().endswith("hardware"):
+                hardware_parser = row[i].split(';')
+                hardware_parser = [i.lstrip() for i in hardware_parser]
+                if len(hardware_parser) !=3:
+                    print("ERROR: Encoding chain hardware does not follow expected formatting")
+                coding_history_dict['primary fields']['coding algorithm'] = "A=" + hardware_parser[0]
+                #TODO change how T= is added so it is instead just placed before the first entry of the freetext section
+                coding_history_dict['freetext']['device'] = "T=" + hardware_parser[1]
+                coding_history_dict['freetext']['id'] = hardware_parser[2]
+            if i.lower().endswith("mode"):
+                coding_history_dict['primary fields']['sound mode'] = "M=" + row[i]
+            if i.lower().endswith("digital characteristics"):
+                hardware_parser = row[i].split(';')
+                hardware_parser = [i.lstrip() for i in hardware_parser]
+                if len(hardware_parser) !=2:
+                    print("ERROR: Encoding chain digital characteristics does not follow expected formatting")
+                coding_history_dict['primary fields']['sample rate'] = "F=" + hardware_parser[0]
+                coding_history_dict['primary fields']['word length'] = "W=" +hardware_parser[1]
+            if i.lower().endswith("hardware type") and row[i].lower == "playback deck":
+                pass
+                #convert append list to string
+                #coding_history_dict['freetext']['append fields'] = append_list
+            else:
+                coding_history_dict['freetext']['ad type'] = row[i]
+        print(coding_history_dict)
+        #primary_fields [coding_algorithm, sampling_rate, word_length, sound_mode,]
+        #notes {join with ;} [device, id, append_list, AD type]
+        #if value exists, write it to coding history list in specific order
+
 def import_inventories(source_inventories, reference_inventory_list):
     csvDict = {}
     for i in source_inventories:
         verify_csv_exists(i)
         with open(i, encoding='utf-8')as f:
             reader = csv.DictReader(f, delimiter=',')
-            missing_fieldnames = [i for i in reference_inventory_list if not i in reader.fieldnames]
-            extra_fieldnames = [i for i in reader.fieldnames if not i in reference_inventory_list]
+            cleaned_fieldnames = [a for a in reader.fieldnames if not "encoding chain" in a.lower()]
+            encoding_chain_fields = sorted([a for a in reader.fieldnames if "encoding chain" in a.lower()])
+            missing_fieldnames = [i for i in reference_inventory_list if not i in cleaned_fieldnames]
+            extra_fieldnames = [i for i in cleaned_fieldnames if not i in reference_inventory_list]
             if missing_fieldnames:
                 print("WARNING: Your inventory seems to be missing the following columns")
                 print(missing_fieldnames)
@@ -202,28 +262,32 @@ def import_inventories(source_inventories, reference_inventory_list):
                 print("WARNING: Your inventory contains the following extra columns")
                 print(extra_fieldnames)
                 quit()
+            if not encoding_chain_fields:
+                print("ERROR: Unable to find encoding chain fields in inventory")
+                quit()
             for row in reader:
                 name = row['filename']
                 record_date = row['Record Date/Time']
                 container_markings = row['Housing/Container Markings']
                 container_markings = container_markings.split('\n')
-                format = row['Format']
+                format = row['Format'].lower()
                 captureDate = row['Capture Date']
                 #try to format date as yyyy-mm-dd if not formatted correctly
                 if captureDate:
                     captureDate = str(guess_date(captureDate))
                 tapeBrand = row['Tape Brand']
-                pbdeck = row['Playback Deck']
-                sproc = row['Additional Signal Processing']
-                adc = row['ADC'] + "; A/D"
-                dio = row['DIO'] + "; DIO"
+                create_coding_history(row, encoding_chain_fields)
+                quit()
                 sound = row['Sound (Mono/Stereo)']
                 type = row['Tape Type (Cassette)']
+                nr = row['Noise Reduction']
+                speed = row['Speed IPS']
+                #TODO make a more generic expandable coding history builder
                 coding_history = []
-                coding_history = generate_coding_history(coding_history, pbdeck, sound, [format, tapeBrand])
-                coding_history = generate_coding_history(coding_history, sproc, sound, [None])
-                coding_history = generate_coding_history(coding_history, adc, sound, [None])
-                coding_history = generate_coding_history(coding_history, dio, sound, [None])
+                coding_history = generate_coding_history(coding_history, pbdeck, [format, type, tapeBrand, speed, nr])
+                coding_history = generate_coding_history(coding_history, sproc, [None])
+                coding_history = generate_coding_history(coding_history, adc, [None])
+                coding_history = generate_coding_history(coding_history, dio, [None])
                 csvData = {
                 'Work Accession Number' : row['work_accession_number'],
                 'Box/Folder/Alma Number' : row['Box/Folder\nAlma number'],

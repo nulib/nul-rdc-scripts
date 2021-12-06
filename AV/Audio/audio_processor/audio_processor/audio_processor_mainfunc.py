@@ -135,11 +135,17 @@ def audio_processor_main():
                 if args.write_bwf_metadata:
                     source_format = loaded_metadata['Format'].lower()
                     bwf_dict['ISRF']['write'] = source_format
+                    coding_history = '\r\n'.join(loaded_metadata['Coding History'])
+                    bwf_dict['CodingHistory']['write'] = coding_history
                     bwf_command = [args.metaedit_path, pm_file_abspath, '--MD5-Embed']
                     for key in bwf_dict:
                         if bwf_dict[key]['write']:
                             bwf_command += [bwf_dict[key]['command'] + bwf_dict[key]['write']]
+                    if args.reset_timereference:
+                        bwf_command += ['--Timereference=' + '0']
+                    #subprocess.run(bwf_command)
                     print(bwf_command)
+                    quit()
 
                 #create folder for metadata if it doesn't already exist
                 audio_processor_supportfuncs.create_output_folder(meta_folder_abspath)
