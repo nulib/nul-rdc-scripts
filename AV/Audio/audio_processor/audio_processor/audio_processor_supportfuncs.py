@@ -46,10 +46,11 @@ def load_reference_inventory(reference_inventory_file):
     return(reference_inventory_fieldnames)
 
 def load_item_metadata(file, source_inventory_dict):
-    loaded_metadata = None
+    #TODO error out if multiple matches are found
+    loaded_metadata = {}
     for item in source_inventory_dict:
         if item in file:
-            loaded_metadata = source_inventory_dict[item]
+            loaded_metadata = {item : source_inventory_dict[item]}
     if not loaded_metadata:
         print("ERROR: Unable to find matching file for " + file)
         quit()
@@ -117,15 +118,11 @@ def mediaconch_implementation_check(input):
         mediaconchResults = "FAIL"
     return mediaconchResults
 
-def generate_system_log(ffvers, tstime, tftime):
+def generate_system_log():
     #gather system info for json output
     osinfo = platform.platform()
     systemInfo = {
     'operating system': osinfo,
-    'ffmpeg version': ffvers,
-    'transcode start time': tstime,
-    'transcode end time': tftime
-    #TO DO: add capture software/version maybe -- would have to pull from csv
     }
     return systemInfo
 
@@ -133,8 +130,7 @@ def qc_results(inventoryCheck, losslessCheck, mediaconchResults):
     QC_results = {}
     QC_results['QC'] = {
     'Inventory Check': inventoryCheck,
-    'Lossless Check': losslessCheck,
-    'Mediaconch Results': mediaconchResults,
+    'Mediaconch Results': mediaconchResults
     }
     return QC_results
 
@@ -295,6 +291,18 @@ def import_inventories(source_inventories, reference_inventory_list):
                 }
                 csvDict.update({name : csvData})
     return csvDict
+
+def parse_mediaconchResults(mediaconchResults_dict):
+    if "FAIL" in mediaconchResults_dict.values():
+        mediaconchResults = "FAIL"
+        failed_policies = []
+        for key in mediaconchResults_dict.keys():
+            if "FAIL" in mediaconchResults_dict.get(key):
+                failed_policies.append(key)
+        mediaconchResults = mediaconchResults + ': ' + str(failed_policies).strip('[]')
+    else:
+        mediaconchResults = "PASS"
+    return mediaconchResults
 
 def convert_runtime(duration):
     runtime = time.strftime("%H:%M:%S", time.gmtime(float(duration)))

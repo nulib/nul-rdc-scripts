@@ -17,7 +17,7 @@ parser.add_argument('--bwfmetaedit', action='store', dest='metaedit_path', defau
 parser.add_argument('--ffmpeg', action='store', dest='ffmpeg_path', default='ffmpeg', type=str, help='For setting a custom ffmpeg path')
 parser.add_argument('--ffprobe', action='store', dest='ffprobe_path', default='ffprobe', type=str, help='For setting a custom ffprobe path')
 parser.add_argument('--mediaconch', action='store', dest='mediaconch_path', default='mediaconch', type=str, help='For setting a custom mediaconch path')
-parser.add_argument('--verbose', required=False, action='store_true', help='view ffmpeg output when transcoding')
+#parser.add_argument('--verbose', required=False, action='store_true', help='view ffmpeg output when transcoding')
 parser.add_argument('--transcode', '-t', required=False, action='store_true', dest='transcode', help='Transcode access files')
 parser.add_argument('--write_metadata', '-w', required=False, action='store_true', dest='write_bwf_metadata', help='Write Broadcast WAVE metadata to Preservation file')
 parser.add_argument('--reset_Timereference', '-r', required=False, action='store_true', dest='reset_timereference', help='Reset the time reference of a BWF file to 00:00:00.000')
