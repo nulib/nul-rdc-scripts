@@ -19,12 +19,14 @@ parser.add_argument('--ffprobe', action='store', dest='ffprobe_path', default='f
 parser.add_argument('--mediaconch', action='store', dest='mediaconch_path', default='mediaconch', type=str, help='For setting a custom mediaconch path')
 #parser.add_argument('--verbose', required=False, action='store_true', help='view ffmpeg output when transcoding')
 parser.add_argument('--transcode', '-t', required=False, action='store_true', dest='transcode', help='Transcode access files')
-parser.add_argument('--write_metadata', '-w', required=False, action='store_true', dest='write_bwf_metadata', help='Write Broadcast WAVE metadata to Preservation file')
-parser.add_argument('--reset_Timereference', '-r', required=False, action='store_true', dest='reset_timereference', help='Reset the time reference of a BWF file to 00:00:00.000')
+parser.add_argument('--write_metadata', '-m', required=False, action='store_true', dest='write_bwf_metadata', help='Write Broadcast WAVE metadata to Preservation file')
+parser.add_argument('--reset_timereference', '-r', required=False, action='store_true', dest='reset_timereference', help='Reset the time reference of a BWF file to 00:00:00.000')
+parser.add_argument('--write_json', '-j', required=False, action='store_true', dest='write_json', help='Write Broadcast WAVE metadata to Preservation file')
 #parser.add_argument('--skipac', required=False, action='store_true', dest='skip_ac', help='skip access copy transcoding')
-parser.add_argument('--skipspectrogram', required=False, action='store_true', dest='skip_spectrogram', help='skip generating spectrograms')
+parser.add_argument('--spectrogram', '-s', required=False, action='store_true', dest='spectrogram', help='generate spectrograms')
 parser.add_argument('--p_policy', required=False, action='store', dest='input_policy', help='Mediaconch policy for preservation files')
 parser.add_argument('--a_policy', required=False, action='store', dest='output_policy', help='Mediaconch policy for access files')
 
+#TODO add a '-a' argument that automatically does -s -j -m -t
 
 args = parser.parse_args()

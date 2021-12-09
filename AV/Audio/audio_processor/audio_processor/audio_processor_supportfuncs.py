@@ -69,20 +69,17 @@ def ffprobe_report(filename, input_file_abspath):
     audio_channels = [stream.get('channels') for stream in (audio_output['streams'])][0]
 
     file_metadata = {
-    'filename' : filename,
+    #'filename' : filename,
     'file size' : format_output.get('format')['size'],
     'duration' : format_output.get('format')['duration'],
     'streams' : format_output.get('format')['nb_streams'],
-    'audio streams' : audio_codec_name_list
-    }
-
-    techMetaA = {
-    'audio bitrate' : audio_bitrate,
+    'channels' : audio_channels,
+    'audio streams' : audio_codec_name_list,
     'audio sample rate' : audio_sample_rate,
-    'channels' : audio_channels
+    'audio bitrate' : audio_bitrate
     }
 
-    ffprobe_metadata = {'file metadata' : file_metadata, 'techMetaA' : techMetaA}
+    ffprobe_metadata = {'file metadata' : file_metadata}
 
     return ffprobe_metadata
 
@@ -126,7 +123,7 @@ def generate_system_log():
     }
     return systemInfo
 
-def qc_results(inventoryCheck, losslessCheck, mediaconchResults):
+def qc_results(inventoryCheck, mediaconchResults):
     QC_results = {}
     QC_results['QC'] = {
     'Inventory Check': inventoryCheck,
@@ -207,7 +204,7 @@ def create_coding_history(row, encoding_chain_fields, append_list):
                 if len(hardware_parser) !=2:
                     print("ERROR: Encoding chain digital characteristics does not follow expected formatting")
                 coding_history_dict['primary fields']['sample rate'] = "F=" + hardware_parser[0]
-                coding_history_dict['primary fields']['word length'] = "W=" +hardware_parser[1]
+                coding_history_dict['primary fields']['word length'] = "W=" + hardware_parser[1]
             if i.lower().endswith("hardware type") and row[i].lower() == "playback deck":
                 clean_list = []
                 for field in append_list:
@@ -237,6 +234,7 @@ def create_coding_history(row, encoding_chain_fields, append_list):
 
 def import_inventories(source_inventories, reference_inventory_list):
     csvDict = {}
+    skip_coding_history = False
     for i in source_inventories:
         verify_csv_exists(i)
         with open(i, encoding='utf-8')as f:
@@ -254,8 +252,18 @@ def import_inventories(source_inventories, reference_inventory_list):
                 print(extra_fieldnames)
                 quit()
             if not encoding_chain_fields:
-                print("ERROR: Unable to find encoding chain fields in inventory")
-                quit()
+                print("WARNING: Unable to find encoding chain fields in inventory")
+                print("Continue without building Coding History? (y/n)")
+                yes = {'yes','y', 'ye', ''}
+                no = {'no','n'}
+                choice = input().lower()
+                if choice in yes:
+                   skip_coding_history = True
+                elif choice in no:
+                   quit()
+                else:
+                   sys.stdout.write("Please respond with 'yes' or 'no'")
+                   quit()
             for row in reader:
                 name = row['filename']
                 record_date = row['Record Date/Time']
@@ -271,7 +279,10 @@ def import_inventories(source_inventories, reference_inventory_list):
                 type = row['Tape Type (Cassette)']
                 nr = row['Noise Reduction']
                 speed = row['Speed IPS']
-                coding_history = create_coding_history(row, encoding_chain_fields, [tapeBrand, type, speed, nr])
+                if skip_coding_history is False:
+                    coding_history = create_coding_history(row, encoding_chain_fields, [tapeBrand, type, speed, nr])
+                else:
+                    coding_history = None
                 #TODO make a more generic expandable coding history builder
                 csvData = {
                 'Work Accession Number' : row['work_accession_number'],
@@ -286,7 +297,6 @@ def import_inventories(source_inventories, reference_inventory_list):
                 'Capture Date' : captureDate,
                 'Coding History' : coding_history,
                 'Sound Note' : sound,
-                'Sides' : '',
                 'Capture Notes' : row['Digitizer Notes']
                 }
                 csvDict.update({name : csvData})
@@ -308,7 +318,7 @@ def convert_runtime(duration):
     runtime = time.strftime("%H:%M:%S", time.gmtime(float(duration)))
     return runtime
 
-def write_output_csv(outdir, csvHeaderList, csvWriteList, output_metadata, qcResults):
+def write_output_csv(outdir, csvHeaderList, csvWriteList, qcResults):
     csv_file = os.path.join(outdir, "qc_log.csv")
     csvOutFileExists = os.path.isfile(csv_file)
 
@@ -317,50 +327,3 @@ def write_output_csv(outdir, csvHeaderList, csvWriteList, output_metadata, qcRes
         if not csvOutFileExists:
             writer.writerow(csvHeaderList)
         writer.writerow(csvWriteList)
-
-def create_json(jsonAbsPath, systemInfo, input_metadata, mov_stream_sum, mkvHash, mkv_stream_sum, baseFilename, output_metadata, item_csvDict, qcResults):
-    input_techMetaV = input_metadata.get('techMetaV')
-    input_techMetaA = input_metadata.get('techMetaA')
-    input_file_metadata = input_metadata.get('file metadata')
-    output_techMetaV = output_metadata.get('techMetaV')
-    output_techMetaA = output_metadata.get('techMetaA')
-    output_file_metadata = output_metadata.get('file metadata')
-
-    #create dictionary for json output
-    data = {}
-    data[baseFilename] = []
-
-    #gather pre and post transcode file metadata for json output
-    mov_file_meta = {}
-    ffv1_file_meta = {}
-    #add stream checksums to metadata
-    mov_md5_dict = {'a/v streamMD5s': mov_stream_sum}
-    ffv1_md5_dict = {'md5 checksum': mkvHash, 'a/v streamMD5s': mkv_stream_sum}
-    input_file_metadata = {**input_file_metadata, **mov_md5_dict}
-    output_file_metadata = {**output_file_metadata, **ffv1_md5_dict}
-    ffv1_file_meta = {'post-transcode metadata' : output_file_metadata}
-    mov_file_meta = {'pre-transcode metadata' : input_file_metadata}
-
-    #gather technical metadata for json output
-    techdata = {}
-    video_techdata = {}
-    audio_techdata = {}
-    techdata['technical metadata'] = []
-    video_techdata = {'video' : input_techMetaV}
-    audio_techdata = {'audio' : input_techMetaA}
-    techdata['technical metadata'].append(video_techdata)
-    techdata['technical metadata'].append(audio_techdata)
-
-    #gather metadata from csv dictionary as capture metadata
-    csv_metadata = {'inventory metadata' : item_csvDict}
-
-    system_info = {'system information' : systemInfo}
-
-    data[baseFilename].append(csv_metadata)
-    data[baseFilename].append(system_info)
-    data[baseFilename].append(ffv1_file_meta)
-    data[baseFilename].append(mov_file_meta)
-    data[baseFilename].append(techdata)
-    data[baseFilename].append(qcResults)
-    with open(jsonAbsPath, 'w', newline='\n') as outfile:
-        json.dump(data, outfile, indent=4)

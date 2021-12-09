@@ -63,7 +63,7 @@ def audio_processor_main():
     else:
         print('\n*** Checking input directory for CSV files ***')
         source_inventories = glob.glob(os.path.join(indir, "*.csv"))
-        source_inventories = [i for i in source_inventories if not '-QC_results.csv' in i]
+        source_inventories = [i for i in source_inventories if not 'qc_log.csv' in i]
         if not source_inventories:
             print("\n+++ WARNING: Unable to CSV inventory file +++")
             print("CONTINUE? (y/n)")
@@ -89,7 +89,8 @@ def audio_processor_main():
     "Date",
     "File Inspection",
     "Date",
-    "QC Notes"
+    "QC Notes",
+    "Runtime"
     ]
     print ("***STARTING PROCESS***")
 
@@ -101,6 +102,8 @@ def audio_processor_main():
         bwf_file = os.path.join(os.path.dirname(__file__), 'data/bwf_metadata.json')
         with open(bwf_file) as standard_metadata:
             bwf_dict = json.load(standard_metadata)
+
+#TODO add earlier failure to end process if all files do not have corresponding inventory entries
 
     for object in object_list:
         object_folder_abspath = os.path.join(indir, object)
@@ -134,19 +137,9 @@ def audio_processor_main():
                 #json filename should use the filename found in the inventory
                 json_file_abspath = os.path.join(meta_folder_abspath, inventory_filename + '-' + metadata_identifier + '.json')
 
-                '''
-                continue work here
-                '''
-                #TODO build out content appended to Files section of this dict with BWF metadata, technical metadata, and qc results
-                loaded_metadata[inventory_filename]['Files'] = [file]
-                if 'Files' not in loaded_metadata[inventory_filename]:
-                    loaded_metadata[inventory_filename]['Files'] = [file]
-                else:
-                    loaded_metadata[inventory_filename]['Files'].append(file)
                 #generate ffprobe metadata from input
                 input_metadata = audio_processor_supportfuncs.ffprobe_report(file, pm_file_abspath)
-                print(loaded_metadata)
-                quit()
+
                 #embed BWF metadata
                 if args.write_bwf_metadata:
                     print("*embedding BWF metadata*")
@@ -154,14 +147,14 @@ def audio_processor_main():
                     bwf_dict['ISRF']['write'] = source_format
                     #TODO coding history needs to be updated accordingly
                     coding_history = loaded_metadata[inventory_filename]['Coding History']
-                    if input_metadata['techMetaA']['channels'] == 1:
+                    if input_metadata['file metadata']['channels'] == 1:
                         file_sound_mode = 'mono'
-                    elif input_metadata['techMetaA']['channels'] == 2:
+                    elif input_metadata['file metadata']['channels'] == 2:
                         file_sound_mode = 'stereo'
                     else:
                         #TODO prompt user to enter a sound mode for the file manually?
                         pass
-                    coding_history_update = 'A=PCM,F=' + input_metadata['techMetaA']['audio sample rate'] + ',W=' + input_metadata['techMetaA']['audio bitrate'] + ',M=' + file_sound_mode + ',T=BWFMetaEdit ' + metaedit_version
+                    coding_history_update = 'A=PCM,F=' + input_metadata['file metadata']['audio sample rate'] + ',W=' + input_metadata['file metadata']['audio bitrate'] + ',M=' + file_sound_mode + ',T=BWFMetaEdit ' + metaedit_version
                     coding_history = coding_history + '\r\n' + coding_history_update
                     bwf_dict['CodingHistory']['write'] = coding_history
                     bwf_command = [args.metaedit_path, pm_file_abspath, '--MD5-Embed', '--BextVersion=1']
@@ -179,9 +172,6 @@ def audio_processor_main():
                     with open (pm_md5_abspath, 'w',  newline='\n') as f:
                         print(pm_hash, '*' + file, file=f)
 
-                #create folder for metadata if it doesn't already exist
-                audio_processor_supportfuncs.create_output_folder(meta_folder_abspath)
-
                 if args.transcode:
                     print("*transcoding access file*")
                     audio_processor_supportfuncs.create_output_folder(ac_folder_abspath)
@@ -195,18 +185,23 @@ def audio_processor_main():
                     with open (os.path.join(ac_md5_abspath), 'w',  newline='\n') as f:
                         print(acHash, '*' + base_filename + ac_identifier + access_extension, file=f)
 
+                #create folder for metadata if needed
+                if args.spectrogram or args.write_json:
+                    audio_processor_supportfuncs.create_output_folder(meta_folder_abspath)
+
                 #create spectrogram for pm audio channels
-                if not args.skip_spectrogram:
+                if args.spectrogram:
                     #TODO handle cases where spectrogram files already exist
                     print ("*generating QC spectrograms*")
                     sox_spectrogram_command = [args.sox_path, pm_file_abspath, '-n', 'spectrogram', '-Y', '1080', '-x', '1920', '-o', os.path.join(meta_folder_abspath, base_filename + 'spectrogram' + '.png')]
                     subprocess.run(sox_spectrogram_command)
-                    #channel_layout = input_metadata['techMetaA']['channels']
+                    #channel_layout = input_metadata['file metadata']['channels']
                     #audio_processor_supportfuncs.generate_spectrogram(pm_file_abspath, channel_layout, meta_folder_abspath, base_filename)
 
                 #TODO make this able to handle cases where there is no access file
+                #TODO split BWF metadata checks into separate policies?
                 #create a dictionary with the mediaconch results
-                print("*Running MediaConch*")
+                print("*Running MediaConch on Preservation and Access files*")
                 mediaconchResults_dict = {
                 'Preservation Mediaconch Policy': audio_processor_supportfuncs.mediaconch_policy_check(pm_file_abspath, p_wav_policy),
                 'Access Mediaconch Policy': audio_processor_supportfuncs.mediaconch_policy_check(ac_file_abspath, a_wav_policy)
@@ -217,13 +212,26 @@ def audio_processor_main():
                 #systemInfo = audio_processor_supportfuncs.generate_system_log()
 
                 #create json metadata file
-                audio_processor_supportfuncs.create_json(json_file_abspath, systemInfo, input_metadata, bwf_metadata, item_csvDict, qcResults)
+                #audio_processor_supportfuncs.create_json(json_file_abspath, systemInfo, input_metadata, bwf_metadata, item_csvDict, qcResults)
+
+                #create a dictionary containing QC results
+                qcResults = audio_processor_supportfuncs.qc_results(inventory_check, mediaconchResults)
+
+                if args.write_json:
+                    file_dict = {file : {}}
+                    file_dict[file].update({'Technical Metadata' : input_metadata['file metadata']})
+                    file_dict[file].update(qcResults)
+
+                    if 'Preservation Files' not in loaded_metadata[inventory_filename]:
+                        loaded_metadata[inventory_filename]['Preservation Files'] = [file_dict]
+                    else:
+                        loaded_metadata[inventory_filename]['Preservation Files'].append(file_dict)
+
+                    with open(json_file_abspath, 'w', newline='\n') as outfile:
+                        json.dump(loaded_metadata, outfile, indent=4)
 
                 #get current date for logging when QC happned
                 qcDate = str(datetime.datetime.today().strftime('%Y-%m-%d'))
-
-                #create a dictionary containing QC results
-                qcResults = mov2ffv1supportfuncs.qc_results(inventory_check, mediaconchResults)
 
                 #create the list that will go in the qc log csv file
                 #should correspond to the csvHeaderList earlier in the script
@@ -235,12 +243,8 @@ def audio_processor_main():
                 None,
                 None,
                 None,
-                audio_processor_supportfuncs.convert_runtime(output_metadata['file metadata']['duration'])
+                audio_processor_supportfuncs.convert_runtime(input_metadata['file metadata']['duration'])
                 ]
 
                 #Add QC results to QC log csv file
-                audio_processor_supportfuncs.write_output_csv(outdir, csvHeaderList, csvWriteList, output_metadata, qcResults)
-
-
-            else:
-                print ('No file in output folder.  Skipping file processing')
+                audio_processor_supportfuncs.write_output_csv(indir, csvHeaderList, csvWriteList, qcResults)
