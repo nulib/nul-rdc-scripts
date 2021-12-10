@@ -217,6 +217,7 @@ def audio_processor_main():
                 #create a dictionary containing QC results
                 qcResults = audio_processor_supportfuncs.qc_results(inventory_check, mediaconchResults)
 
+                #TODO use bwfmetaedit --out-core and --out-tech to grab the BWF metadata, then translate csv data to dict
                 if args.write_json:
                     file_dict = {file : {}}
                     file_dict[file].update({'Technical Metadata' : input_metadata['file metadata']})
