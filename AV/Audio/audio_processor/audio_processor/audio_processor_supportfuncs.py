@@ -2,6 +2,7 @@
 
 import os
 import sys
+import re
 import subprocess
 import platform
 import json
@@ -301,6 +302,14 @@ def import_inventories(source_inventories, reference_inventory_list):
                 }
                 csvDict.update({name : csvData})
     return csvDict
+
+def get_bwf_metadata(pm_file_abspath):
+    core_bwf_command = [args.metaedit_path, '--out-core', pm_file_abspath]
+    tech_bwf_command = [args.metaedit_path, '--out-tech', pm_file_abspath]
+    tech_bwf_csv = subprocess.check_output(tech_bwf_command).decode("ascii").rstrip().splitlines()
+    core_bwf_csv = subprocess.check_output(core_bwf_command).decode("ascii").rstrip()
+    print(core_bwf_csv)
+    quit()
 
 def parse_mediaconchResults(mediaconchResults_dict):
     if "FAIL" in mediaconchResults_dict.values():

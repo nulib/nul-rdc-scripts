@@ -203,8 +203,9 @@ def audio_processor_main():
                 #create a dictionary with the mediaconch results
                 print("*Running MediaConch on Preservation and Access files*")
                 mediaconchResults_dict = {
-                'Preservation Mediaconch Policy': audio_processor_supportfuncs.mediaconch_policy_check(pm_file_abspath, p_wav_policy),
-                'Access Mediaconch Policy': audio_processor_supportfuncs.mediaconch_policy_check(ac_file_abspath, a_wav_policy)
+                'Preservation Format Policy': audio_processor_supportfuncs.mediaconch_policy_check(pm_file_abspath, p_wav_policy),
+                #'Preservation BWF Policy' : '',
+                'Access Format Policy': audio_processor_supportfuncs.mediaconch_policy_check(ac_file_abspath, a_wav_policy)
                 }
                 #PASS/FAIL - check if any mediaconch results failed and append failed policies to results
                 mediaconchResults = audio_processor_supportfuncs.parse_mediaconchResults(mediaconchResults_dict)
@@ -216,6 +217,9 @@ def audio_processor_main():
 
                 #create a dictionary containing QC results
                 qcResults = audio_processor_supportfuncs.qc_results(inventory_check, mediaconchResults)
+
+                #TODO consider using --out-tech to get technical metadata instead of ffmpeg?
+                #bwf_meta_dict = audio_processor_supportfuncs.get_bwf_metadata(pm_file_abspath)
 
                 #TODO use bwfmetaedit --out-core and --out-tech to grab the BWF metadata, then translate csv data to dict
                 if args.write_json:
