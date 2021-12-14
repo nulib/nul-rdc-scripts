@@ -285,7 +285,8 @@ def import_inventories(source_inventories, reference_inventory_list):
                 else:
                     coding_history = None
                 #TODO make a more generic expandable coding history builder
-                csvData = {
+                #TODO separate out metadata that is specifically needed for embedding vs json file metadata
+                csvData = {'Inventory Metadata' : {
                 'Work Accession Number' : row['work_accession_number'],
                 'Box/Folder/Alma Number' : row['Box/Folder\nAlma number'],
                 'Barcode' : row['Barcode'],
@@ -293,23 +294,29 @@ def import_inventories(source_inventories, reference_inventory_list):
                 'Record Date' : record_date,
                 'Container Markings' : container_markings,
                 'Condition Notes' : row['Condition Notes'],
-                'Format' : format,
                 'Digitization Operator' : row['Digitizer'],
                 'Capture Date' : captureDate,
-                'Coding History' : coding_history,
                 'Sound Note' : sound,
-                'Capture Notes' : row['Digitizer Notes']
-                }
+                'Capture Notes' : row['Digitizer Notes'],
+                },
+                'BWF Metadata' : {
+                'Format' : format,
+                'Coding History' : coding_history
+                }}
                 csvDict.update({name : csvData})
     return csvDict
 
 def get_bwf_metadata(pm_file_abspath):
-    core_bwf_command = [args.metaedit_path, '--out-core', pm_file_abspath]
+    #TODO use bwfmetaedit to get metadata instead
+    ffprobe_tags = json.loads(subprocess.check_output([args.ffprobe_path, '-v', 'error', '-show_entries', 'format_tags', pm_file_abspath, '-of', 'json']).decode("ascii").rstrip())
+    ffprobe_tags = ffprobe_tags['format']['tags']
+    #core_bwf_command = [args.metaedit_path, '--out-core', pm_file_abspath]
     tech_bwf_command = [args.metaedit_path, '--out-tech', pm_file_abspath]
-    tech_bwf_csv = subprocess.check_output(tech_bwf_command).decode("ascii").rstrip().splitlines()
-    core_bwf_csv = subprocess.check_output(core_bwf_command).decode("ascii").rstrip()
-    print(core_bwf_csv)
-    quit()
+    tech_bwf_csv = subprocess.check_output(tech_bwf_command).decode("ascii").rstrip().splitlines()[2]
+    embedded_md5 = {'MD5Stored' : tech_bwf_csv.split(',')[16]}
+    ffprobe_tags.update(embedded_md5)
+    #core_bwf_csv = subprocess.check_output(core_bwf_command).decode("ascii").rstrip()
+    return(ffprobe_tags)
 
 def parse_mediaconchResults(mediaconchResults_dict):
     if "FAIL" in mediaconchResults_dict.values():

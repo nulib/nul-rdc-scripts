@@ -21,13 +21,14 @@ def audio_processor_main():
 
     #assign mediaconch policies to use
     if not args.input_policy:
-        p_wav_policy = os.path.join(os.path.dirname(__file__), 'data/mediaconch_policies/preservation_wav-96k24.xml')
+        p_wav_policy = os.path.join(os.path.dirname(__file__), 'data/mediaconch_policies/preservation_wav-96k24-tech.xml')
     else:
         p_wav_policy = args.input_policy
     if not args.output_policy:
-        a_wav_policy = os.path.join(os.path.dirname(__file__), 'data/mediaconch_policies/access_wav-44k16.xml')
+        a_wav_policy = os.path.join(os.path.dirname(__file__), 'data/mediaconch_policies/access_wav-44k16-tech.xml')
     else:
         a_wav_policy = args.output_policy
+    bwf_policy = os.path.join(os.path.dirname(__file__), 'data/mediaconch_policies/wav-bwf.xml')
 
     #assign input and output
     indir = corefuncs.input_check()
@@ -83,6 +84,7 @@ def audio_processor_main():
             source_inventory_dict = audio_processor_supportfuncs.import_inventories(source_inventories, reference_inventory_list)
 
     csvHeaderList = [
+    "filename",
     "Shot Sheet Check",
     "Date",
     "File Format & Metadata Verification",
@@ -143,10 +145,11 @@ def audio_processor_main():
                 #embed BWF metadata
                 if args.write_bwf_metadata:
                     print("*embedding BWF metadata*")
-                    source_format = loaded_metadata[inventory_filename]['Format'].lower()
+                    inventory_bwf_metadata = loaded_metadata[inventory_filename]['BWF Metadata']
+                    source_format = inventory_bwf_metadata['Format'].lower()
                     bwf_dict['ISRF']['write'] = source_format
                     #TODO coding history needs to be updated accordingly
-                    coding_history = loaded_metadata[inventory_filename]['Coding History']
+                    coding_history = inventory_bwf_metadata['Coding History']
                     if input_metadata['file metadata']['channels'] == 1:
                         file_sound_mode = 'mono'
                     elif input_metadata['file metadata']['channels'] == 2:
@@ -204,36 +207,35 @@ def audio_processor_main():
                 print("*Running MediaConch on Preservation and Access files*")
                 mediaconchResults_dict = {
                 'Preservation Format Policy': audio_processor_supportfuncs.mediaconch_policy_check(pm_file_abspath, p_wav_policy),
-                #'Preservation BWF Policy' : '',
-                'Access Format Policy': audio_processor_supportfuncs.mediaconch_policy_check(ac_file_abspath, a_wav_policy)
+                'Preservation BWF Policy' : audio_processor_supportfuncs.mediaconch_policy_check(pm_file_abspath, bwf_policy),
+                'Access Format Policy': audio_processor_supportfuncs.mediaconch_policy_check(ac_file_abspath, a_wav_policy),
+                'Access BWF Policy' : audio_processor_supportfuncs.mediaconch_policy_check(pm_file_abspath, bwf_policy)
                 }
                 #PASS/FAIL - check if any mediaconch results failed and append failed policies to results
                 mediaconchResults = audio_processor_supportfuncs.parse_mediaconchResults(mediaconchResults_dict)
 
                 #systemInfo = audio_processor_supportfuncs.generate_system_log()
 
-                #create json metadata file
-                #audio_processor_supportfuncs.create_json(json_file_abspath, systemInfo, input_metadata, bwf_metadata, item_csvDict, qcResults)
-
                 #create a dictionary containing QC results
                 qcResults = audio_processor_supportfuncs.qc_results(inventory_check, mediaconchResults)
 
                 #TODO consider using --out-tech to get technical metadata instead of ffmpeg?
-                #bwf_meta_dict = audio_processor_supportfuncs.get_bwf_metadata(pm_file_abspath)
+                bwf_meta_dict = audio_processor_supportfuncs.get_bwf_metadata(pm_file_abspath)
 
                 #TODO use bwfmetaedit --out-core and --out-tech to grab the BWF metadata, then translate csv data to dict
                 if args.write_json:
+                    #input_metadata['file_metadata'].pop('Format')
                     file_dict = {file : {}}
                     file_dict[file].update({'Technical Metadata' : input_metadata['file metadata']})
+                    file_dict[file].update({'BWF Metadata' : bwf_meta_dict})
                     file_dict[file].update(qcResults)
-
-                    if 'Preservation Files' not in loaded_metadata[inventory_filename]:
-                        loaded_metadata[inventory_filename]['Preservation Files'] = [file_dict]
+                    output_metadata = loaded_metadata[inventory_filename]['Inventory Metadata']
+                    if 'Preservation Files' not in output_metadata:
+                        output_metadata['Preservation Files'] = [file_dict]
                     else:
-                        loaded_metadata[inventory_filename]['Preservation Files'].append(file_dict)
-
+                        output_metadata['Preservation Files'].append(file_dict)
                     with open(json_file_abspath, 'w', newline='\n') as outfile:
-                        json.dump(loaded_metadata, outfile, indent=4)
+                        json.dump(output_metadata, outfile, indent=4)
 
                 #get current date for logging when QC happned
                 qcDate = str(datetime.datetime.today().strftime('%Y-%m-%d'))
@@ -241,6 +243,7 @@ def audio_processor_main():
                 #create the list that will go in the qc log csv file
                 #should correspond to the csvHeaderList earlier in the script
                 csvWriteList = [
+                file,
                 qcResults['QC']['Inventory Check'],
                 qcDate,
                 qcResults['QC']['Mediaconch Results'],
