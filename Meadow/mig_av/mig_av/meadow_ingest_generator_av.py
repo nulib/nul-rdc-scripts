@@ -5,6 +5,7 @@ import argparse
 import csv
 import glob
 import meadow_parser_funcs
+import posixpath
 
 parser = argparse.ArgumentParser()
 
@@ -255,6 +256,7 @@ for subdir, dirs, files in os.walk(indir):
     for file in sorted(files):
         #set filename
         filename = os.path.join(clean_subdir, file)
+        #filename = filename.replace(os.sep, posixpath.sep)
         meadow_file_dict = {
         'work_type': None,
         'work_accession_number': None,
