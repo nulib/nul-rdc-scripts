@@ -312,6 +312,7 @@ def get_bwf_metadata(pm_file_abspath):
     ffprobe_tags = ffprobe_tags['format']['tags']
     #core_bwf_command = [args.metaedit_path, '--out-core', pm_file_abspath]
     tech_bwf_command = [args.metaedit_path, '--out-tech', pm_file_abspath]
+    #TODO fix - splitlines returns different results here depending on OS
     tech_bwf_csv = subprocess.check_output(tech_bwf_command).decode("ascii").rstrip().splitlines()[2]
     embedded_md5 = {'MD5Stored' : tech_bwf_csv.split(',')[16]}
     ffprobe_tags.update(embedded_md5)

@@ -26,7 +26,12 @@ parser.add_argument('--write_json', '-j', required=False, action='store_true', d
 parser.add_argument('--spectrogram', '-s', required=False, action='store_true', dest='spectrogram', help='generate spectrograms')
 parser.add_argument('--p_policy', required=False, action='store', dest='input_policy', help='Mediaconch policy for preservation files')
 parser.add_argument('--a_policy', required=False, action='store', dest='output_policy', help='Mediaconch policy for access files')
-
-#TODO add a '-a' argument that automatically does -s -j -m -t
+parser.add_argument('--all', '-a', required=False, action='store_true', dest='all', help='This is equivalent to using -t -m -j -s')
 
 args = parser.parse_args()
+
+if args.all is True:
+    args.transcode = True
+    args.write_bwf_metadata = True
+    args.write_json = True
+    args.spectrogram = True
