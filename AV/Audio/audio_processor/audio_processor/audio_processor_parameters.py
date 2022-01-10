@@ -21,7 +21,7 @@ parser.add_argument('--mediaconch', action='store', dest='mediaconch_path', defa
 parser.add_argument('--transcode', '-t', required=False, action='store_true', dest='transcode', help='Transcode access files')
 parser.add_argument('--write_metadata', '-m', required=False, action='store_true', dest='write_bwf_metadata', help='Write Broadcast WAVE metadata to Preservation file')
 parser.add_argument('--reset_timereference', '-r', required=False, action='store_true', dest='reset_timereference', help='Reset the time reference of a BWF file to 00:00:00.000')
-parser.add_argument('--write_json', '-j', required=False, action='store_true', dest='write_json', help='Write Broadcast WAVE metadata to Preservation file')
+parser.add_argument('--write_json', '-j', required=False, action='store_true', dest='write_json', help='Write metadata to json file')
 #parser.add_argument('--skipac', required=False, action='store_true', dest='skip_ac', help='skip access copy transcoding')
 parser.add_argument('--spectrogram', '-s', required=False, action='store_true', dest='spectrogram', help='generate spectrograms')
 parser.add_argument('--p_policy', required=False, action='store', dest='input_policy', help='Mediaconch policy for preservation files')
