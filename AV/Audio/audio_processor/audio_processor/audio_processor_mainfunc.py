@@ -240,6 +240,7 @@ def audio_processor_main():
                 #get current date for logging when QC happned
                 qcDate = str(datetime.datetime.today().strftime('%Y-%m-%d'))
 
+                #TODO multi-part/side files need cumulative runtime
                 #create the list that will go in the qc log csv file
                 #should correspond to the csvHeaderList earlier in the script
                 csvWriteList = [
