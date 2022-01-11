@@ -128,13 +128,12 @@ def get_sox_version():
     '''
     Returns the version of sox
     '''
-    sox_version = None
-    print(sox_version)
-    sox_version = subprocess.check_output([
-        args.sox_path, '--version'
-    ]).decode("ascii").rstrip().splitlines()[0].split()#[2]
-    sox_version = ''.join([i for i in sox_version if i.startswith('v')])
-    if not sox_version:
+    try:
+        sox_version = subprocess.check_output([
+            args.sox_path, '--version'
+        ]).decode("ascii").rstrip().splitlines()[0].split()#[2]
+        sox_version = ''.join([i for i in sox_version if i.startswith('v')])
+    except:
         print("Error getting sox version")
         quit()
     return sox_version
