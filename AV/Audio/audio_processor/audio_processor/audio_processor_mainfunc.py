@@ -164,8 +164,8 @@ def audio_processor_main():
                     for key in bwf_dict:
                         if bwf_dict[key]['write']:
                             bwf_command += [bwf_dict[key]['command'] + bwf_dict[key]['write']]
-                    if args.reset_timereference:
-                        bwf_command += ['--Timereference=' + '0']
+                    #if args.reset_timereference:
+                    #    bwf_command += ['--Timereference=' + '0']
                     subprocess.run(bwf_command)
                     #print(bwf_command)
 
