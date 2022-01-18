@@ -1,4 +1,4 @@
-# Meadow CSV Script <br/>
+# Meadow Ingest Sheet Generator for AV <br/>
 This is a Python script for converting AV inventories to Meadow ingest sheets. It can also be used to create ingest sheets for image projects with nested folder structures. <br/>
 
 ## Overview
