@@ -254,9 +254,10 @@ for subdir, dirs, files in os.walk(indir):
             files = [f for f in files if not i in f]
     dirs[:] = [d for d in dirs if not d[0] == '.']
     for file in sorted(files):
-        #set filename
+        #set filename, use unix style path without leading slash
         filename = os.path.join(clean_subdir, file)
-        #filename = filename.replace(os.sep, posixpath.sep)
+        filename = filename.replace(os.sep, posixpath.sep)
+        filename = filename.strip('/')
         meadow_file_dict = {
         'work_type': None,
         'work_accession_number': None,
