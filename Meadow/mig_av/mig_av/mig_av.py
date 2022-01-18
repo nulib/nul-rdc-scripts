@@ -3,8 +3,8 @@
 import os
 import csv
 import glob
-import mig_av.meadow_parser_funcs as meadow_parser_funcs
-from mig_av.meadow_ingest_generator_av_parameters import args
+import mig_av.mig_av_parser_funcs as meadow_parser_funcs
+from mig_av.mig_av_parameters import args
 import posixpath
 
 def input_check(indir):
