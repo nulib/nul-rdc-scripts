@@ -177,11 +177,11 @@ def mig_av_main():
     #TODO may want to convert everything to lowercase so you don't risk running into errors
     #TODO move generating this dict to a function in a separate module
     role_dict = {
-    'framemd5' : {'identifiers' : ['.framemd5'], 'type' : 'extension', 'role' : 'S', 'label' : 'Framemd5 file', 'file_builder' : '_supplementary_'},
-    'metadata' : {'identifiers' : ['.xml', '.json'], 'type' : 'extension', 'role' : 'S', 'label' : 'Metadata file', 'file_builder' : '_supplementary_'},
+    'framemd5' : {'identifiers' : ['.framemd5'], 'type' : 'extension', 'role' : 'S', 'label' : 'framemd5 file', 'file_builder' : '_supplementary_'},
+    'metadata' : {'identifiers' : ['.xml', '.json'], 'type' : 'extension', 'role' : 'S', 'label' : 'metadata file', 'file_builder' : '_supplementary_'},
     'qctools' : {'identifiers' : ['.xml.gz', '.qctools.mkv'], 'type' : 'extension', 'role' : 'S', 'label' : 'QCTools report', 'file_builder' : '_supplementary_'},
-    'spectrogram' : {'identifiers' : ['.png', '.PNG'], 'type' : 'extension', 'role' : 'S', 'label' : 'Spectrogram file', 'file_builder' : '_supplementary_'},
-    'dpx_checksum' : {'identifiers' : ['dpx.txt'], 'type' : 'extension', 'role' : 'S', 'label' : 'Source DPX sidecar checksum', 'file_builder' : '_supplementary_'},
+    'spectrogram' : {'identifiers' : ['.png', '.PNG'], 'type' : 'extension', 'role' : 'S', 'label' : 'spectrogram file', 'file_builder' : '_supplementary_'},
+    'dpx_checksum' : {'identifiers' : ['dpx.txt'], 'type' : 'extension', 'role' : 'S', 'label' : 'source DPX sidecar checksum', 'file_builder' : '_supplementary_'},
     'access' : {'identifiers' : ['-a.', '_a.', '-am.', '_am.', '_am_', '-am-', '.mp4'], 'type' : 'pattern', 'role' : 'A', 'label' : None, 'file_builder' : '_access_'},
     'preservation' : {'identifiers' : ['-p.', '_p.', '-pm.', '_pm.', '_pm_', '-pm-', '.mkv'], 'type' : 'pattern', 'role' : 'P', 'label' : None, 'file_builder' : '_preservation_'}
     }
