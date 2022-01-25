@@ -181,7 +181,7 @@ def mig_av_main():
     'metadata' : {'identifiers' : ['.xml', '.json'], 'type' : 'extension', 'role' : 'S', 'label' : 'technical metadata file', 'file_builder' : '_supplementary_'},
     'qctools' : {'identifiers' : ['.xml.gz', '.qctools.mkv'], 'type' : 'extension', 'role' : 'S', 'label' : 'QCTools report', 'file_builder' : '_supplementary_'},
     'spectrogram' : {'identifiers' : ['.png', '.PNG'], 'type' : 'extension', 'role' : 'S', 'label' : 'spectrogram file', 'file_builder' : '_supplementary_'},
-    'dpx_checksum' : {'identifiers' : ['dpx.txt'], 'type' : 'extension', 'role' : 'S', 'label' : 'original DPX sidecar checksum', 'file_builder' : '_supplementary_'},
+    'dpx_checksum' : {'identifiers' : ['dpx.txt'], 'type' : 'extension', 'role' : 'S', 'label' : 'original DPX checksums', 'file_builder' : '_supplementary_'},
     'access' : {'identifiers' : ['-a.', '_a.', '-am.', '_am.', '_am_', '-am-', '.mp4'], 'type' : 'pattern', 'role' : 'A', 'label' : None, 'file_builder' : '_access_'},
     'preservation' : {'identifiers' : ['-p.', '_p.', '-pm.', '_pm.', '_pm_', '-pm-', '.mkv'], 'type' : 'pattern', 'role' : 'P', 'label' : None, 'file_builder' : '_preservation_'}
     }
