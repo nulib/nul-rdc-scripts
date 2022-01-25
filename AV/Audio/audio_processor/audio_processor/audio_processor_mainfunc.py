@@ -62,7 +62,7 @@ def audio_processor_main():
     #importing inventories
     if args.source_inventory:
         source_inventories = args.source_inventory
-        source_inventory_dictlist = audio_processor_supportfuncs.import_inventories(source_inventories, reference_inventory_list)
+        source_inventory_dict = audio_processor_supportfuncs.import_inventories(source_inventories, reference_inventory_list)
     else:
         print('\n*** Checking input directory for CSV files ***')
         source_inventories = glob.glob(os.path.join(indir, "*.csv"))
@@ -221,11 +221,10 @@ def audio_processor_main():
                 #create a dictionary containing QC results
                 qcResults = audio_processor_supportfuncs.qc_results(inventory_check, mediaconchResults)
 
-                #TODO consider using --out-tech to get technical metadata instead of ffmpeg?
-                bwf_meta_dict = audio_processor_supportfuncs.get_bwf_metadata(pm_file_abspath)
-
                 #TODO use bwfmetaedit --out-core and --out-tech to grab the BWF metadata, then translate csv data to dict
                 if args.write_json:
+                    #TODO consider using --out-tech to get technical metadata instead of ffmpeg?
+                    bwf_meta_dict = audio_processor_supportfuncs.get_bwf_metadata(pm_file_abspath)
                     #input_metadata['file_metadata'].pop('Format')
                     file_dict = {file : {}}
                     file_dict[file].update({'Technical Metadata' : input_metadata['file metadata']})
