@@ -33,7 +33,7 @@ def audio_processor_main():
     #assign input and output
     indir = corefuncs.input_check()
     if args.output_path:
-        meadow_csv_file = args.output_path
+        qc_csv_file = args.output_path
     else:
         base_folder_name = os.path.basename(indir)
         qc_csv_file = os.path.join(indir, base_folder_name + '-QC_results.csv')
