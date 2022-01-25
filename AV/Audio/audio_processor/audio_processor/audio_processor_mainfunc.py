@@ -42,8 +42,10 @@ def audio_processor_main():
     #check that required programs are present
     corefuncs.mediaconch_check()
     corefuncs.ffprobe_check()
-    ffvers = corefuncs.get_ffmpeg_version()
-    metaedit_version = corefuncs.get_bwf_metaedit_version()
+    if args.transcode:
+        ffvers = corefuncs.get_ffmpeg_version()
+    if args.write_bwf_metadata:
+        metaedit_version = corefuncs.get_bwf_metaedit_version()
     sox_version = corefuncs.get_sox_version()
 
     reference_inventory_file = os.path.join(os.path.dirname(__file__), 'data/inventory_reference.csv')
@@ -60,7 +62,7 @@ def audio_processor_main():
     #importing inventories
     if args.source_inventory:
         source_inventories = args.source_inventory
-        source_inventory_dictlist = audio_processor_supportfuncs.import_inventories(source_inventories, reference_inventory_dict)
+        source_inventory_dictlist = audio_processor_supportfuncs.import_inventories(source_inventories, reference_inventory_list)
     else:
         print('\n*** Checking input directory for CSV files ***')
         source_inventories = glob.glob(os.path.join(indir, "*.csv"))
