@@ -36,7 +36,7 @@ def audio_processor_main():
         qc_csv_file = args.output_path
     else:
         base_folder_name = os.path.basename(indir)
-        qc_csv_file = os.path.join(indir, base_folder_name + '-QC_results.csv')
+        qc_csv_file = os.path.join(indir, base_folder_name + '-qc_log.csv')
     corefuncs.output_check(qc_csv_file)
 
     #check that required programs are present
@@ -257,4 +257,4 @@ def audio_processor_main():
                 ]
 
                 #Add QC results to QC log csv file
-                audio_processor_supportfuncs.write_output_csv(indir, csvHeaderList, csvWriteList, qcResults)
+                audio_processor_supportfuncs.write_output_csv(qc_csv_file, csvHeaderList, csvWriteList, qcResults)

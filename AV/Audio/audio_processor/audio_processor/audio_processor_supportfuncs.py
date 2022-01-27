@@ -335,10 +335,8 @@ def convert_runtime(duration):
     runtime = time.strftime("%H:%M:%S", time.gmtime(float(duration)))
     return runtime
 
-def write_output_csv(outdir, csvHeaderList, csvWriteList, qcResults):
-    csv_file = os.path.join(outdir, "qc_log.csv")
+def write_output_csv(csv_file, csvHeaderList, csvWriteList, qcResults):
     csvOutFileExists = os.path.isfile(csv_file)
-
     with open(csv_file, 'a') as f:
         writer = csv.writer(f, delimiter=',', lineterminator='\n')
         if not csvOutFileExists:

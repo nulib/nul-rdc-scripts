@@ -32,6 +32,7 @@ def output_check(output):
     if not output.endswith('.csv'):
         print("\n--- ERROR: Output must be a CSV file ---\n")
         quit()
+    #TODO add check if csv will go in a valid directory
 
 def hashlib_md5(filename):
     '''
