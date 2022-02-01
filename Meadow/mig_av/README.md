@@ -23,5 +23,6 @@ The script performs the following primary functions:
 
 ## Usage
 Use the run.py file to run the script without installing.
+Use Atom's Git integration for your work
 
 ## Notes
