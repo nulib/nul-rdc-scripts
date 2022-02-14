@@ -53,8 +53,6 @@ def xparser(filename, pattern_list, inventory_label):
     label = " ".join(i for i in label_list if i)
     if not label:
         label = filename
-    else:
-        label = label.capitalize()
     return label
 
 def label_creator(filename, inventory_label):
