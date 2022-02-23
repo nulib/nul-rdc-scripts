@@ -225,7 +225,6 @@ def mig_av_main():
         print("\n--- ERROR: Unable to create output file", meadow_csv_file + ' ---\n')
         quit()
 
-    meadow_inventory = []
     meadow_full_dict = {}
     for subdir, dirs, files in os.walk(indir):
         dirs.sort()
