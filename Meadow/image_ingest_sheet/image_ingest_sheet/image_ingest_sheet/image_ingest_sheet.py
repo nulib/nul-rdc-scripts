@@ -4,7 +4,7 @@ import csv
 import sys
 import os
 import glob
-from meadow_csv_script.parameters import args
+from image_ingest_sheet.parameters import args
 import pandas as pd
 
 def csv_main():
