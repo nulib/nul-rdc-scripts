@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 '''
-Argument parser for meadow csv processing script
+Argument parser for image ingest sheet script
 '''
 
 import argparse
