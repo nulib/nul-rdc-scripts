@@ -63,10 +63,10 @@ def label_creator(filename, inventory_label):
     'Reel 1 Side 2'
     '''
     pattern_dict = {
-    'Side' : 's(\d{2})',
-    'Part' : 'p(\d{2})',
-    'Region' : 'r(\d{2})',
-    'Capture' : 'c(\d{2})'
+    'side' : 's(\d{2})',
+    'part' : 'p(\d{2})',
+    'region' : 'r(\d{2})',
+    'capture' : 'c(\d{2})'
     }
     label_list = [inventory_label]
     #print(pattern_dict['Side']['abbreviation'])
