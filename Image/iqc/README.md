@@ -1,26 +1,28 @@
-# IQC - Image Quality Checker <br/>
+# IQC - Image Quality Checker
 Python tools for running various automated QC functions on NUL RDC image projects. <br/>
 
-## Dependencies - CHECK BEFORE TRYING TO RUN THE SCRIPT <br/>
-- This script requires ExifTool and Python 3 with the Pandas and Pillow libraries. <br/>
-- Install Python from the Python website if it is not already installed. If you aren't sure whether or not Python is installed, try typing `python -h` in the command line. If installing Python on Windows make sure to check the box to add Python to your PATH during installation. <br/>
-- If installing an iqc release using pip, it should automatically install Pandas and Pillow. <br/>
-- ExifTool can be installed from the ExifTool website: https://exiftool.org/ <br/>
-- If on Windows, make sure that ExifTool is in your PATH or that you specify the path to the ExifTool executable using `--exiftool` when running the script. <br/>
-- If you need to manually install the pandas and Pillow libraries follow the instructions on their respective websites. <br/>
+## Installation Instructions
+- Before installing IQC
+  - Download and install ExifTool from the ExifTool website: https://exiftool.org/
+  - If on Windows, make sure that ExifTool is in your PATH. Otherwise you will need to specify the path to the ExifTool executable using `--exiftool` when running IQC (see Commands section for more information).
+- IQC Installation instructions
+  - Download the latest IQC release from the releases page.
+  - The release will be a .zip folder.
+  - To install the script and dependencies open the command line or terminal, cd to the folder containing the zipped folder and run `pip install iqc.zip`.
 
+## Additional Installation Notes
+- This script uses ExifTool and Python 3 with the Pandas and Pillow libraries.
+- Follow the instructions for installing Python from the Python website if it is not already installed.
+- If installing Python on Windows it is recommended that you check the box to add Python to your PATH during installation.
+- If installing an IQC release using pip, Pandas and Pillow will automatically be installed.
+- If you need to manually install the pandas and Pillow libraries follow the instructions on their respective websites.
 
-## Installation <br/>
-- Download the latest release from the releases page. <br/>
-- The release will be a .zip folder. <br/>
-- To install the script open the command line or terminal, cd to the folder containing the zipped folder and run `pip install iqc.zip`. <br/>
+## Updating
+- To update the script, follow the same process as installing, but run `pip install -U iqc.zip`.
+- You can check the version of IQC that you have installed by running `pip show iqc`.
 
-## Updating <br/>
-- To update the script, follow the same process as installing, but run `pip install -U iqc.zip`. <br/>
-- You can check the version of iqc that you have installed by running `pip show iqc`. <br/>
-
-## Usage <br/>
-### Commands <br/>
+## Usage
+### Commands
 **-i**, **--input**   This should be the full path to a project folder. If one or more inventory csv files are placed in the base folder of your input and you do not use the `--inventory` command to specify a different csv file or directory, those inventories will be used for processing the files. <br/>
 **-o**, **--output**   This should be the full path, including file name, to a json file for writing a json report to. If the output already exists it will be overwritten. Example - /user/my_documents/project_report.json <br/>
 **--exiftool**  Used to specify a custom path to ExifTool. This should generally not be needed. <br/>
@@ -30,7 +32,7 @@ Python tools for running various automated QC functions on NUL RDC image project
 **--strict**  When used with `--verify_metadata` this enforces exact matches when checking metadata (i.e. a file with IPTC metadata "Northwestern Uni" would fail if the inventory metadata is "Northwestern University"). <br/>
 **--verify_techdata**, **-t** This will use ExifTool to check the bit depth and color profile of images and compare them against expected Access and Preservation file specifications used by RDC. <br/>
 **--all**, **-a** This is equivalent to using the commands `--verify_metadata --verify_techdata --verify_checksums md5 -o /path/to/input/input-iqc_report.json`. The output path will default to the base folder of your input. Using the `-o` command and specifying an output in addition to using `-a` will output the report to the specified output rather than the default `-a` one. <br/>
-### Examples <br/>
+### Examples
 - Basic usage where you have a csv inventory in your project folder and want to check that there are TIFF files for all of the files in the inventory. This will output a short report in the terminal/command line: <br/>
 ```
   iqc -i /path/to/project/folder/P000_ProjectID
@@ -43,7 +45,7 @@ Python tools for running various automated QC functions on NUL RDC image project
 ```
   iqc --inventory /path/to/inventory/folder -i /path/to/project/folder/P000_ProjectID -c sha1
 ```
-- The script can be run without installing using the run.py script located in the base iqc directory. <br/>
+- The script can be run without installing using the run.py script located in the base IQC directory. <br/>
 - You may need to make the script executable first. In order to do so, type `chmod 755` into the command line on a Mac followed by a space, then drag and drop the run.py file into the command line and press return. The full command should look something like `chmod 755 path/to/git/folder/iqc/run.py` <br/>
 - You can check if the script is executable by trying to bring up the help text `path/to/git/folder/iqc/run.py -h` <br/>
 - Once the script is executable, you can run it by setting the correct inputs and outputs: <br/>
@@ -52,6 +54,6 @@ Python tools for running various automated QC functions on NUL RDC image project
 ```
 - The commands can be included in any order as long as each is followed by the correct path (i.e. `--inventory` should always have the path to a csv file after it regardless of where it is in the command). <br/>
 
-## Notes on changing script functionality <br/>
+## Notes on changing script functionality
 - Customizing the inventory column name used to match file names: Change the value of the column_to_match variable in the script <br/>
 - Handle csv files with a second header row Change header=0 to header=1 <br/>
