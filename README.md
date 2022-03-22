@@ -9,5 +9,5 @@ When you add a script please be sure to add documentation and make sure to comme
 [Audio Processor](https://github.com/nulib/nul-rdc-scripts/tree/main/AV/Audio/audio_processor) <br/>
 
 ## Additional Tools <br/>
-[Meadow CSV Converter](https://github.com/nulib/nul-rdc-scripts/tree/main/Meadow/meadow_csv_script) <br/>
+[Meadow Image CSV Converter](https://github.com/nulib/nul-rdc-scripts/tree/main/Meadow/image_ingest_sheet) <br/>
 [Meadow Ingest Sheet Generator for AV](https://github.com/nulib/nul-rdc-scripts/tree/main/Meadow/mig_av) <br/>
