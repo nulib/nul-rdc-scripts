@@ -6,7 +6,7 @@ if sys.version_info[0] < 3:
 
 def main():
     from image_ingest_sheet import image_ingest_sheet
-    image_ingest_sheet.csv_main()
+    image_csv_script.csv_main()
 
 if __name__ == "__main__":
 	main()
