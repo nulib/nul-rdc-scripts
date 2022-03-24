@@ -17,6 +17,10 @@ import subprocess
 from PIL import Image
 from iqc.iqcparameters import args
 
+column_to_match = 'filename'
+target_identifiers = ['target_', '_target.tif']
+target_filter = '|'.join(target_identifiers)
+
 def input_check():
     '''Checks if input was provided and if it is a directory that exists'''
     if args.input_path:
@@ -302,7 +306,6 @@ def check_for_meadow_columns(inventory):
                 quit()
 
 def iqc_main():
-    column_to_match = 'filename'
     indir = args.input_path
     input_check()
     base_folder_name = os.path.basename(indir)
@@ -404,7 +407,7 @@ def iqc_main():
     md5df = pd.DataFrame.from_dict(checksum_sidecar_dictionary['MD5']['dictionary'], orient='index', columns=['base filename', 'md5 filename', 'md5 path', 'filename in md5 checksum', 'md5 checksum value'])
     sha1df = pd.DataFrame.from_dict(checksum_sidecar_dictionary['SHA1']['dictionary'], orient='index', columns=['base filename', 'sha1 filename', 'sha1 path', 'filename in sha1 checksum', 'sha1 checksum value'])
     #returns a df of just the target files
-    targetdf = imagedf[imagedf[column_to_match].str.contains("_target.tif", na=False)]
+    targetdf = imagedf[imagedf[column_to_match].str.contains(target_filter, na=False)]
 
     #count the number of items in inventory
     inventory_count = len(inventorydf.index)
@@ -416,7 +419,9 @@ def iqc_main():
     image_count = image_count - target_count
 
     #filter out targets from imagedf using the inverse of the target filter
-    imagedf = imagedf[~imagedf[column_to_match].str.contains("_target.tif", na=False)]
+    #imagedf = imagedf[~imagedf[column_to_match].str.endswith("_target.tif", na=False)]
+    imagedf = imagedf[~imagedf[column_to_match].index.isin(targetdf.index)]
+    #imagedf = imagedf[~imagedf[column_to_match]]
     #returns df of images not found in inventory
     df3 = imagedf.merge(inventorydf, how='left', on=column_to_match, indicator="Status").query('Status == "left_only"')
     #returns df of inventory entries with no tif file
@@ -428,7 +433,7 @@ def iqc_main():
         df_merged = df_merged.merge(exifdf, how='left', on=column_to_match)
         #remove target files and instances where there is no file/inventory entry to match
         clean_exifdf = pd.merge(exifdf, df3[column_to_match], on=column_to_match, how='outer', indicator='exifdfmatch').query("exifdfmatch == 'left_only'")
-        clean_exifdf = clean_exifdf[~clean_exifdf[column_to_match].str.contains("_target.tif", na=False)]
+        clean_exifdf = clean_exifdf[~clean_exifdf[column_to_match].str.contains(target_filter, na=False)]
         if args.strict:
             metadf_failures = pd.merge(clean_exifdf, inventorydf, left_on=[column_to_match, 'By-line', 'Source', 'CopyrightNotice'], right_on=[column_to_match, 'Creator', 'Source', 'Copyright Notice'], how='outer', indicator='metamatch').query("metamatch == 'left_only'")
             #metadf_failures = pd.merge(clean_exifdf, inventorydf, left_on=[column_to_match, 'By-line', 'Headline', 'Source', 'CopyrightNotice'], right_on=[column_to_match, 'Creator', 'Headline', 'Source', 'Copyright Notice'], how='outer', indicator='metamatch').query("metamatch == 'left_only'")
