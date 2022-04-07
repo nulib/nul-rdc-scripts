@@ -180,6 +180,7 @@ def mig_av_main():
     'framemd5' : {'identifiers' : ['.framemd5'], 'type' : 'extension', 'role' : 'S', 'label' : 'framemd5 file', 'file_builder' : '_supplementary_'},
     'metadata' : {'identifiers' : ['.xml', '.json'], 'type' : 'extension', 'role' : 'S', 'label' : 'technical metadata file', 'file_builder' : '_supplementary_'},
     'qctools' : {'identifiers' : ['.xml.gz', '.qctools.mkv'], 'type' : 'extension', 'role' : 'S', 'label' : 'QCTools report', 'file_builder' : '_supplementary_'},
+    'logfile' : {'identifiers' : ['.log'], 'type' : 'extension', 'role' : 'S', 'label' : 'log file', 'file_builder' : '_supplementary_'},
     'spectrogram' : {'identifiers' : ['.png', '.PNG'], 'type' : 'extension', 'role' : 'S', 'label' : 'spectrogram file', 'file_builder' : '_supplementary_'},
     'dpx_checksum' : {'identifiers' : ['dpx.txt'], 'type' : 'extension', 'role' : 'S', 'label' : 'original DPX checksums', 'file_builder' : '_supplementary_'},
     'access' : {'identifiers' : ['-a.', '_a.', '-am.', '_am.', '_am_', '-am-', '.mp4', '_access'], 'type' : 'pattern', 'role' : 'A', 'label' : None, 'file_builder' : '_access_'},
