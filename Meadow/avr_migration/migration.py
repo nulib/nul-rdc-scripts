@@ -15,6 +15,14 @@ parser.add_argument('--skip', '-s', required=False, nargs='*', action='store', d
 
 args = parser.parse_args()
 
+def interpret_aux_command():
+    '''checks if argument passed to aux_parse is valid'''
+    aux_parse_list = ['extension', 'parse', '2pass']
+    for i in args.aux_parse:
+        if not i in aux_parse_list:
+            print('\n---ERROR: ' + i + ' is not a valid input to the auxiliary command ---\n')
+            quit()
+
 def input_check(indir):
     """
     Checks if input was provided and if it is a directory that exists
@@ -62,7 +70,7 @@ def import_csv(csv_file):
     """
     Imports csv file and maps data to dictionary
     """
-    filter_text = ['_am_', '_am', '-am', '_ac_', '_ac']
+    filter_text = ['_am_', '_am', '-am', '_ac_', '_ac', '_access']
     csv_dict = {}
     with open(csv_file, encoding='utf-8')as f:
         reader = csv.DictReader(f, delimiter=',')
@@ -261,11 +269,31 @@ indir = args.input_path
 input_check(indir)
 output_file = args.output_path
 
+if args.aux_parse:
+    interpret_aux_command()
+
 global_element_selection = None
 csv_file = args.source_inventory
 csv_dict = import_csv(csv_file)
 indir_dictionary = generate_input_dict(indir)
 print("\n")
+
+if "2pass" in args.aux_parse:
+    filtered_dict = {k:v for (k,v) in indir_dictionary.items() if '.JPG' in k or '.jpg' in k}
+    indir_dictionary = {k: v for k, v in indir_dictionary.items() if k not in filtered_dict}
+    #TODO: 2pass will require a filter option to create a list
+    # of strings to remove from the end of filenames set by user
+    #TODO: set fileset accession as base_filename + image + 3 digit #
+    reduced_csv_dict = {}
+    for i in csv_dict:
+        #TODO: make a new simplified dictionary that excludes repeats
+        filter_list = ['s01', 's02']
+        for el in filter_list:
+            #if i.endswith(el):
+            i = i.removesuffix(el)
+        print(i)
+        #print(csv_dict)
+    quit()
 
 partial_matches = None
 full_dict = {}

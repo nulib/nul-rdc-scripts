@@ -70,6 +70,11 @@ def import_inventories(source_inventories):
                             work_type = 'AUDIO'
                         elif 'Region' or 'Stock' in reader.fieldnames:
                             work_type = 'VIDEO'
+                        else:
+                            print('\n---ERROR: Unable to determine work_type. ---\n')
+                            print('make sure that your inventory has the necessary format-specific columns')
+                            print('IMAGE: "Width (cm.)" \n AUDIO: "Speed IPS" \n VIDEO: "Region" or "Stock"')
+                            quit()
                         name = row['filename']
                         if work_type == 'AUDIO' or work_type == 'VIDEO':
                             if not args.desc:
@@ -268,8 +273,11 @@ def mig_av_main():
                     #load the work type
                     work_type = source_inventory_dict[item]['work_type']
                     meadow_file_dict.update({'work_type': work_type})
-                    #load the description
-                    meadow_file_dict.update({'description': source_inventory_dict[item]['description']})
+                    #load the description or auto-fill if description is empty
+                    if not source_inventory_dict[item]['description']:
+                        meadow_file_dict.update({'description': file})
+                    else:
+                        meadow_file_dict.update({'description': source_inventory_dict[item]['description']})
                     #if dictionary does not already have a key corresponding to the item add it
                     if item not in meadow_full_dict:
                         meadow_full_dict[item] = [meadow_file_dict]
