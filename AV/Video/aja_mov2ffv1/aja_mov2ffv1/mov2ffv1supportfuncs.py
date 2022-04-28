@@ -33,11 +33,11 @@ def create_transcode_output_folders(baseOutput, outputFolderList):
             print ("using existing folder", folder, "as output")
 
 def check_mixdown_arg():
-    mixdown_list = ['copy', '4to3', '4to2']
+    mixdown_list = ['copy', '4to3', '4to2', '2to1']
     #TO DO add swap as an option to allow switching tracks 3&4 with tracks 1&2
     if not args.mixdown in mixdown_list:
         print("The selected audio mixdown is not a valid value")
-        print ("please use one of: copy, swap, 4to3, 4to2")
+        print ("please use one of: copy, 4to3, 4to2, 2to1")
         quit()
 
 def ffprobe_report(filename, input_file_abspath):
