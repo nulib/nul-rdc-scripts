@@ -195,6 +195,8 @@ def two_pass_h264_encoding(audioStreamCounter, outputAbsPath, acAbsPath):
             pass1 += ['-filter_complex', '[0:a:0][0:a:1]amerge=inputs=2[a]', '-map', '0:v', '-map', '[a]', '-map', '0:a:2', '-map', '0:a:3']
         if args.mixdown == '4to2' and audioStreamCounter == 4:
             pass1 += ['-filter_complex', '[0:a:0][0:a:1]amerge=inputs=2[a];[0:a:2][0:a:3]amerge=inputs=2[b]', '-map', '0:v', '-map', '[a]', '-map', '[b]']
+        if args.mixdown == '2to1' and audioStreamCounter == 2:
+            pass2 += ['-filter_complex', '[0:a:0][0:a:1]amerge=inputs=2[a]', '-map', '0:v', '-map', '[a]']
     pass1 += ['-f', 'mp4', nullOut]
     pass2 = [args.ffmpeg_path]
     if not args.verbose:
@@ -207,6 +209,8 @@ def two_pass_h264_encoding(audioStreamCounter, outputAbsPath, acAbsPath):
             pass2 += ['-filter_complex', '[0:a:0][0:a:1]amerge=inputs=2[a]', '-map', '0:v', '-map', '[a]', '-map', '0:a:2', '-map', '0:a:3']
         if args.mixdown == '4to2' and audioStreamCounter == 4:
             pass2 += ['-filter_complex', '[0:a:0][0:a:1]amerge=inputs=2[a];[0:a:2][0:a:3]amerge=inputs=2[b]', '-map', '0:v', '-map', '[a]', '-map', '[b]']
+        if args.mixdown == '2to1' and audioStreamCounter == 2:
+            pass2 += ['-filter_complex', '[0:a:0][0:a:1]amerge=inputs=2[a]', '-map', '0:v', '-map', '[a]']
     pass2 += [acAbsPath]
     subprocess.run(pass1)
     subprocess.run(pass2)
