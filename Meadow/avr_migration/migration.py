@@ -70,7 +70,7 @@ def import_csv(csv_file):
     """
     Imports csv file and maps data to dictionary
     """
-    filter_text = ['_am_', '_am', '-am', '_ac_', '_ac', '_access']
+    filter_text = ['_am_', '_am', '-am', '_ac_', '_ac', '-ac', '-a', '_access']
     csv_dict = {}
     with open(csv_file, encoding='utf-8')as f:
         reader = csv.DictReader(f, delimiter=',')
@@ -172,7 +172,7 @@ def get_role(filename, inventory_label):
     'qctools' : {'identifiers' : ['.xml.gz', '.qctools.mkv'], 'type' : 'extension', 'role' : 'S', 'label' : 'QCTools report', 'file_builder' : '_supplementary_'},
     'spectrogram' : {'identifiers' : ['.png', '.PNG'], 'type' : 'extension', 'role' : 'S', 'label' : 'spectrogram file', 'file_builder' : '_supplementary_'},
     'dpx_checksum' : {'identifiers' : ['dpx.txt'], 'type' : 'extension', 'role' : 'S', 'label' : 'original DPX checksums', 'file_builder' : '_supplementary_'},
-    'access' : {'identifiers' : ['-a.', '_a.', '-am.', '_am.', '_am_', '-am-', '.mp4', '_access.'], 'type' : 'pattern', 'role' : 'A', 'label' : None, 'file_builder' : '_access_'},
+    'access' : {'identifiers' : ['-a.', '_a.', '-am.', '_am.', '_am_', '-am-', '-ac.', '.mp4', '_access.'], 'type' : 'pattern', 'role' : 'A', 'label' : None, 'file_builder' : '_access_'},
     'preservation' : {'identifiers' : ['-p.', '_p.', '-pm.', '_pm.', '_pm_', '-pm-', '_preservation.'], 'type' : 'pattern', 'role' : 'P', 'label' : None, 'file_builder' : '_preservation_'},
     }
     if not args.aux_parse:
@@ -269,31 +269,30 @@ indir = args.input_path
 input_check(indir)
 output_file = args.output_path
 
-if args.aux_parse:
-    interpret_aux_command()
-
 global_element_selection = None
 csv_file = args.source_inventory
 csv_dict = import_csv(csv_file)
 indir_dictionary = generate_input_dict(indir)
 print("\n")
 
-if "2pass" in args.aux_parse:
-    filtered_dict = {k:v for (k,v) in indir_dictionary.items() if '.JPG' in k or '.jpg' in k}
-    indir_dictionary = {k: v for k, v in indir_dictionary.items() if k not in filtered_dict}
-    #TODO: 2pass will require a filter option to create a list
-    # of strings to remove from the end of filenames set by user
-    #TODO: set fileset accession as base_filename + image + 3 digit #
-    reduced_csv_dict = {}
-    for i in csv_dict:
-        #TODO: make a new simplified dictionary that excludes repeats
-        filter_list = ['s01', 's02']
-        for el in filter_list:
-            #if i.endswith(el):
-            i = i.removesuffix(el)
-        print(i)
-        #print(csv_dict)
-    quit()
+if args.aux_parse:
+    interpret_aux_command()
+    if "2pass" in args.aux_parse:
+        filtered_dict = {k:v for (k,v) in indir_dictionary.items() if '.JPG' in k or '.jpg' in k}
+        indir_dictionary = {k: v for k, v in indir_dictionary.items() if k not in filtered_dict}
+        #TODO: 2pass will require a filter option to create a list
+        # of strings to remove from the end of filenames set by user
+        #TODO: set fileset accession as base_filename + image + 3 digit #
+        reduced_csv_dict = {}
+        for i in csv_dict:
+            #TODO: make a new simplified dictionary that excludes repeats
+            filter_list = ['s01', 's02']
+            for el in filter_list:
+                #if i.endswith(el):
+                i = i.removesuffix(el)
+            print(i)
+            #print(csv_dict)
+        quit()
 
 partial_matches = None
 full_dict = {}
@@ -305,7 +304,11 @@ for item in csv_dict:
             partial_matches.remove(csv_dict[item]["Fileset Original Filename"])
         for match in partial_matches:
             inventory_label = csv_dict[item]["Fileset Label"]
+            if inventory_label == csv_dict[item]["Fileset Original Filename"]:
+                inventory_label = None
             role,file_accession_builder,label = get_role(match, inventory_label)
+            if not label:
+                label = match
             file_dict = {
             "Collection Title" : csv_dict[item]["Collection Title"],
             "Meadow URL" : csv_dict[item]["Meadow URL"],
