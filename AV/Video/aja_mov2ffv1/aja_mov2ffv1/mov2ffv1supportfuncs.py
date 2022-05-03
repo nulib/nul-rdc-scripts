@@ -196,7 +196,7 @@ def two_pass_h264_encoding(audioStreamCounter, outputAbsPath, acAbsPath):
         if args.mixdown == '4to2' and audioStreamCounter == 4:
             pass1 += ['-filter_complex', '[0:a:0][0:a:1]amerge=inputs=2[a];[0:a:2][0:a:3]amerge=inputs=2[b]', '-map', '0:v', '-map', '[a]', '-map', '[b]']
         if args.mixdown == '2to1' and audioStreamCounter == 2:
-            pass2 += ['-filter_complex', '[0:a:0][0:a:1]amerge=inputs=2[a]', '-map', '0:v', '-map', '[a]']
+            pass1 += ['-filter_complex', '[0:a:0][0:a:1]amerge=inputs=2[a]', '-map', '0:v', '-map', '[a]']
     pass1 += ['-f', 'mp4', nullOut]
     pass2 = [args.ffmpeg_path]
     if not args.verbose:
@@ -316,26 +316,25 @@ def import_csv(csvInventory):
     try:
         with open(csvInventory, encoding='utf-8')as f:
             reader = csv.DictReader(f, delimiter=',')
-            video_fieldnames_list = ['File name', 'Accession number/Call number', 'ALMA number/Finding Aid', 'Barcode', 'Title', 'Record Date/Time', 'Housing/Container/Cassette Markings', 'Description', 'Condition', 'Format', 'Capture Date', 'Digitization Operator', 'VTR', 'VTR Output Used', 'Tape Brand', 'Tape Record Mode', 'TBC', 'TBC Output Used', 'ADC', 'Capture Card', 'Sound', 'Region', 'Capture notes']
+            video_fieldnames_list = ['filename', 'work_accession_number', 'ALMA number/Finding Aid', 'Barcode', 'inventory_title', 'Record Date/Time', 'Housing/Container Markings', 'Condition Notes', 'Format', 'Capture Date', 'Digitizer', 'VTR', 'VTR Output Used', 'Tape Brand', 'Tape Record Mode', 'TBC', 'TBC Output Used', 'ADC', 'Capture Card', 'Sound', 'Region', 'Capture notes']
             missing_fieldnames = [i for i in video_fieldnames_list if not i in reader.fieldnames]
             if not missing_fieldnames:
                 for row in reader:
-                    name = row['File name']
-                    id1 = row['Accession number/Call number']
+                    name = row['filename']
+                    id1 = row['work_accession_number']
                     id2 = row['ALMA number/Finding Aid']
                     id3 = row['Barcode']
-                    title = row['Title']
+                    title = row['inventory_title']
                     record_date = row['Record Date/Time']
-                    container_markings = row['Housing/Container/Cassette Markings']
+                    container_markings = row['Housing/Container Markings']
                     container_markings = container_markings.split('\n')
-                    description = row['Description']
-                    condition_notes = row['Condition']
+                    condition_notes = row['Condition Notes']
                     format = row['Format']
                     captureDate = row['Capture Date']
                     #try to format date as yyyy-mm-dd if not formatted correctly
                     if captureDate:
                         captureDate = str(guess_date(captureDate))
-                    digitizationOperator = row['Digitization Operator']
+                    digitizationOperator = row['Digitizer']
                     vtr = row['VTR']
                     vtrOut = row['VTR Output Used']
                     tapeBrand = row['Tape Brand']
@@ -360,7 +359,6 @@ def import_csv(csvInventory):
                     'Title' : title,
                     'Record Date' : record_date,
                     'Container Markings' : container_markings,
-                    'Description' : description,
                     'Condition Notes' : condition_notes,
                     'Format' : format,
                     'Digitization Operator' : digitizationOperator,
