@@ -12,6 +12,7 @@ parser.add_argument('--load_inventory', '-l', required=False, action='store', de
 parser.add_argument('--output', '-o', action='store', dest='output_path', type=str, help='full path to output csv file')
 parser.add_argument('--auxiliary', '-x', required=False, nargs=1, action='store', dest='aux_parse', help='Sets how to parse auxiliary files. Options include: extension (by extension), parse (by word), none (no aux files). Default is none.')
 parser.add_argument('--skip', '-s', required=False, nargs='*', action='store', dest='skip', help='Use to specify patterns to skip. Can take multiple inputs. For example, "_ac." "_am." could be used to skip legacy ac and am files.')
+parser.add_argument('--prepend_accession', '-p', action='store', dest='prepend', type=str, help='set a string to be added to the beginning of the file accession number when generated')
 
 args = parser.parse_args()
 
@@ -70,7 +71,7 @@ def import_csv(csv_file):
     """
     Imports csv file and maps data to dictionary
     """
-    filter_text = ['_am_', '_am', '-am', '_ac_', '_ac', '-ac', '-a', '_access']
+    filter_text = ['_am_', '_am', '-am', '_ac_', '_ac', '-ac', '_access', '_streaming'] #'-a' removed to avoid some collisions
     csv_dict = {}
     with open(csv_file, encoding='utf-8')as f:
         reader = csv.DictReader(f, delimiter=',')
@@ -172,8 +173,8 @@ def get_role(filename, inventory_label):
     'qctools' : {'identifiers' : ['.xml.gz', '.qctools.mkv'], 'type' : 'extension', 'role' : 'S', 'label' : 'QCTools report', 'file_builder' : '_supplementary_'},
     'spectrogram' : {'identifiers' : ['.png', '.PNG'], 'type' : 'extension', 'role' : 'S', 'label' : 'spectrogram file', 'file_builder' : '_supplementary_'},
     'dpx_checksum' : {'identifiers' : ['dpx.txt'], 'type' : 'extension', 'role' : 'S', 'label' : 'original DPX checksums', 'file_builder' : '_supplementary_'},
-    'access' : {'identifiers' : ['-a.', '_a.', '-am.', '_am.', '_am_', '-am-', '-ac.', '.mp4', '_access.'], 'type' : 'pattern', 'role' : 'A', 'label' : None, 'file_builder' : '_access_'},
-    'preservation' : {'identifiers' : ['-p.', '_p.', '-pm.', '_pm.', '_pm_', '-pm-', '_preservation.'], 'type' : 'pattern', 'role' : 'P', 'label' : None, 'file_builder' : '_preservation_'},
+    'access' : {'identifiers' : ['-a.', '_a.', '-am.', '_am.', '_am_', '-am-', '-ac.', '.mp4', '_access.', '_amcc_'], 'type' : 'pattern', 'role' : 'A', 'label' : None, 'file_builder' : '_access_'},
+    'preservation' : {'identifiers' : ['-p.', '_p.', '-pm.', '_pm.', '_pm_', '-pm-', '_preservation.', '.mkv'], 'type' : 'pattern', 'role' : 'P', 'label' : None, 'file_builder' : '_preservation_'},
     }
     if not args.aux_parse:
         aux_dict = {'auxiliary' : {'identifiers' : None, 'type' : None, 'role' : None, 'label' : None, 'file_builder' : None}}
@@ -181,11 +182,12 @@ def get_role(filename, inventory_label):
         aux_dict = {
         'auxiliay' : {'identifiers' : ['.jpg', '.JPG'], 'type' : 'extension', 'role' : 'X', 'label' : 'image', 'file_builder' : '_auxiliary_'}
         }
-    elif 'parse' in args.aux_parse:
+    elif 'parse' in args.aux_parse or '2pass' in args.aux_parse:
         aux_dict = {'auxiliary' : {'identifiers' : ['_Asset', '-Asset', '_Can', '-Can', 'Front.', 'Back.', 'Side.', '_Ephemera.'], 'type' : 'xparse', 'role' : 'X', 'label' : None, 'file_builder' : '_auxiliary_'}}
     role_dict.update(aux_dict)
     role = None
     #TODO: make these separate functions
+    #if 'extension' in args.aux_parse: label = None
     for i in role_dict:
         if role_dict[i]['type'] == 'extension' and not role:
             if filename.endswith(tuple(role_dict[i]['identifiers'])):
@@ -278,7 +280,7 @@ print("\n")
 if args.aux_parse:
     interpret_aux_command()
     if "2pass" in args.aux_parse:
-        filtered_dict = {k:v for (k,v) in indir_dictionary.items() if '.JPG' in k or '.jpg' in k}
+        filtered_dict = {k:v for (k,v) in indir_dictionary.items() if '.JPG' in k or '.jpg' in k or '.xml' in k}
         indir_dictionary = {k: v for k, v in indir_dictionary.items() if k not in filtered_dict}
         #TODO: 2pass will require a filter option to create a list
         # of strings to remove from the end of filenames set by user
@@ -286,13 +288,16 @@ if args.aux_parse:
         reduced_csv_dict = {}
         for i in csv_dict:
             #TODO: make a new simplified dictionary that excludes repeats
+            imported_data = csv_dict[i]
             filter_list = ['s01', 's02']
             for el in filter_list:
                 #if i.endswith(el):
                 i = i.removesuffix(el)
-            print(i)
-            #print(csv_dict)
-        quit()
+            if not i in reduced_csv_dict:
+                reduced_csv_dict[i] = imported_data
+        #print(reduced_csv_dict)
+        #print(filtered_dict)
+        #quit()
 
 partial_matches = None
 full_dict = {}
@@ -334,9 +339,57 @@ for item in csv_dict:
                 file_dict.update({"Fileset Accession" : csv_dict[item]["Fileset Accession"]})
             else:
                 role_count = sum(x.get("Fileset Role") == role for x in full_dict.get(item))
-                file_dict.update({"Fileset Accession" : item + file_accession_builder + f'{role_count:03d}'})
+                if not args.prepend:
+                    file_dict.update({"Fileset Accession" : item + file_accession_builder + f'{role_count:03d}'})
+                else:
+                    file_dict.update({"Fileset Accession" : args.prepend + item + file_accession_builder + f'{role_count:03d}'})
     else:
         print("nothing matching " + item + " found")
+
+if args.aux_parse:
+    if "2pass" in args.aux_parse:
+        for item in reduced_csv_dict:
+            partial_matches = [x for x in filtered_dict.keys() if item in x]
+            if partial_matches:
+                print("images for " + item + " found")
+                for match in partial_matches:
+                    inventory_label = reduced_csv_dict[item]["Fileset Label"]
+                    if inventory_label == reduced_csv_dict[item]["Fileset Original Filename"]:
+                        inventory_label = None
+                    role,file_accession_builder,label = get_role(match, inventory_label)
+                    if not label:
+                        label = match
+                    file_dict = {
+                    "Collection Title" : reduced_csv_dict[item]["Collection Title"],
+                    "Meadow URL" : reduced_csv_dict[item]["Meadow URL"],
+                    "Work ID" : reduced_csv_dict[item]["Work ID"],
+                    "Work Accession" : reduced_csv_dict[item]["Work Accession"],
+                    "Work Title" : reduced_csv_dict[item]["Work Title"],
+                    "Fileset ID" : None,
+                    "Fileset Accession" : None,
+                    "Fileset Role" : role,
+                    "Fileset Original Filename" : match,
+                    "Fileset Label" : label,
+                    "Fileset Description" : reduced_csv_dict[item]["Fileset Description"],
+                    "File Path" : filtered_dict[match]
+                    }
+                    #add item to full dict or append if item exists
+                    if item not in full_dict:
+                        full_dict[item] = [file_dict]
+                    else:
+                        full_dict[item].append(file_dict)
+                    #update the Fileset ID and file accession
+                    if role == "A":
+                        file_dict.update({"Fileset ID" : reduced_csv_dict[item]["Fileset ID"]})
+                        file_dict.update({"Fileset Accession" : reduced_csv_dict[item]["Fileset Accession"]})
+                    else:
+                        role_count = sum(x.get("Fileset Role") == role for x in full_dict.get(item))
+                        if not args.prepend:
+                            file_dict.update({"Fileset Accession" : item + file_accession_builder + f'{role_count:03d}'})
+                        else:
+                            file_dict.update({"Fileset Accession" : args.prepend + item + file_accession_builder + f'{role_count:03d}'})
+            else:
+                print("nothing matching " + item + " found")
 
 write_output(full_dict)
 print("Process complete!")
