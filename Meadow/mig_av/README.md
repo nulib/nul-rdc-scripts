@@ -20,13 +20,30 @@ The script performs the following primary functions:
 **-s**, **--skip**  Defines patterns to ignore. For example, `-s ".mp3"` would prevent the script from adding any .mp3 files it finds to the final inventory. <br/>
 **-d**, **--description** Use to specify column names to populate Meadow description field with. Can take multiple inputs. Information from each column will be separated by a ";" in the description. Example usage: `-d "Date/Time" "Barcode"`. If not specified, script will default to looking for the column "inventory_title"<br/>
 **-x**, **--auxiliary** Sets how to parse auxiliary files. Options include: `extension` (by extension; i.e. ".jpg"), `parse` (by word; i.e. "_Asset_Front"), `none` (no aux files). Default is `none`. <br/>
+**--prepend_accession**, **-p** Set a string to be added to the beginning of the file accession number when it is generated
 
 ## Usage
 Use the run.py file to run the script without installing.
 Use Atom's Git integration for your work
 
-ex. -i target folder -o output\ingest.csv -x parse
+Basic usage, input folder containing inventory and files. No auxiliary files. Outputting Meadow ingest inventory to input folder:
+```
+run.py -i path/to/input/folder
+```
 
+Basic usage, separate input folder, inventory, and output folder. No auxiliary files:
+```
+run.py -i path/to/input/folder -l path/to/inventory.csv -o path/to/output/file.csv
+```
 
+Parse image file filenames that contain keywords identifying them as auxiliary files ("_AssetFront", "_CanBack", etc.):
+```
+run.py -i path/to/input/folder -x parse
+```
+
+Skip ".mp4" and ".png" files. Add any JPEG files as auxiliary files. Add "P0001-" to the beginning of all file accession numbers. Combine information from the inventory_title, barcode, and record_date columns into the description :
+```
+run.py -i path/to/input/folder -s .mp4 .png -x extension -p P0001- -d inventory_title barcode record_date
+```
 
 ## Notes
