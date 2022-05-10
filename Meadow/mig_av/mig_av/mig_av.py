@@ -183,7 +183,7 @@ def mig_av_main():
     #TODO move generating this dict to a function in a separate module
     role_dict = {
     'framemd5' : {'identifiers' : ['.framemd5'], 'type' : 'extension', 'role' : 'S', 'label' : 'framemd5 file', 'file_builder' : '_supplementary_'},
-    'metadata' : {'identifiers' : ['.xml', '.json'], 'type' : 'extension', 'role' : 'S', 'label' : 'technical metadata file', 'file_builder' : '_supplementary_'},
+    'metadata' : {'identifiers' : ['.xml', '.json', '.pdf'], 'type' : 'extension', 'role' : 'S', 'label' : 'technical metadata file', 'file_builder' : '_supplementary_'},
     'qctools' : {'identifiers' : ['.xml.gz', '.qctools.mkv'], 'type' : 'extension', 'role' : 'S', 'label' : 'QCTools report', 'file_builder' : '_supplementary_'},
     'logfile' : {'identifiers' : ['.log'], 'type' : 'extension', 'role' : 'S', 'label' : 'log file', 'file_builder' : '_supplementary_'},
     'spectrogram' : {'identifiers' : ['.png', '.PNG'], 'type' : 'extension', 'role' : 'S', 'label' : 'spectrogram file', 'file_builder' : '_supplementary_'},
@@ -199,7 +199,10 @@ def mig_av_main():
         }
     elif 'parse' in args.aux_parse:
         aux_dict = {'auxiliary' : {'identifiers' : ['_Asset', '-Asset', '_Can', '-Can', 'Front.', 'Back.'], 'type' : 'xparse', 'role' : 'X', 'label' : None, 'file_builder' : '_auxiliary_'}}
-    role_dict.update(aux_dict)
+    #role_dict.update(aux_dict)
+    #add the aux_dict to the beginning of the role_dict
+    #this will catch X files that also have a/p identifiers in the filename
+    role_dict = {**aux_dict, **role_dict}
     #add generic catch-all for unexpected file types
     role_dict.update({'other' : {'identifiers' : None, 'type' : None, 'role' : None, 'label' : None, 'file_builder' : None}})
 
@@ -291,11 +294,17 @@ def mig_av_main():
                         meadow_file_dict.update({'role': role})
                         role_count = sum(x.get('role') == role for x in meadow_full_dict.get(item))
                         meadow_file_dict.update({'label': label})
-                        meadow_file_dict.update({'file_accession_number' : item + file_builder + f'{role_count:03d}'})
+                        if args.prepend:
+                            meadow_file_dict.update({'file_accession_number' : args.prepend + item + file_builder + f'{role_count:03d}'})
+                        else:
+                            meadow_file_dict.update({'file_accession_number' : item + file_builder + f'{role_count:03d}'})
                     else:
                         meadow_file_dict.update({'role': source_inventory_dict[item]['role']})
                         meadow_file_dict.update({'label': inventory_label})
-                        meadow_file_dict.update({'file_accession_number' : source_inventory_dict[item]['file_accession_number']})
+                        if args.prepend:
+                            meadow_file_dict.update({'file_accession_number' : args.prepend + source_inventory_dict[item]['file_accession_number']})
+                        else:
+                            meadow_file_dict.update({'file_accession_number' : source_inventory_dict[item]['file_accession_number']})
             #TODO build out how to handle cases where a file is not found in the inventory
             #allow user to add the file anyway
             if not any(item in file for item in filename_list):

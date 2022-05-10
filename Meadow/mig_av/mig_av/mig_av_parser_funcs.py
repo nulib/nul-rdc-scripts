@@ -18,14 +18,14 @@ def get_label(role_dict, filename, inventory_label):
                     else:
                         label = 'Asset ' + role_dict[i]['label']
                     file_builder = role_dict[i]['file_builder']
-            elif role_dict[i]['type'] == 'pattern':
-                if any(ext in filename for ext in role_dict[i]['identifiers']):
-                    label = label_creator(filename, inventory_label)
-                    role = role_dict[i]['role']
-                    file_builder = role_dict[i]['file_builder']
             elif role_dict[i]['type'] == 'xparse':
                 if any(ext in filename for ext in role_dict[i]['identifiers']):
                     label = xparser(filename, role_dict[i]['identifiers'], inventory_label)
+                    role = role_dict[i]['role']
+                    file_builder = role_dict[i]['file_builder']
+            elif role_dict[i]['type'] == 'pattern':
+                if any(ext in filename for ext in role_dict[i]['identifiers']):
+                    label = label_creator(filename, inventory_label)
                     role = role_dict[i]['role']
                     file_builder = role_dict[i]['file_builder']
             else:
