@@ -25,4 +25,8 @@ The script performs the following primary functions:
 Use the run.py file to run the script without installing.
 Use Atom's Git integration for your work
 
+ex. -i target folder -o output\ingest.csv -x parse
+
+
+
 ## Notes
