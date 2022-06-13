@@ -169,13 +169,13 @@ def get_role(filename, inventory_label):
     #temporarily removed '-a.', '_a.', to avoid collisions
     role_dict = {
     'framemd5' : {'identifiers' : ['.framemd5'], 'type' : 'extension', 'role' : 'S', 'label' : 'framemd5 file', 'file_builder' : '_supplementary_'},
-    'metadata' : {'identifiers' : ['.xml', 'json'], 'type' : 'extension', 'role' : 'S', 'label' : 'technical metadata file', 'file_builder' : '_supplementary_'},
+    'metadata' : {'identifiers' : ['.xml', 'json', '.pdf'], 'type' : 'extension', 'role' : 'S', 'label' : 'technical metadata file', 'file_builder' : '_supplementary_'},
     'logfile' : {'identifiers' : ['.log'], 'type' : 'extension', 'role' : 'S', 'label' : 'log file', 'file_builder' : '_supplementary_'},
     'qctools' : {'identifiers' : ['.xml.gz', '.qctools.mkv'], 'type' : 'extension', 'role' : 'S', 'label' : 'QCTools report', 'file_builder' : '_supplementary_'},
     'spectrogram' : {'identifiers' : ['.png', '.PNG'], 'type' : 'extension', 'role' : 'S', 'label' : 'spectrogram file', 'file_builder' : '_supplementary_'},
     'dpx_checksum' : {'identifiers' : ['dpx.txt'], 'type' : 'extension', 'role' : 'S', 'label' : 'original DPX checksums', 'file_builder' : '_supplementary_'},
-    'access' : {'identifiers' : ['-am.', '_am.', '_am_', '-am-', '-ac.', '.mp4', '_access.', '_amcc_'], 'type' : 'pattern', 'role' : 'A', 'label' : None, 'file_builder' : '_access_'},
-    'preservation' : {'identifiers' : ['-p.', '_p.', '-pm.', '_pm.', '_pm_', '-pm-', '_preservation.', '.mkv'], 'type' : 'pattern', 'role' : 'P', 'label' : None, 'file_builder' : '_preservation_'},
+    'access' : {'identifiers' : ['-am.', '_am.', '-am[', '-am_', '_am_', '-am-', '-ac.', '.mp4', '_access.', '_amcc_'], 'type' : 'pattern', 'role' : 'A', 'label' : None, 'file_builder' : '_access_'},
+    'preservation' : {'identifiers' : ['-p.', '-pm[', '-pm_', '_p.', '-pm.', '_pm.', '_pm_', '-pm-', '_preservation.', '.mkv'], 'type' : 'pattern', 'role' : 'P', 'label' : None, 'file_builder' : '_preservation_'},
     }
     if not args.aux_parse:
         aux_dict = {'auxiliary' : {'identifiers' : None, 'type' : None, 'role' : None, 'label' : None, 'file_builder' : None}}
@@ -185,10 +185,12 @@ def get_role(filename, inventory_label):
         }
     elif 'parse' in args.aux_parse or '2pass' in args.aux_parse:
         aux_dict = {'auxiliary' : {'identifiers' : ['_Asset', '-Asset', '_Can', '-Can', 'Front.', 'Back.', 'Side.', '_Ephemera.'], 'type' : 'xparse', 'role' : 'X', 'label' : None, 'file_builder' : '_auxiliary_'}}
-    role_dict.update(aux_dict)
+    #role_dict.update(aux_dict)
+    role_dict = {**aux_dict, **role_dict}
     role = None
     #TODO: make these separate functions
     #if 'extension' in args.aux_parse: label = None
+    #label = None
     for i in role_dict:
         if role_dict[i]['type'] == 'extension' and not role:
             if filename.endswith(tuple(role_dict[i]['identifiers'])):
@@ -198,22 +200,27 @@ def get_role(filename, inventory_label):
                     label = role_dict[i]['label']
                 elif inventory_label:
                     label = inventory_label + ' ' + role_dict[i]['label']
-    for i in role_dict:
-        if role_dict[i]['type'] == 'pattern' and not role:
-            if any(ext in filename for ext in role_dict[i]['identifiers']):
-                role = role_dict[i]['role']
-                file_accession_builder = role_dict[i]['file_builder']
-                label = inventory_label
+                else:
+                    label = role_dict[i]['label']
     for i in role_dict:
         if role_dict[i]['type'] == 'xparse' and not role:
             if any(ext in filename for ext in role_dict[i]['identifiers']):
                 label = xparser(filename, role_dict[i]['identifiers'], inventory_label)
                 role = role_dict[i]['role']
                 file_accession_builder = role_dict[i]['file_builder']
+    for i in role_dict:
+        if role_dict[i]['type'] == 'pattern' and not role:
+            if any(ext in filename for ext in role_dict[i]['identifiers']):
+                role = role_dict[i]['role']
+                file_accession_builder = role_dict[i]['file_builder']
+                label = inventory_label
     if not role:
         label = inventory_label
         role = 'S'
         file_accession_builder = '_supplementary_'
+    print(filename)
+    print(role)
+    print(label)
     return role,file_accession_builder,label
 
 def xparser(filename, pattern_list, inventory_label):
