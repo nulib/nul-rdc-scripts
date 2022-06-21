@@ -6,8 +6,10 @@ def get_label(role_dict, filename, inventory_label):
     #run through each key in role_dict
     #if it matches on extension, it should be removed and passed to the next check
     label = None
+    print(role_dict)
     for i in role_dict:
         if not label:
+            print(role_dict[i]['type'])
             if role_dict[i]['type'] == 'extension':
                 if filename.endswith(tuple(role_dict[i]['identifiers'])):
                     role = role_dict[i]['role']
@@ -18,20 +20,24 @@ def get_label(role_dict, filename, inventory_label):
                     else:
                         label = 'Asset ' + role_dict[i]['label']
                     file_builder = role_dict[i]['file_builder']
+                    print(label)
             elif role_dict[i]['type'] == 'xparse':
                 if any(ext in filename for ext in role_dict[i]['identifiers']):
                     label = xparser(filename, role_dict[i]['identifiers'], inventory_label)
                     role = role_dict[i]['role']
                     file_builder = role_dict[i]['file_builder']
+                    print(label)
             elif role_dict[i]['type'] == 'pattern':
                 if any(ext in filename for ext in role_dict[i]['identifiers']):
                     label = label_creator(filename, inventory_label)
                     role = role_dict[i]['role']
                     file_builder = role_dict[i]['file_builder']
-            else:
+                    print(label)
+            elif not label:
                 label = filename
                 role = 'S'
                 file_builder = '_supplementary_'
+                print(label)
     return label,role,file_builder
 
 def xparser(filename, pattern_list, inventory_label):
