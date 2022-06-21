@@ -134,6 +134,9 @@ def clean_filename(base_filename):
                 base_filename = base_filename[global_element_selection]
     else:
         base_filename = Path(base_filename).stem
+    #try to resolve filenames with multiple extensions
+    if '.' in base_filename:
+        base_filename = Path(base_filename).stem
     return base_filename
 
 def generate_input_dict(indir):
@@ -173,7 +176,7 @@ def get_role(filename, inventory_label):
     'logfile' : {'identifiers' : ['.log'], 'type' : 'extension', 'role' : 'S', 'label' : 'log file', 'file_builder' : '_supplementary_'},
     'qctools' : {'identifiers' : ['.xml.gz', '.qctools.mkv'], 'type' : 'extension', 'role' : 'S', 'label' : 'QCTools report', 'file_builder' : '_supplementary_'},
     'spectrogram' : {'identifiers' : ['.png', '.PNG'], 'type' : 'extension', 'role' : 'S', 'label' : 'spectrogram file', 'file_builder' : '_supplementary_'},
-    'dpx_checksum' : {'identifiers' : ['dpx.txt'], 'type' : 'extension', 'role' : 'S', 'label' : 'original DPX checksums', 'file_builder' : '_supplementary_'},
+    'dpx_checksum' : {'identifiers' : ['dpx.txt', '-dpx_checksums.txt'], 'type' : 'extension', 'role' : 'S', 'label' : 'original DPX checksums', 'file_builder' : '_supplementary_'},
     'access' : {'identifiers' : ['-am.', '_am.', '_am_', '-am-', '-ac.', '.mp4', '_access.', '_amcc_'], 'type' : 'pattern', 'role' : 'A', 'label' : None, 'file_builder' : '_access_'},
     'preservation' : {'identifiers' : ['-p.', '_p.', '-pm.', '_pm.', '_pm_', '-pm-', '_preservation.', '.mkv'], 'type' : 'pattern', 'role' : 'P', 'label' : None, 'file_builder' : '_preservation_'},
     }
