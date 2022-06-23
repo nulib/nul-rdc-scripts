@@ -201,11 +201,11 @@ def mig_av_main():
             'auxiliay' : {'identifiers' : ['.jpg', '.JPG'], 'type' : 'extension', 'role' : 'X', 'label' : 'image', 'file_builder' : '_auxiliary_'}
             }
         elif 'parse' in args.aux_parse:
-            aux_dict = {'auxiliary' : {'identifiers' : ['_Asset', '-Asset', '_Can', '-Can', 'Front.', 'Back.'], 'type' : 'xparse', 'role' : 'X', 'label' : None, 'file_builder' : '_auxiliary_'}}
+            aux_dict = {'auxiliary' : {'identifiers' : ['_Asset', '-Asset', '_Can', '-Can', 'Front.', 'Back.', '_Ephemera', '-Ephemera'], 'type' : 'xparse', 'role' : 'X', 'label' : None, 'file_builder' : '_auxiliary_'}}
         #add the aux_dict to the beginning of the role_dict
         #this will catch X files that also have a/p identifiers in the filename
         role_dict = {**aux_dict, **role_dict}
-        #add generic catch-all for unexpected file types
+        #add generic catch-all for unexpected file types to the end of role_dict
         role_dict.update({'other' : {'identifiers' : None, 'type' : None, 'role' : None, 'label' : None, 'file_builder' : None}})
 
     header_names = ['work_type', 'work_accession_number', 'file_accession_number', 'filename', 'description', 'label', 'role', 'work_image', 'structure']

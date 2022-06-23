@@ -41,7 +41,8 @@ def xparser(filename, pattern_list, inventory_label):
     'asset' : ['_Asset', '-Asset'],
     'back' : ['Back.'],
     'front' : ['Front.'],
-    'side' : ['Side.']
+    'side' : ['Side.'],
+    'ephemera' : ['_Ephemera', '-Ephemera']
     }
     label_list = []
     if inventory_label:
