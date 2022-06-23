@@ -40,7 +40,8 @@ def xparser(filename, pattern_list, inventory_label):
     'can' : ['_Can', '-Can'],
     'asset' : ['_Asset', '-Asset'],
     'back' : ['Back.'],
-    'front' : ['Front.']
+    'front' : ['Front.'],
+    'side' : ['Side.']
     }
     label_list = []
     if inventory_label:
