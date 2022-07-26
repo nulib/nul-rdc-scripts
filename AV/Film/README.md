@@ -26,10 +26,10 @@ Scripts for batch transcoding DPX sequences using RAWCooked <br/>
 
 **Basic usage:**
 ```
-dpx2ffv1 -i input_folder -o output_folder
+dpx2ffv1.py -i input_folder -o output_folder
 ```
 
 **Transcode and compare FFV1/MKV runtime against access file runtime**
 ```
-dpx2ffv1 -i input_folder -o output_folder --check_runtime
+dpx2ffv1.py -i input_folder -o output_folder --check_runtime
 ```
