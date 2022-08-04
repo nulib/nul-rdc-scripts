@@ -37,6 +37,7 @@ def get_label(role_dict, filename, inventory_label):
 def xparser(filename, pattern_list, inventory_label):
     #TODO use regex instead so numbers could be extracted
     parser_dict = {
+    'reel' : ['_Reel', '-Reel'],
     'can' : ['_Can', '-Can'],
     'asset' : ['_Asset', '-Asset'],
     'back' : ['Back.'],
