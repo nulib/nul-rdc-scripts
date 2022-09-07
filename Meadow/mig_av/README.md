@@ -47,3 +47,4 @@ run.py -i path/to/input/folder -s .mp4 .png -x extension -p P0001- -d inventory_
 ```
 
 ## Notes
+When ingesting files associated with an inventory created using the script, the folder structure in the S3 bucket should match the folder structure of the input that the script was run on.
