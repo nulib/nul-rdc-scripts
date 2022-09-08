@@ -16,7 +16,7 @@ Scripts for batch transcoding files<br/>
 **--mediaconch** MEDIACONCH_PATH<br/>
 
 ### Installation
-If you want to use the script without installing, you can use the run.py file located in the aja_mov2ffv1 folder. In a command line window either drag and drop the file into the window or navigate to the aja_mov2ffv1 folder and then type `run.py` followed by any needed variables.<br/>
+If you want to use the script without installing, you can use the `run.py` file located in the aja_mov2ffv1 folder. In a command line window either drag and drop the file into the window or navigate to the aja_mov2ffv1 folder and then type `run.py` followed by any needed variables.<br/>
 **In order to install the script:**<br/>
 -First, make sure that you have Python 3 or higher installed<br/>
 -Download the folder for this repository<br/>
@@ -25,10 +25,20 @@ If you want to use the script without installing, you can use the run.py file lo
 -You should now be able to run the mov transcoding script using the command `aja-mov2ffv1`<br/>
 
 ### Usage
--The input should be a folder containing v210/MOV files that you want to losslessly transcode to FFV1/MKV.<br/>
--Place the transcode_inventory.csv file in the input folder with the video files and add any associated inventory information. Doing so allows the script to pull the inventory metadata and use it for some of the QC steps. The csv file also supplies additional metadata for the sidecar json file that will be produced.<br/>
--It is recommended to use a program like Data Curator (github.com/qcif/data-curator) to edit the CSV file to avoid any autoformatting.<br/>
--In order for the script to match a v210/MOV file with its associated inventory row the v210/MOV file minus the ".mov" extension **MUST** be identical to the name entered in the "File name" column in the inventory.<br/>
+- The input should be a folder containing v210/MOV files that you want to losslessly transcode to FFV1/MKV.<br/>
+- Place the transcode_inventory.csv file in the input folder with the video files and add any associated inventory information. Doing so allows the script to pull the inventory metadata and use it for some of the QC steps. The csv file also supplies additional metadata for the sidecar json file that will be produced.<br/>
+- **Note 1** It is recommended that you copy the rows from the source inventory and use "Paste Special..." in LibreOffice to paste them into a copy of the example transcode inventory. This ensures that the column names will be correct. It also lets you set the Accession Number column to use text formatting in order to avoid auto-formatting that will mess up accession numbers. After pasting the information in, make sure that all of the data is in the correct column.<br/>
+- **Note 2** In order for the script to match a v210/MOV file with its associated inventory row the v210/MOV file minus the ".mov" extension **MUST** be identical to the name entered in the "File name" column in the inventory.<br/>
+- When you are sure that your inventory and filenames are correct, run the script on the folder.
 
-**Example command:**
-	`aja-mov2ffv1 -i input_folder -o output_folder --mixdown 4to3`
+### Examples
+
+Basic usage. Transcode all mov files in input folder and output to a specific location:
+	```
+	aja-mov2ffv1 -i input_folder -o output_folder
+	```
+
+Change how audio channels are mixed:
+```
+aja-mov2ffv1 -i input_folder -o output_folder --mixdown 4to3
+```
