@@ -27,6 +27,9 @@ A script for processing and performing QC on audio files.
                       Mediaconch policy for access files <br>
 `--all`, `-a`             This is equivalent to using `-t -m -j -s`
 
+## Prerequisites
+In order to use all of the script's functions you will need to have the following programs installed: ffmpeg, ffprobe, SoX, BWFMetaedit, Mediaconch
+
 ## Usage
 Embed BWF metadata, transcode access files, generate spectrograms, and create sidecar json file. Correctly formatted inventory present in base of input directory.
 ```
