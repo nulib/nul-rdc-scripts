@@ -1,0 +1,20 @@
+"technical metadata" : {
+	"preservation" : {
+		"Bit Depth" : "16 16 16",
+		"Profile Description" : ["ProPhoto"]
+	}
+	"access" : {
+		"Color" : {
+			"Bit Depth" : "8 8 8",
+			"Profile Description" : ["Adobe RGB (1998)"]
+		},
+		"Grayscale" : {
+			"Bit Depth" : "8",
+			"Profile Description" : ["Gray Gamma 2.2"]
+		}
+	}
+	"none" : {
+		"Bit Depth" : "None",
+		"Profile Description" : ["None"]
+	}
+}
