@@ -1,0 +1,19 @@
+import csv
+
+proj_number=input("What is the project name/number?")
+box_other=input('Are there boxes and folders?')
+field_names = ['Spreadsheet Row Number', 'work_image' , 'structure' , 'role' , 'work_type' , 'work_accession_number' , 'file_accession_number' , 'filename' , 'label' , 'description' , 'Capture date' , 'Staff Initials' , 'Container number ex. Box Number' , 'folder number' , 'Width (cm.)' , 'Height (cm.)' , 'Date (Year+Month+Day)' , 'project_job_number' , 'Notes about album page or photo', 'Production Notes', 'Creator' , 'Source' , 'Copyright Notice']
+
+# Whether or not there are box and folders
+if box_other('YES'): # will run box folder version
+    folder_number=input("What is the folder number?")
+    box_number=input("What is the box number?")
+    number_files=input("How many files?") #number to loop by
+
+elif box_other('NO'):  #will run choose your own adventure
+    work_info=input("What is your work info ex. (v for volume)") #takes the place of the Box and Folder # information
+    number_files=input("How many files?") # number to loop by
+    
+
+else:
+    print("Try again with YES or NO")
