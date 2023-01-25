@@ -40,15 +40,5 @@ elif box_other('NO'):  #will run choose your own adventure
 
 
 
-
-
-
-
-
-
-
-
-
-
 else:
     print("Try again with YES or NO")
