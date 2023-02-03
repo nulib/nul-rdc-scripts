@@ -14,17 +14,20 @@ folder_files=int(input("How many files?")) #number to loop by
 file_number=1
 row_number=1
 
-for x in range(0,folder_files):
-        file_number=str(file_number)
-        inventory=[{'Spreadsheet Row Number':row_number,'work_accession_number': proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number, 'file_accession_number':proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number+'_'+file_number+'_'+'01'+'_'+'a', 'filename': proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number+'_'+file_number+'_'+'01'+'_'+'a'+'.tif', 'Container number ex. Box Number':box_number, 'folder number':folder_number, 'role':'A', 'work_type':'IMAGE','project_job_number':proj_number},]
 
-        with open ('inventory.csv','w+') as csvfile:
+with open ('inventory.csv','a') as csvfile:
                 writer=csv.DictWriter(csvfile,fieldnames=field_names)
                 writer.writeheader()
-                for data in inventory:
-                    writer.writerows(inventory)
-        file_number=int(file_number)+1
-        row_number=row_number+1
+                while file_number <= folder_files:
+                        file_number=str(file_number)
+                        inventory=[{'Spreadsheet Row Number':row_number,'work_accession_number': proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number, 'file_accession_number':proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number+'_'+file_number+'_'+'01'+'_'+'a', 'filename': proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number+'_'+file_number+'_'+'01'+'_'+'a'+'.tif', 'Container number ex. Box Number':box_number, 'folder number':folder_number, 'role':'A', 'work_type':'IMAGE','project_job_number':proj_number}]
+
+                        for data in inventory:
+                                writer.writerows(inventory)
+
+
+                        file_number=int(file_number)+1
+                        row_number=row_number+1
 
         
         
