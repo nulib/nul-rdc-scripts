@@ -1,4 +1,5 @@
 import csv
+import os
 
 proj_number=input("What is the project number?")
 proj_4dig=input("What is the four letter id?")
@@ -26,7 +27,7 @@ if box_other=='Y': # will run box folder version
                         # Below increments the row and file up by one
                         file_number=int(file_number)+1
                         row_number=row_number+1
-
+    os.system("start EXCEL.exe inventory.csv")
 
 elif box_other=='N':  #will run choose your own adventure
     work_info=input("What is your work info ex. (v for volume)") #takes the place of the Box and Folder # information
@@ -48,6 +49,6 @@ elif box_other=='N':  #will run choose your own adventure
             file_number=int(file_number)+1
             row_number=row_number+1
 
-
+    os.system("start EXCEL.exe inventory.csv")
 else:
     print("Try again with Y for YES or N for NO")
