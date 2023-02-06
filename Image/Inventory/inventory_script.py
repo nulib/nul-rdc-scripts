@@ -14,7 +14,7 @@ if box_other=='Y': # will run box folder version
     folder_number=input("What is the folder number?")
     folder_files=int(input("How many files?")) #number to loop by
     
-    with open ('inventory.csv','a') as csvfile:
+    with open ('inventory.csv','a', newline='') as csvfile:
                 writer=csv.DictWriter(csvfile,fieldnames=field_names)
                 writer.writeheader()
                 while file_number <= folder_files: # runs while the file number is less than or equal to the number of files that you need
@@ -34,7 +34,7 @@ elif box_other=='N':  #will run choose your own adventure
     number_files=input("How many files?") # number to loop by
     
 
-    with open ('inventory.csv','a') as csvfile:
+    with open ('inventory.csv','a', newline='') as csvfile:
                 writer=csv.DictWriter(csvfile,fieldnames=field_names)
                 writer.writeheader()
     while file_number<=number_files: # runs while the file number is less than or equal to the number of files that you need
