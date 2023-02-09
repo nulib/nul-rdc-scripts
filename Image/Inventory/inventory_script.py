@@ -12,8 +12,8 @@ new_bOrf=0
 # Whether or not there are box and folders
 if box_other=='y': # will run box folder version
         box_number=input("What is the box number?")
-        box_number=str(box_number).zfill(2)
         folder_number=input("What is the folder number?")
+        box_number=str(box_number).zfill(2)
         folder_number=str(folder_number).zfill(2)
         folder_files=int(input("How many files?")) #number to loop by
         with open ('inventory.csv','a', newline='') as csvfile:
@@ -31,23 +31,15 @@ if box_other=='y': # will run box folder version
                 # Below increments the row and file up by one
              
                         def ask_new_bOrf():
-                                new_bOrf=input('Do you want to add - b for box, f for folder, no - for end and open csv ')
-                                if new_bOrf =='f':
-                                        folder_number=input("What is the folder number?")
-                                        folder_files=int(input("How many files?")) #number to loop by
-                                        while file_number <= folder_files: # runs while the file number is less than or equal to the number of files that you need
-                                                lz_filenumber=str(file_number).zfill(4) 
-                                                lz_filenumber=str(lz_filenumber)
-                                                inventory=[{'work_accession_number': proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number, 'file_accession_number':proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number+'_'+lz_filenumber+'_'+'01'+'_'+'a', 'filename': proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number+'_'+lz_filenumber+'_'+'01'+'_'+'a'+'.tif', 'Container number ex. Box Number':box_number, 'folder number':folder_number, 'role':'A', 'work_type':'IMAGE','project_job_number':proj_number}]
-                                                writer.writerows(inventory)
-                                                file_number=int(file_number)+1
-                                                
-                                        ask_new_bOrf()
-                                        
-                                elif new_bOrf =='b':
+                                new_bOrf=input('Do you want to add - y for yes, n for no which will open the CSV ')
+       
+                                if new_bOrf =='y':
+
                                         file_number=1
                                         box_number=input("What is the box number?")
                                         folder_number=input("What is the folder number?")
+                                        box_number=str(box_number).zfill(2)
+                                        folder_number=str(folder_number).zfill(2)
                                         folder_files=int(input("How many files?")) #number to loop by
                                         while file_number <= folder_files: # runs while the file number is less than or equal to the number of files that you need
                                                 lz_filenumber=str(file_number).zfill(4) 
