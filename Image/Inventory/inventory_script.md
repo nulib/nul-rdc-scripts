@@ -42,8 +42,7 @@ Placeholder for documentation
             </tr>
             <tr>
                 <td>new_bOrf</td>
-                <td>Upcoming variable that will ask whether or not you want to add a new box or folder</td>
-                    
+                <td>Upcoming variable that will ask whether or not you want to add a new box or folder</td>      
             </tr>
             <tr>
                 <td>box_number</td>
