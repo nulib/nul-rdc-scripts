@@ -11,7 +11,9 @@ new_bOrf=0
 # Whether or not there are box and folders
 if box_other=='y': # will run box folder version
         box_number=input("What is the box number?")
+        box_number=str(box_number).zfill(2)
         folder_number=input("What is the folder number?")
+        folder_number=str(folder_number).zfill(2)
         folder_files=int(input("How many files?")) #number to loop by
         with open ('inventory.csv','a', newline='') as csvfile:
                 writer=csv.DictWriter(csvfile,fieldnames=field_names)
