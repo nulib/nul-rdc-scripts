@@ -5,15 +5,15 @@ import csv
 
 proj_number=input("What is the project number?    ")
 proj_4dig=input("What is the four letter id?    ")
-box_other=input('Are there boxes and folders? y for Yes and n for No')
+box_other=input('Are there boxes and folders? y for Yes and n for No     ')
 field_names = ['Spreadsheet Row Number', 'work_image' , 'structure' , 'role' , 'work_type' , 'work_accession_number' , 'file_accession_number' , 'filename' , 'label' , 'description' , 'Capture date' , 'Staff Initials' , 'Container number ex. Box Number' , 'folder number' , 'Width (cm.)' , 'Height (cm.)' , 'Date (Year+Month+Day)' , 'project_job_number' , 'Notes about album page or photo', 'Production Notes', 'Creator' , 'Source' , 'Copyright Notice']
 
 #defining functions
 
-def ask_new_bOrf():
+def ask_new_bOrf(): #function that will ask if you want to add a box or folder. If you want to add pages, answer 'n' to the question and then 'y' to the following question
     new_bOrf=input('Do you want to add - y for yes, n for no which will open the CSV ')
 
-    if new_bOrf =='y':
+    if new_bOrf =='y': #if you want a new box or folder this will run
 
             file_number=1
             box_number=input("What is the box number?")
@@ -38,17 +38,21 @@ def ask_new_bOrf():
 
             ask_new_bOrf()
             
-    elif new_bOrf == 'n':
-                new_pages=input('Do you want to add a work with more than one page - y for Yes and n for No    ')
-                if new_pages =='y':
+    elif new_bOrf == 'n': #if you do not want to run a new box or folder
+                new_pages=input('Do you want to add a work with more than one page - y for Yes and n for No    ') #will ask if you want to add a work that has to have page designation
+                if new_pages =='y': #if you want to use page designation this will run
                         page_path()
-                else:
+                else: # if you want to terminate and open the csv file
                         os.system("start EXCEL.exe inventory.csv")
                         
-def page_path():
+def page_path(): #This script runs when you want to add works with page designations
+
+    #Leading Zeros    
     box_number=str(box_number).zfill(2)
     folder_number=str(folder_number).zfill(2)
     #Leading Zeros
+
+
     file=input('What is your file number?   ')
     pages=int(input("How many pages in the work?")) #number to loop by
     with open ('inventory.csv','a', newline='') as csvfile:
@@ -65,7 +69,7 @@ def page_path():
                     file_number=int(file_number)+1
                     for data in inventory:
                         writer.writerows(inventory)
-                        ask_new_bOrf()
+                        ask_new_bOrf() #will then call the ask_new_bOrf function to see if you want to add a box or folder next. If you want to run another work with page designations, answer 'n' to the first question and the 'y' to the next
 
 
 #setting variables up to be used
@@ -82,7 +86,7 @@ if box_other=='y': # will run box folder version
         box_number=input("What is the box number?    ")
         folder_number=input("What is the folder number?   ")
         pages_yn=input("Does your folder have works with multiple pages? (ex. a letter) y for Yes and n for No    ")
-        if pages_yn=='y': #Leading Zeros
+        if pages_yn=='y': #runs if you need to designate page numbers
                 page_path()
 
         elif pages_yn =='n':
@@ -92,7 +96,7 @@ if box_other=='y': # will run box folder version
                 folder_number=str(folder_number).zfill(2)
                 #Leading Zeros
 
-                folder_files=int(input("How many files?")) #number to loop by
+                folder_files=int(input("How many files?      ")) #number to loop by
                 with open ('inventory.csv','a', newline='') as csvfile:
                         writer=csv.DictWriter(csvfile,fieldnames=field_names)
                         writer.writeheader()
@@ -117,8 +121,8 @@ if box_other=='y': # will run box folder version
 
 
 elif box_other=='n':  #will run choose your own adventure
-    work_info=input("What is your work info ex. v for volume") #takes the place of the Box and Folder # information
-    number_files=input("How many files?") # number to loop by
+    work_info=input("What is your work info ex. v for volume?    ") #takes the place of the Box and Folder # information
+    number_files=input("How many files?      ") # number to loop by
     
 
     with open ('inventory.csv','a', newline='') as csvfile:
@@ -139,4 +143,4 @@ elif box_other=='n':  #will run choose your own adventure
 
     os.system("start EXCEL.exe inventory.csv")
 else:
-    print("Try again with y for YES or n for NO")
+    print("Try again running the script again with y for YES or n for NO")
