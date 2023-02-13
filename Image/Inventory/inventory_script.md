@@ -10,7 +10,7 @@ Placeholder for documentation
     <div>
         <h1>Helpful Tips:</h1>
         <ul>
-            <li>In order to <b>change the number of leading zeros</b>, find zfill and change the number within the parentheses to how many digits you want the number to have</li>
+            <li>In order to <b><u>change the number of leading zeros</b></u>, find zfill and change the number within the parentheses to how many digits you want the number to have</li>
             <ul>
                 <li>For example: If you have 4, but you need two zeros before the 4, you would have zfill(3) which would give you 004 </li>
             </ul>
