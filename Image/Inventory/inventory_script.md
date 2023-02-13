@@ -1,6 +1,5 @@
 
 <body>
-    
     <div>
         <h1>Helpful Tips:</h1>
         <ul>
