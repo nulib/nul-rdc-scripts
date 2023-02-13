@@ -17,7 +17,8 @@ Placeholder for documentation
             <li></li>
         </ul>
     </div>
-    <div>
+    <div> 
+        <h1>Key to Variables:</h1>
         <table>
             <colgroup>
                 <col />
@@ -79,6 +80,31 @@ Placeholder for documentation
                         File number with leading zeros attached
                     </td>
                 </tr>
+                <tr>
+                    <td>page_number</td>
+                    <td>Counts number of pages (similar to the file_number). Increments up by one to add a new page each time the loop runs</td>
+                </tr>
+                <tr>
+                    <td>pages_yn</td>
+                    <td>Whether or not you want to add a work with page designations</td>
+                </tr>
+                <tr>
+                    <td>pages</td>
+                    <td>Based on user input for the pages currently working on. Only will show when pages_yn=y </td>
+                </tr>
+                <tr>
+                    <td>os.system</td>
+                    <td>Calls the os.system of the computer -- this is how it knows to open excel</td>
+                </tr>
         </table>
     </div>
 </body>
+
+<!--- 
+
+<tr>
+    <td></td>
+    <td></td>
+</tr>
+    
+>
