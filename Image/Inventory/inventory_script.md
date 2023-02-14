@@ -89,6 +89,26 @@
                     <td>os.system</td>
                     <td>Calls the os.system of the computer -- this is how it knows to open excel</td>
                 </tr>
+                <tr>
+                    <td>file_path</td>
+                    <td>Variable for the location where you want to save the csv file</td>
+                </tr>
+                <tr>
+                    <td>csv_name</td>
+                    <td>Variable that names the csv file</td>
+                </tr>
+                <tr>
+                    <td>open_CSV</td>
+                    <td>Variable to open the excel file</td>
+                </tr>
+                <tr>
+                    <td>new_work</td>
+                    <td>Based on user input -- whether or not you want to add a new work to the inventory</td>
+                </tr>
+                <tr>
+                    <td>ask_new_work</td>
+                    <td>Function that will ask if you want to add a new work to the inventory</td>
+                </tr>
         </table>
     </div>
 </body>
