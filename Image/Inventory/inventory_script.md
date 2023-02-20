@@ -1,13 +1,32 @@
 
 <body>
     <div>
+        <h1>Running the Script:</h1>
+        <ul>
+            <li><h2>Running in Command Line:</h2></li>
+                <ul>
+                    <li></li>
+                </ul>
+            <li><h2>Running in VSCode Terminal:</h2></li>
+                <ul>
+                    <li></li>
+                </ul>
+            <li><h2>Running in VSCode Interactive Window:</h2></li>
+                <ul>
+                    <li>Open up the inventory_script.py file in VSCode</li>
+                    <li>Click on the carrot that is pointing down next to the triangle in the corner of the window and select Run Current File in Interactive Window (see figure <b>x</b>)</li>
+                    <li>Answer the questions asked</li>
+                </ul>
+        </ul>
+    </div>
+    <div>
         <h1>Helpful Tips:</h1>
         <ul>
             <li>In order to <b><i>change the number of leading zeros</b></i>, find zfill and change the number within the parentheses to how many digits you want the number to have</li>
             <ul>
                 <li>For example: If you have 4, but you need two zeros before the 4, you would have zfill(3) which would give you 004 </li>
             </ul>
-            <li></li>
+            <li>In order to <b><i>change from inventory access files to preservation files</b></i>, find " 'role':'A' " and replace with " 'role':'P' " and find " file_number+'_'+'a' " and replace with " file_number+'_'+'p' " </li>
         </ul>
     </div>
     <div> 

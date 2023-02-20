@@ -105,9 +105,6 @@ def ask_new_bOrf(): #function that will ask if you want to add a box or folder. 
                 if new_pages =='y': #if you want to use page designation this will run
                         page_path()
                 elif new_pages=='n': 
-                        for data in inventory:
-                                writer.writerows(inventory)
-                                page_number=int(page_number)+1
                         save_CSV() #Saves the CSV
                         os.system(open_CSV) #Opens the CSV in Excel
                         
