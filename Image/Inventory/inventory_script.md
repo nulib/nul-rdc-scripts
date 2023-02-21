@@ -1,142 +1,43 @@
+# Running the Script
+## Running in Command Line
+In the search bar of your computer search for Command Line
 
-<body>
-    <div>
-        <h1>Running the Script:</h1>
-        <ul>
-            <li><h2>Running in Command Line:</h2></li>
-                <ul>
-                    <li></li>
-                </ul>
-            <li><h2>Running in VSCode Terminal:</h2></li>
-                <ul>
-                    <li></li>
-                </ul>
-            <li><h2>Running in VSCode Interactive Window:</h2></li>
-                <ul>
-                    <li>Open up the inventory_script.py file in VSCode</li>
-                    <li>Click on the carrot that is pointing down next to the triangle in the corner of the window and select Run Current File in Interactive Window (see figure <b>x</b>)</li>
-                    <li>Answer the questions asked</li>
-                </ul>
-        </ul>
-    </div>
-    <div>
-        <h1>Helpful Tips:</h1>
-        <ul>
-            <li>In order to <b><i>change the number of leading zeros</b></i>, find zfill and change the number within the parentheses to how many digits you want the number to have</li>
-            <ul>
-                <li>For example: If you have 4, but you need two zeros before the 4, you would have zfill(3) which would give you 004 </li>
-            </ul>
-            <li>In order to <b><i>change from inventory access files to preservation files</b></i>, find " 'role':'A' " and replace with " 'role':'P' " and find " file_number+'_'+'a' " and replace with " file_number+'_'+'p' " </li>
-        </ul>
-    </div>
-    <div> 
-        <h1>Key to Variables:</h1>
-        <table>
-            <colgroup>
-                <col />
-                <col />
-            </colgroup>
-            <tr>
-            <th>Variable</th>
-            <th>Meaning</th>
-            </tr>
-                <tr>
-                    <td>proj_number</td>
-                    <td>Project Number (ex. p0386)</td>
-                </tr>
-                <tr>
-                    <td>proj_4dig</td>
-                    <td>Four letter collection identifier (ex. grea -> used for Great Lakes Steamship Pamphlets</td>
-                </tr>
-                <tr>
-                    <td>box_other</td>
-                    <td>IDs whether or not you are using box/folder designation or another type</td>
-                </tr>
-                <tr>
-                    <td>field_names, fieldnames</td>
-                    <td>Gives the headers for each of the columns</td>
-                </tr>
-                <tr>
-                    <td>row_number</td>
-                    <td>Counts the rows. Is incremented by one to add a new row.</td>
-                </tr>
-                <tr>
-                    <td>file_number</td>
-                    <td>Counts the number of file that is being written into the script. Is incremented by one so that whole inventory is built out</td>
-                </tr>
-                <tr>
-                    <td>new_bOrf</td>
-                    <td>Upcoming variable that will ask whether or not you want to add a new box or folder</td>      
-                </tr>
-                <tr>
-                    <td>box_number</td>
-                    <td>Based on user input for the box currently working on</td>
-                </tr>
-                <tr>
-                    <td>folder_number</td>
-                    <td>Based on user input for the folder currently working on</td>
-                </tr>
-                <tr>
-                    <td>
-                        folder_files
-                    </td>
-                    <td>
-                        The number of total files to write. This provides a loop for 'x' number of times
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        lz_filenumber
-                    </td>
-                    <td>
-                        File number with leading zeros attached
-                    </td>
-                </tr>
-                <tr>
-                    <td>page_number</td>
-                    <td>Counts number of pages (similar to the file_number). Increments up by one to add a new page each time the loop runs</td>
-                </tr>
-                <tr>
-                    <td>pages_yn</td>
-                    <td>Whether or not you want to add a work with page designations</td>
-                </tr>
-                <tr>
-                    <td>pages</td>
-                    <td>Based on user input for the pages currently working on. Only will show when pages_yn=y </td>
-                </tr>
-                <tr>
-                    <td>os.system</td>
-                    <td>Calls the os.system of the computer -- this is how it knows to open excel</td>
-                </tr>
-                <tr>
-                    <td>file_path</td>
-                    <td>Variable for the location where you want to save the csv file</td>
-                </tr>
-                <tr>
-                    <td>csv_name</td>
-                    <td>Variable that names the csv file</td>
-                </tr>
-                <tr>
-                    <td>open_CSV</td>
-                    <td>Variable to open the excel file</td>
-                </tr>
-                <tr>
-                    <td>new_work</td>
-                    <td>Based on user input -- whether or not you want to add a new work to the inventory</td>
-                </tr>
-                <tr>
-                    <td>ask_new_work</td>
-                    <td>Function that will ask if you want to add a new work to the inventory</td>
-                </tr>
-        </table>
-    </div>
-</body>
+## Running in VSCode Terminal
+## Running in VSCode Interactive Window
 
-<!-- 
 
-<tr>
-    <td></td>
-    <td></td>
-</tr>
-    
--->
+# Helpful Tips
+In order to **_change the number of leading zeros_**, find zfill and change the number within the parenthese to how many digits you want the number to have. 
+
+For example:
+``` zfill(4)``` means that any number that you want to have leading zeros will always have to have 4 digits. So, 6 would become 0006; 14 would become 0014; 245 would become 0245; and 5462 would stay the same.
+
+
+In order to **_change from inventorying access files to preservation files_**, find ```'role':'A'``` and replace it with ```'role':'P'```. After replacing that part, find ```file_number+''+'a'``` and replace it with ```file_number+''+'p'```
+
+
+# Key to Variables
+
+
+|Variable|Value|
+|:--:|:--:|
+|ask_new_work_bOrf|Asks whether or not you want to add a Box or a Folder to your project if you are running the Box/Folder option|
+|ask_new_work_choose|Asks whether or not you want to add a new work if you are running the choose your own adventure option| 
+|ask_new_work|Asks if you want to add a new work to the inventory|
+|box_number|Based on user input for the box currently working on. Only shows for Box/Folder option.
+|box_other|Asks whether or not you are using the box/folder designation or the choose your own adventure route|
+|csv_name|Variable that sets the name of the CSV based on the user input|
+|field_names|Gives the headers for each of the columns|
+|file_number|Counts the number of the file that is being created by the script. Is incremented by one each time the loop runs|
+|file_path|Variable for the location where you want to save the CSV file|
+|folder_files|The total number of files to write. This provides the loop for 'x' number of times run this code|
+|folder_number|Based on user input for the folder currently working on|
+|new_bOrf|Asks whether or not you want to add a new box or folder|
+|new_work|Asks whether or not your want to add a new work|
+|os.system|Calls the os.system of your computer -- this is how it knows to open Excel|
+|page_number|Counts number of pages (similar to file_number). Increments up by one after each loop. Only shows when running the choose your adventure route|
+|pages|Based on user input for the page currently working on. Only shows when running the choose your own adventure route|
+|pages_yn|Asks whether or not you want to add a work that uses page designations|
+|proj_number|Project Number (ex. p0386)|
+
+
