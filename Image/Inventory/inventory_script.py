@@ -58,7 +58,7 @@ def ask_new_work_choose():
                         #Leading Zeros
 
                         #Combines the information that the user has put in to fill out select fields in the CSV file
-                        inventory=[{'work_accession_number': proj_number+'_'+proj_4dig+'_'+work_info, 'file_accession_number':proj_number+'_'+proj_4dig+'_'+work_info+'_'+file_number+'_'+'a', 'filename': proj_number+'_'+proj_4dig+'_'+work_info+'_'+file_number+'_'+'a'+'.tif', 'Container number ex. Box Number':'N/A', 'folder number':'N/A', 'role':'A', 'work_type':'IMAGE','project_job_number':proj_number}]
+                        inventory=[{'work_accession_number': proj_number+'_'+proj_4dig+'_'+work_info, 'file_accession_number':proj_number+'_'+proj_4dig+'_'+work_info+'_'+file_number+'_'+'a', 'filename': proj_number+'_'+proj_4dig+'_'+work_info+'_'+file_number+'_'+'a'+'.tif','role':'A', 'work_type':'IMAGE','project_job_number':proj_number}]
                         for data in inventory:
                                 writer.writerows(inventory)
                                 # Below increments the row and file up by one
@@ -89,11 +89,10 @@ def ask_new_bOrf(): #function that will ask if you want to add a box or folder. 
             while file_number <= folder_files: # runs while the file number is less than or equal to the number of files that you need
 
                     #Leading Zeros
-                    lz_filenumber=str(file_number).zfill(4) 
-                    lz_filenumber=str(lz_filenumber)
+                    file_number=str(file_number).zfill(4) 
                     #Leading Zeros
 
-                    inventory=[{'work_accession_number': proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number, 'file_accession_number':proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number+'_'+lz_filenumber+'_'+'01'+'_'+'a', 'filename': proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number+'_'+lz_filenumber+'_'+'01'+'_'+'a'+'.tif', 'Container number ex. Box Number':box_number, 'folder number':folder_number, 'role':'A', 'work_type':'IMAGE','project_job_number':proj_number}]
+                    inventory=[{'work_accession_number': proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number, 'file_accession_number':proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number+'_'+file_number+'_'+'01'+'_'+'a', 'filename': proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number+'_'+file_number+'_'+'01'+'_'+'a'+'.tif','role':'A', 'work_type':'IMAGE','project_job_number':proj_number}]
                     for data in inventory:
                         writer.writerows(inventory)
                         file_number=int(file_number)+1
@@ -172,11 +171,10 @@ if box_other=='y': # will run box folder version
                         while file_number <= folder_files: # runs while the file number is less than or equal to the number of files that you need
 
                                 #Leading Zeros
-                                lz_filenumber=str(file_number).zfill(4) 
-                                lz_filenumber=str(lz_filenumber)
+                                file_number=str(file_number).zfill(4) 
                                 #Leading Zeros
 
-                                inventory=[{'work_accession_number': proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number+'_'+lz_filenumber, 'file_accession_number':proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number+'_'+lz_filenumber+'_'+'01'+'_'+'a', 'filename': proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number+'_'+lz_filenumber+'_'+'01'+'_'+'a'+'.tif', 'Container number ex. Box Number':box_number, 'folder number':folder_number, 'role':'A', 'work_type':'IMAGE','project_job_number':proj_number}]
+                                inventory=[{'work_accession_number': proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number+'_'+file_number, 'file_accession_number':proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number+'_'+file_number+'_'+'01'+'_'+'a', 'filename': proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number+'_'+file_number+'_'+'01'+'_'+'a'+'.tif', 'Container number ex. Box Number':box_number, 'folder number':folder_number, 'role':'A', 'work_type':'IMAGE','project_job_number':proj_number}]
 
                                 for data in inventory:
                                         writer.writerows(inventory)
@@ -202,7 +200,7 @@ elif box_other=='n':  #will run choose your own adventure
                         file_number=str(file_number).zfill(5)
                                 #leading zeros
 
-                        inventory=[{'work_accession_number': proj_number+'_'+proj_4dig+'_'+work_info, 'file_accession_number':proj_number+'_'+proj_4dig+'_'+work_info+'_'+file_number+'_'+'a', 'filename': proj_number+'_'+proj_4dig+'_'+work_info+'_'+file_number+'_'+'a'+'.tif', 'Container number ex. Box Number':'N/A', 'folder number':'N/A', 'role':'A', 'work_type':'IMAGE','project_job_number':proj_number}]
+                        inventory=[{'work_accession_number': proj_number+'_'+proj_4dig+'_'+work_info, 'file_accession_number':proj_number+'_'+proj_4dig+'_'+work_info+'_'+file_number+'_'+'a', 'filename': proj_number+'_'+proj_4dig+'_'+work_info+'_'+file_number+'_'+'a'+'.tif','role':'A', 'work_type':'IMAGE','project_job_number':proj_number}]
                         for data in inventory:
                                 writer.writerows(inventory)
                                 # Below increments the row and file up by one
