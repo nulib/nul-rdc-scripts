@@ -21,7 +21,7 @@ flowchart TD
     F-->H
     I[Do you want to add a work with page designations?]
     H-->I
-    J[Yes]
+    J[Yes - runs page designations function]
     K[No - terminates script opens CSV]
     I-->J
     I-->K
