@@ -4,7 +4,50 @@ import csv
 
 #Asking the user questions to decide the workflow that is going to be used by the script
 proj_number=input("What is the project number?    ")
+def ask_projnum_again ():
+        proj_number=input("What is the project number?    ")
+        proj_P_TF=proj_number.startswith('p')
+        if proj_P_TF == True:
+                proj_number_leng=len(proj_number)
+                if proj_number_leng !=5:
+                        print("Please answer with a 4 digit number after 'p'")
+                        ask_projnum_again()
+                else:
+                        print()
+        else:
+                print("Please answer with the number prefixed by a p")
+                ask_projnum_again()
+
+proj_P_TF=proj_number.startswith('p')
+if proj_P_TF == True:
+        proj_number_leng=len(proj_number)
+        if proj_number_leng !=5:
+                print("Please answer with a 4 digit number after 'p'")
+                ask_projnum_again()
+        else:
+                print()
+else:
+        print("Please answer with the number prefixed by a p")
+        ask_projnum_again()
+
+
 proj_4dig=input("What is the four letter id?    ")
+def proj_name_check_again():
+        proj_4dig=input("What is the four letter id?     ")
+        proj_name_leng=len(proj_4dig)
+        if proj_name_leng !=4:
+                print("Please answer again with a four letter name")
+                proj_name_check_again()
+        else:
+                print("Has correct number of letters - cleared to continue")
+
+proj_name_leng=len(proj_4dig)
+if proj_name_leng !=4:
+        print("Please answer again with a four letter name")
+        proj_name_check_again()
+else:
+        print()
+
 box_other=input("Are there boxes and folders? y for Yes and n for No     ")
 
 #Building some of the intial variables that will be used
