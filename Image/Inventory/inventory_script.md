@@ -15,7 +15,9 @@ For example:
 
 In order to **_change from inventorying access files to preservation files_**, find ```'role':'A'``` and replace it with ```'role':'P'```. After replacing that part, find ```file_number+''+'a'``` and replace it with ```file_number+''+'p'```
 
-
+In order to **_change the length of the project number_**, find ```project_number_leng !=5``` and change the 5 to whatever you need. 
+* **Make sure to update the print() questions to match this change**. <br>
+* **Make sure to add one digit for the 'p' so p0115 would require five digits**.
 # Key to Variables
 
 
@@ -24,6 +26,7 @@ In order to **_change from inventorying access files to preservation files_**, f
 |ask_new_work_bOrf|Asks whether or not you want to add a Box or a Folder to your project if you are running the Box/Folder option|
 |ask_new_work_choose|Asks whether or not you want to add a new work if you are running the choose your own adventure option| 
 |ask_new_work|Asks if you want to add a new work to the inventory|
+|ask_projnum_again|Asks what the project number is again if originally entered incorrectly|
 |box_number|Based on user input for the box currently working on. Only shows for Box/Folder option.
 |box_other|Asks whether or not you are using the box/folder designation or the choose your own adventure route|
 |csv_name|Variable that sets the name of the CSV based on the user input|
@@ -38,7 +41,12 @@ In order to **_change from inventorying access files to preservation files_**, f
 |page_number|Counts number of pages (similar to file_number). Increments up by one after each loop. Only shows when running the choose your adventure route|
 |pages|Based on user input for the page currently working on. Only shows when running the choose your own adventure route|
 |pages_yn|Asks whether or not you want to add a work that uses page designations|
+|proj_name_check_again|Asks and checks the project name is if was originally entered wrong|
+|proj_name_leng|Length of the project name|
 |proj_number|Project Number (ex. p0386)|
+|proj_number_leng|Length of the project number|
+|proj_P_TF|If project number has a 'p' prefix (True or False - Boolean)
+
 
 
 # Filenaming
