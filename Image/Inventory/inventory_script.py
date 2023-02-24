@@ -5,17 +5,30 @@ import csv
 #Asking the user questions to decide the workflow that is going to be used by the script
 proj_number=input("What is the project number?    ")
 proj_4dig=input("What is the four letter id?    ")
-box_other=input('Are there boxes and folders? y for Yes and n for No     ')
+box_other=input("Are there boxes and folders? y for Yes and n for No     ")
 
 #Building some of the intial variables that will be used
 field_names = ['Spreadsheet Row Number', 'work_image' , 'structure' , 'role' , 'work_type' , 'work_accession_number' , 'file_accession_number' , 'filename' , 'label' , 'description' , 'Capture date' , 'Staff Initials' , 'Container number ex. Box Number' , 'folder number' , 'Width (cm.)' , 'Height (cm.)' , 'Date (Year+Month+Day)' , 'project_job_number' , 'Notes about album page or photo', 'Production Notes', 'Creator' , 'Source' , 'Copyright Notice']
+
 file_path=input("Where do you want to save to?   ")
 csv_name=proj_number+'_'+proj_4dig+'_'+'inventory'+'.csv' #assigning the CSV file a name based on the data that the user input
 open_CSV='"'+'start EXCEL.exe'+' '+csv_name+'"' #Part of the command to open the CSV file in Excel -- you can swap ' EXCEL.exe' for your preferred CSV editor that is installed on your PC
 
 #defining functions
+def ask_overwrite():
+        overwrite=input("File already exists, do you want to append? y for yes and n for no -- will terminate script")
+        if overwrite =='y':
+                with open(os.path.join(file_path, open_CSV),'w') as fp:
+                        fp.write()
+
+        elif overwrite=='n':
+                print('Try running the script again')
+
 def save_CSV():
-        os.path.join(file_path, open_CSV) #writes the CSV file to the user specified save location
+                try:
+                        pass
+                except:
+                        pass
 
 def ask_new_work_bOrf():
         new_work=input('Do you want to add a new work - y for yes, n for no which will open the CSV   ')
@@ -31,7 +44,7 @@ def ask_new_work_bOrf():
                         #Leading Zeros
                         
                         #Combines the information that the user has put in to fill out select fields in the CSV file
-                        inventory=[{'work_accession_number': proj_number+'_'+proj_4dig+'_'+work_info, 'file_accession_number':proj_number+'_'+proj_4dig+'_'+work_info+'_'+file_number+'_'+'a', 'filename': proj_number+'_'+proj_4dig+'_'+work_info+'_'+file_number+'_'+'a'+'.tif', 'Container number ex. Box Number':'N/A', 'folder number':'N/A', 'role':'A', 'work_type':'IMAGE','project_job_number':proj_number}]
+                        inventory=[{'work_accession_number': proj_number+'_'+proj_4dig+'_'+work_info, 'file_accession_number':proj_number+'_'+proj_4dig+'_'+work_info+'_'+file_number+'_'+'a', 'filename': proj_number+'_'+proj_4dig+'_'+work_info+'_'+file_number+'_'+'a'+'.tif', 'role':'A', 'work_type':'IMAGE','project_job_number':proj_number}]
                         for data in inventory:
                                 writer.writerows(inventory)
                                 # Below increments the row and file up by one
@@ -92,7 +105,7 @@ def ask_new_bOrf(): #function that will ask if you want to add a box or folder. 
                     file_number=str(file_number).zfill(4) 
                     #Leading Zeros
 
-                    inventory=[{'work_accession_number': proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number, 'file_accession_number':proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number+'_'+file_number+'_'+'01'+'_'+'a', 'filename': proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number+'_'+file_number+'_'+'01'+'_'+'a'+'.tif','role':'A', 'work_type':'IMAGE','project_job_number':proj_number}]
+                    inventory=[{'work_accession_number': proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number, 'file_accession_number':proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number+'_'+file_number+'_'+'01'+'_'+'a', 'filename': proj_number+'_'+proj_4dig+'_'+'b'+box_number+'_'+'f'+folder_number+'_'+file_number+'_'+'01'+'_'+'a'+'.tif','role':'A', 'work_type':'IMAGE','project_job_number':proj_number, 'Container number ex. Box Number':box_number,'folder number':folder_number}]
                     for data in inventory:
                         writer.writerows(inventory)
                         file_number=int(file_number)+1
