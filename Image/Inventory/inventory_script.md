@@ -10,7 +10,7 @@ In the search bar of your computer search for Command Line
 In order to **_change the number of leading zeros_**, find zfill and change the number within the parenthese to how many digits you want the number to have. 
 
 For example:
-``` zfill(4)``` means that any number that you want to have leading zeros will always have to have 4 digits. So, 6 would become 0006; 14 would become 0014; 245 would become 0245; and 5462 would stay the same.
+```zfill(4)``` means that any number that you want to have leading zeros will always have to have 4 digits. So, 6 would become 0006; 14 would become 0014; 245 would become 0245; and 5462 would stay the same.
 
 
 In order to **_change from inventorying access files to preservation files_**, find ```'role':'A'``` and replace it with ```'role':'P'```. After replacing that part, find ```file_number+''+'a'``` and replace it with ```file_number+''+'p'```
@@ -40,4 +40,16 @@ In order to **_change from inventorying access files to preservation files_**, f
 |pages_yn|Asks whether or not you want to add a work that uses page designations|
 |proj_number|Project Number (ex. p0386)|
 
+
+# Filenaming
+## Box/Folder
+```
+<project info>+<work info>+<image number>+<part*>+<role>.tif
+```
+\* Part is only present for when a digitizers has a work that will require the retention of multiple preservation files per image number (i.e. stitching pieces)
+
+## Choose Your Own Adventure
+```
+<project info>+<4 letter id>+<work number>+<image number>_a.tif
+```
 
