@@ -18,9 +18,10 @@ This document provides information about running the inventory script, updating 
  4. Answer the questions that appear
 
  ![Finding Python Address](../../Images/FindingAddressPythonFile.png)
-
+    Figure 1
+    
  ![Entering Address into Command Prompt](../../Images/CommandPromptPaste.png)
-
+    Figure 2
 
 ## Running in VSCode Terminal
 1. With VSCode open, open the inventory_script.py file
@@ -28,13 +29,14 @@ This document provides information about running the inventory script, updating 
 3. A pop up terminal window will open, follow the prompts given
 
 ![Running python file in VSCode Terminal](../../Images/RunTerminalInVSCode.png)
-
+    Figure 3
 
 ## Running in VSCode Interactive Window
 1. Follow the same directions in VSCode Terminal option, but select 'Run Python File in Interactive Window' 
 2. A pop up window at the top of the page will give you prompts, answer them in the box below the prompt (Figure 4)
 
 ![Running python file in VSCode Interactive Window](../../Images/RunInInteractiveWindow.jpg)
+    Figure 4
 
 # Helpful Tips
 In order to **_change the number of leading zeros_**, find zfill and change the number within the parenthese to how many digits you want the number to have. 
