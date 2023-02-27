@@ -32,7 +32,9 @@ This document provides information about running the inventory script, updating 
 
 ## Running in VSCode Interactive Window
 1. Follow the same directions in VSCode Terminal option, but select 'Run Python File in Interactive Window' 
-2.![Running python file in VSCode interactive Window](../../Images/RunInInteractiveWindow.jpg)
+2. A pop up window at the top of the page will give you prompts, answer them in the box below the prompt (Figure 4)
+
+![Running python file in VSCode Interactive Window](../../Images/RunInInteractiveWindow.jpg)
 
 # Helpful Tips
 In order to **_change the number of leading zeros_**, find zfill and change the number within the parenthese to how many digits you want the number to have. 
