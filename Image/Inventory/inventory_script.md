@@ -1,3 +1,4 @@
+# General Information
 Version Date: 2/27/2023
 
 Document Owner: Sophia Francis
@@ -11,7 +12,12 @@ This document provides information about running the inventory script, updating 
 
 # Running the Script
 ## Running in Command Line
-In the search bar of your computer search for Command Line
+ 1. In the search bar of your computer search for Command Prompt and select it
+ 2. Copy the address of inventory_script.py by right clicking on the script, going to properties, double clicking the address to highlight it and copying (Figure 1)
+ 3. Paste the address into the Command Prompt window (Figure 2) and press enter
+ 4. Answer the questions that appear
+
+ ![Finding the image address](Image\Inventory\Images\FindingAddressPythonFile.png)
 
 ## Running in VSCode Terminal
 ## Running in VSCode Interactive Window
