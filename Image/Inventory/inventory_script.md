@@ -17,7 +17,7 @@ This document provides information about running the inventory script, updating 
  3. Paste the address into the Command Prompt window (Figure 2) and press enter
  4. Answer the questions that appear
 
- ![Finding the image address](Image\Inventory\Images\FindingAddressPythonFile.png)
+ ![Finding the image address](Images\FindingAddressPythonFile.png)
 
 ## Running in VSCode Terminal
 ## Running in VSCode Interactive Window
