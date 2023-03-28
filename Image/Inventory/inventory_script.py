@@ -79,11 +79,11 @@ def ask_new_work_bOrf():
         if new_work =='y': #if you want a new work this will run
                 file_number=1
                 work_info=input("What is the work info?    ")
-                number_files=int(input("How many files?   ")) #number to loop by
+                number_files=int(input("How many works?   ")) #number to loop by
                 while file_number<=number_files: # runs while the file number is less than or equal to the number of files that you need
 
                         #Leading Zeros
-                        file_number=str(file_number).zfill(5)
+                        file_number=str(file_number).zfill(4)
                         #Leading Zeros
                         
                         #Combines the information that the user has put in to fill out select fields in the CSV file
@@ -105,12 +105,12 @@ def ask_new_work_choose():
         if new_work =='y': #if you want a new work this will run
                 file_number=1
                 work_info=input("What is the work info?    ")
-                number_files=int(input("How many files?   ")) #number to loop by
+                number_files=int(input("How many works?   ")) #number to loop by
                 while file_number<=number_files: # runs while the file number is less than or equal to the number of files that you need
 
 
                         #Leading Zeros
-                        file_number=str(file_number).zfill(5)
+                        file_number=str(file_number).zfill(4)
                         #Leading Zeros
 
                         #Combines the information that the user has put in to fill out select fields in the CSV file
@@ -128,7 +128,7 @@ def ask_new_work_choose():
 
 
 def ask_new_bOrf(): #function that will ask if you want to add a box or folder. If you want to add pages, answer 'n' to the question and then 'y' to the following question
-        new_bOrf=input('Do you want to add - y for yes, n for no (which will ask about if you want to add a work with page designation) ')
+        new_bOrf=input('Do you want to add a work - y for yes, n for no (which will ask about if you want to add a work with page designation) ')
 
         if new_bOrf =='y': #if you want a new box or folder this will run
 
@@ -141,7 +141,7 @@ def ask_new_bOrf(): #function that will ask if you want to add a box or folder. 
             folder_number=str(folder_number).zfill(2)
             #Leading Zeros
 
-            folder_files=int(input("How many files?")) #number to loop by
+            folder_files=int(input("How many works?    ")) #number to loop by
             while file_number <= folder_files: # runs while the file number is less than or equal to the number of files that you need
 
                     #Leading Zeros
@@ -174,8 +174,8 @@ def page_path(): #This script runs when you want to add works with page designat
     #Leading Zeros
 
 
-        file=input('What is your file number?   ')
-        pages=int(input("How many pages in the work?")) #number to loop by
+        file=input('What is your work number?   ')
+        pages=int(input("What is the number of images in the work?     ")) #number to loop by
             
         while page_number <= pages: # runs while the file number is less than or equal to the number of files that you need
 
@@ -203,7 +203,7 @@ new_bOrf=0
 
 
 if box_other=='y': # will run box folder version
-        pages_yn=input("Does your folder have works with multiple pages? (ex. a letter) y for Yes and n for No    ")
+        pages_yn=input("Does your folder have works with multiple images? (ex. a 3 page letter) y for Yes and n for No    ")
         if pages_yn=='y': #runs if you need to designate page numbers
                 with open (csv_name,'a', newline='', encoding='utf-8') as csvfile:
                         writer=csv.DictWriter(csvfile,fieldnames=field_names)
@@ -219,7 +219,7 @@ if box_other=='y': # will run box folder version
                 folder_number=str(folder_number).zfill(2)
                 #Leading Zeros
 
-                folder_files=int(input("How many files?      ")) #number to loop by
+                folder_files=int(input("What is the number of images?      ")) #number to loop by
                 with open (csv_name,'a', newline='', encoding='utf-8') as csvfile:
                         writer=csv.DictWriter(csvfile,fieldnames=field_names)
                         writer.writeheader()
@@ -245,7 +245,7 @@ if box_other=='y': # will run box folder version
 
 elif box_other=='n':  #will run choose your own adventure
     work_info=input("What is your work info ex. v for volume?    ") #takes the place of the Box and Folder # information
-    number_files=int(input("How many files?      ")) # number to loop by
+    number_files=int(input("What is the number of images?      ")) # number to loop by
     
 
     with open (csv_name,'a', newline='', encoding='utf-8') as csvfile:
@@ -254,7 +254,7 @@ elif box_other=='n':  #will run choose your own adventure
                 while file_number <= number_files: # runs while the file number is less than or equal to the number of files that you need
 
                               #leading zeros
-                        file_number=str(file_number).zfill(5)
+                        file_number=str(file_number).zfill(4)
                                 #leading zeros
 
                         inventory=[{'work_accession_number': proj_number+'_'+proj_4dig+'_'+work_info, 'file_accession_number':proj_number+'_'+proj_4dig+'_'+work_info+'_'+file_number+'_'+'a', 'filename': proj_number+'_'+proj_4dig+'_'+work_info+'_'+file_number+'_'+'a'+'.tif','role':'A', 'work_type':'IMAGE','project_job_number':proj_number}]
