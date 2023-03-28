@@ -1,12 +1,12 @@
 # General Information
 Version Date: 2/27/2023
 
-Document Owner: Sophia Francis
-Hardware Used: N/A
-Software Used: Command Line (Optional), VSCode (Optional), Python, Excel
-Location: RDC offices
+Document Owner: Sophia Francis <br>
+Hardware Used: N/A <br>
+Software Used: Command Line (Optional), VSCode (Optional), Python, Excel <br>
+Location: RDC offices <br>
 
-Description:
+Description:<br>
 This document provides information about running the inventory script, updating certain variables if needed, key of variable names, and example user cases for reference.
 
 
