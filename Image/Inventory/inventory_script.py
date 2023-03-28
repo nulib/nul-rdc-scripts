@@ -60,7 +60,7 @@ open_CSV='"'+'start EXCEL.exe'+' '+csv_name+'"' #Part of the command to open the
 #defining functions
 def ask_overwrite():
         overwrite=input("File already exists, do you want to append? y for yes and n for no -- will terminate script")
-        if overwrite =='y' or 'YES' or 'yes' or 'Y':
+        if overwrite =='y':
                 with open(os.path.join(file_path, open_CSV),'w') as fp:
                         fp.write()
 
@@ -76,7 +76,7 @@ def save_CSV():
 def ask_new_work_bOrf():
         new_work=input('Do you want to add a new work - y for yes, n for no which will open the CSV   ')
 
-        if new_work =='y' or 'yes' or 'YES' or 'Y': #if you want a new work this will run
+        if new_work =='y': #if you want a new work this will run
                 file_number=1
                 work_info=input("What is the work info?    ")
                 number_files=int(input("How many works?   ")) #number to loop by
