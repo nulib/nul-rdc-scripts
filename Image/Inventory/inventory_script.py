@@ -137,7 +137,7 @@ def ask_new_bOrf(): #function that will ask if you want to add a box or folder. 
             folder_number=input("What is the folder number?")
             
             #Leading Zeros
-            box_number=str(box_number).zfill(2)
+            box_number=str(box_number).zfill(3)
             folder_number=str(folder_number).zfill(2)
             #Leading Zeros
 
@@ -215,7 +215,7 @@ if box_other=='y': # will run box folder version
                 folder_number=input("What is the folder number?   ")
                 
                 #Leading Zeros
-                box_number=str(box_number).zfill(2)
+                box_number=str(box_number).zfill(3)
                 folder_number=str(folder_number).zfill(2)
                 #Leading Zeros
 
