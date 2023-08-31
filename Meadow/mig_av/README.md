@@ -45,6 +45,39 @@ Skip ".mp4" and ".png" files. Add any JPEG files as auxiliary files. Add "P0001-
 ```
 run.py -i path/to/input/folder -s .mp4 .png -x extension -p P0001- -d inventory_title barcode record_date
 ```
+## File Type Designations
+
+**A** _am, -am, -a, _a, _am\_, -am-
+
+**P** _pm, -pm, -p, _p, _pm\_, -pm-
+
+**S** .framemd5, .xml, .json, .pdf, .xml.gz, .qctools.mkv, .log, .png, .PNG, dpx.txt
+
+**X** .jpg, .jpeg, _Asset, -Asset, _Can, -Can, Front., Back., _Ephemera, -Ephemera
+
+|File Type|File Role|
+|:-------:|:-------:|
+|-a or _a| A|
+|-am or _am| A|
+|-am- or _am\_| A|
+|-Asset or _Asset|X|
+|Back.| X|
+|-can or _Can| X|
+|dpx.txt|S|
+|-Ephemera or _Ephemera| X|
+|.framemd5| S|
+|Front.|X|
+|.json|S|
+|.log|S|
+|-p or _p|P|
+|.pdf| S|
+|-pm or _pm| P|
+|-pm- or _pm\_| P|
+|.png or .PNG| S|
+|.qctool.mkv|S|
+|.xml| S|
+|.xml.gz| S|
+
 
 ## Notes
 When ingesting files associated with an inventory created using the script, the folder structure in the S3 bucket should match the folder structure of the input that the script was run on.
