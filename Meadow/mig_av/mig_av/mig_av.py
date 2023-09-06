@@ -189,7 +189,7 @@ def mig_av_main():
     'spectrogram' : {'identifiers' : ['.png', '.PNG'], 'type' : 'extension', 'role' : 'S', 'label' : 'spectrogram file', 'file_builder' : '_supplementary_'},
     'dpx_checksum' : {'identifiers' : ['dpx.txt'], 'type' : 'extension', 'role' : 'S', 'label' : 'original DPX checksums', 'file_builder' : '_supplementary_'},
     'access' : {'identifiers' : ['-a.', '_a.', '-am.', '_am.', '_am_', '-am-', '-am_', '.mp4', '_access'], 'type' : 'pattern', 'role' : 'A', 'label' : None, 'file_builder' : '_access_'},
-    'preservation' : {'identifiers' : ['-p.', '_p.', '-pm.', '_pm.', '_pm_', '-pm-', '-pm_', '.mkv', '_preservation'], 'type' : 'pattern', 'role' : 'P', 'label' : None, 'file_builder' : '_preservation_'}
+    'preservation' : {'identifiers' : ['-p.', '_p.', '-pm.', '_pm.', '_pm_', '-pm-', '-pm_', '.mkv', '_preservation'], 'type' : 'pattern', 'role' : 'P', 'label' : None, 'file_builder' : '_preservation_'},'auxiliary' : {'identifiers' : ['.jpg', '.JPG'], 'type' : 'extension', 'role' : 'X', 'label' : 'image', 'file_builder' : '_auxiliary_'}
     }
     if not args.aux_parse:
         aux_dict = {'auxiliary' : {'identifiers' : None, 'type' : None, 'role' : None, 'label' : None, 'file_builder' : None}}
