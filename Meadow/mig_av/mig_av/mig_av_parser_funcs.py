@@ -2,7 +2,10 @@
 
 import re
 
+
 def get_label(role_dict, filename, inventory_label):
+
+
     #run through each key in role_dict
     #if it matches on extension, it should be removed and passed to the next check
     label = None
@@ -20,7 +23,8 @@ def get_label(role_dict, filename, inventory_label):
                     file_builder = role_dict[i]['file_builder']
             elif role_dict[i]['type'] == 'xparse':
                 if any(ext in filename for ext in role_dict[i]['identifiers']):
-                    label = xparser(filename, role_dict[i]['identifiers'], inventory_label)
+                    label = xparser(filename, role_dict[i]['identifiers'], 
+                                    inventory_label)
                     role = role_dict[i]['role']
                     file_builder = role_dict[i]['file_builder']
             elif role_dict[i]['type'] == 'pattern':
@@ -34,17 +38,19 @@ def get_label(role_dict, filename, inventory_label):
                 file_builder = '_supplementary_'
     return label,role,file_builder
 
+
 def xparser(filename, pattern_list, inventory_label):
+
+
     #TODO use regex instead so numbers could be extracted
-    parser_dict = {
-    'reel' : ['_Reel', '-Reel'],
-    'can' : ['_Can', '-Can'],
-    'asset' : ['_Asset', '-Asset'],
-    'back' : ['Back.'],
-    'front' : ['Front.'],
-    'side' : ['Side.'],
-    'ephemera' : ['_Ephemera', '-Ephemera']
-    }
+    parser_dict = {'reel' : ['_Reel', '-Reel'],
+                   'can' : ['_Can', '-Can'],
+                   'asset' : ['_Asset', '-Asset'],
+                   'back' : ['Back.'],
+                   'front' : ['Front.'],
+                   'side' : ['Side.'],
+                   'ephemera' : ['_Ephemera', '-Ephemera']
+                  }
     label_list = []
     if inventory_label:
         label_list.append(inventory_label)
@@ -58,18 +64,20 @@ def xparser(filename, pattern_list, inventory_label):
         label = filename
     return label
 
+
 def label_creator(filename, inventory_label):
+
+
     '''
     parses item side information from filenames and updates the label accordingly
 
     >>> label_creator("P001-TEST-f01i01_v01s02.wav", "Reel 1")
     'Reel 1 Side 2'
     '''
-    pattern_dict = {
-    'side' : 's(\d{2})',
-    'part' : 'p(\d{2})',
-    'region' : 'r(\d{2})',
-    'capture' : 'c(\d{2})'
+    pattern_dict = {'side' : 's(\d{2})',
+                    'part' : 'p(\d{2})',
+                    'region' : 'r(\d{2})',
+                    'capture' : 'c(\d{2})'
     }
     label_list = [inventory_label]
     #print(pattern_dict['Side']['abbreviation'])
@@ -86,7 +94,8 @@ def label_creator(filename, inventory_label):
     else:
         #convert findall results to string
         filename_regex_string = "".join(filename_regex)
-        filename_labels = parse_filename_label(filename_regex_string, pattern_dict)
+        filename_labels = parse_filename_label(filename_regex_string,
+                                               pattern_dict)
     #Append side string to Label string
     if filename_labels:
         label_list.extend(filename_labels)
@@ -95,10 +104,14 @@ def label_creator(filename, inventory_label):
         label = filename
     return label
 
+
 def parse_filename_label(filename_regex_string, pattern_dict):
+
+
     filename_labels = []
     for key in pattern_dict.keys():
-        component_number_full = re.search(pattern_dict[key], filename_regex_string)
+        component_number_full = re.search(pattern_dict[key], 
+                                          filename_regex_string)
         #strip leading zero from the (\d{2}) of the matched pattern
         if component_number_full:
             component_number_clean = component_number_full[1].lstrip("0")
@@ -108,6 +121,7 @@ def parse_filename_label(filename_regex_string, pattern_dict):
             component_string = None
         filename_labels.append(component_string)
     return filename_labels
+
 
 if __name__ == "__main__":
     import doctest

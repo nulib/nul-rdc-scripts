@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 
+import sys
 import os
 import csv
 import glob
+import posixpath
 import mig_av.mig_av_parser_funcs as meadow_parser_funcs
 from mig_av.mig_av_parameters import args
-import posixpath
+
 
 def input_check(indir):
+
+
     '''Checks if input was provided and if it is a directory that exists'''
     if not indir:
         print ("No input provided")
@@ -17,13 +21,19 @@ def input_check(indir):
         print('input is not a directory')
         quit()
 
+
 def output_check(output):
+
+
     '''Checks that output is valid'''
     if not output.endswith('.csv'):
         print("\n--- ERROR: Output must be a CSV file ---\n")
         quit()
 
+
 def interpret_aux_command():
+
+
     '''checks if argument passed to aux_parse is valid'''
     aux_parse_list = ['extension', 'parse']
     for i in args.aux_parse:
@@ -31,11 +41,18 @@ def interpret_aux_command():
             print('\n---ERROR: ' + i + ' is not a valid input to the auxiliary command ---\n')
             quit()
 
+
 def update_fieldname_list(original_fieldname_list, missing_fieldname_list):
-    fieldname_list = [header for header in original_fieldname_list if header not in missing_fieldname_list]
+
+
+    fieldname_list = [header for header in original_fieldname_list if header 
+                      not in missing_fieldname_list]
     return fieldname_list
 
+
 def missing_description_field_handler(missing_descriptive_fieldnames):
+
+
     print("+++ WARNING: Your inventory is missing the following columns +++")
     print(missing_descriptive_fieldnames)
     print("SKIP COLUMNS AND CONTINUE? (y/n)")
@@ -47,8 +64,11 @@ def missing_description_field_handler(missing_descriptive_fieldnames):
     elif choice in no:
         quit()
 
+
 #TODO add early warning if spreadsheet is missing important columns like work_accession_number
 def import_inventories(source_inventories):
+
+
     '''
     import CSV inventories and parse each row into a dictionary that is added to a list
     We use lists of dicts initially to catch duplicate filenames later on
@@ -71,9 +91,12 @@ def import_inventories(source_inventories):
                         elif 'Region' or 'Stock' in reader.fieldnames:
                             work_type = 'VIDEO'
                         else:
-                            print('\n---ERROR: Unable to determine work_type. ---\n')
-                            print('make sure that your inventory has the necessary format-specific columns')
-                            print('IMAGE: "Width (cm.)" \n AUDIO: "Speed IPS" \n VIDEO: "Region" or "Stock"')
+                            print('''\n---ERROR: Unable to determine 
+                                  work_type. ---\n''')
+                            print('''make sure that your inventory has the 
+                                  necessary format-specific columns''')
+                            print('''IMAGE: "Width (cm.)" \n AUDIO: "Speed 
+                                  IPS" \n VIDEO: "Region" or "Stock"''')
                             quit()
                         name = row['filename']
                         if work_type == 'AUDIO' or work_type == 'VIDEO':
@@ -81,37 +104,39 @@ def import_inventories(source_inventories):
                                 description_fields = ['inventory_title']
                             else:
                                 description_fields = args.desc
-                            missing_descriptive_fieldnames = [a for a in description_fields if not a in reader.fieldnames]
+                            missing_descriptive_fieldnames = [a for a in 
+                                                              description_fields if not a in reader.fieldnames]
                             if missing_descriptive_fieldnames:
                                 missing_fieldnames = True
-                                description_fields = update_fieldname_list(description_fields, missing_descriptive_fieldnames)
+                                description_fields = update_fieldname_list
+                                (description_fields, missing_descriptive_fieldnames)
                             description_list = []
                             for header in description_fields:
                                 #TODO make this its own function since it's probably going to get repeated
                                 description_list.append(row[header])
-                            description = "; ".join(i for i in description_list if i)
+                            description = "; ".join(i for i in 
+                                                    description_list if i)
                                 #description.update({'descriptive': row[header]})
                             if not 'label' in reader.fieldnames:
                                 inventory_label = None
                             else:
                                 inventory_label = row['label']
                             #if work_type == "VIDEO" and 'Region' in reader.fieldnames:
-                            csvData = {
-                            'filename' : row['filename'],
-                            'work_type' : work_type,
-                            'work_accession_number' : row['work_accession_number'],
-                            'description' : description,
-                            'label' : inventory_label
+                            csvData = {'filename' : row['filename'],
+                                       'work_type' : work_type,'work_accession_number' : row
+                                            ['work_accession_number'],
+                                       'description' : description,
+                                       'label' : inventory_label
                             }
                         elif work_type == 'IMAGE':
-                            csvData = {
-                            'filename' : row['filename'],
-                            'label' : row['label'],
-                            'work_type' : work_type,
-                            'work_accession_number' : row['work_accession_number'],
-                            'file_accession_number' : row['file_accession_number'],
-                            'role' : row ['role'],
-                            'description' : row['description']
+                            csvData = {'filename' : row['filename'],
+                                       'label' : row['label'],
+                                       'work_type' : work_type,'work_accession_number' : row          
+                                            ['work_accession_number'],
+                                        'file_accession_number' : row       
+                                            ['file_accession_number'],
+                                        'role' : row ['role'],
+                                        'description' : row['description']
                             }
                         else:
                             print("--- ERROR: Problem identifying work type in " + i + " ---")
@@ -130,7 +155,9 @@ def import_inventories(source_inventories):
     #quit()
     return source_inventory_dictlist
 
+
 def mig_av_main():
+
     #sorted[]
     '''setting up inputs and outputs'''
     indir = args.input_path
@@ -139,7 +166,8 @@ def mig_av_main():
         meadow_csv_file = args.output_path
     else:
         base_folder_name = os.path.basename(indir)
-        meadow_csv_file = os.path.join(indir, base_folder_name + '-meadow_ingest_inventory.csv')
+        meadow_csv_file = os.path.join('''indir, base_folder_name + 
+                                       '-meadow_ingest_inventory.csv''')
     output_check(meadow_csv_file)
 
     if args.aux_parse:
@@ -153,7 +181,8 @@ def mig_av_main():
         print('\n*** Checking input directory for CSV files ***')
         source_inventories = glob.glob(os.path.join(indir, "*.csv"))
         #skip auto-generated meadow ingest csv if it already exists
-        source_inventories = [i for i in source_inventories if not '-meadow_ingest_inventory.csv' in i]
+        source_inventories = [i for i in source_inventories if not 
+                              '-meadow_ingest_inventory.csv' in i]
         if not source_inventories:
             print("\n+++ WARNING: Unable to find CSV inventory file +++")
             print("CONTINUE? (y/n)")
@@ -181,27 +210,38 @@ def mig_av_main():
     '''
     #TODO may want to convert everything to lowercase so you don't risk running into errors
     #TODO move generating this dict to a function in a separate module
-    role_dict = {
-    'framemd5' : {'identifiers' : ['.framemd5'], 'type' : 'extension', 'role' : 'S', 'label' : 'framemd5 file', 'file_builder' : '_supplementary_'},
-    'metadata' : {'identifiers' : ['.xml', '.json', '.pdf'], 'type' : 'extension', 'role' : 'S', 'label' : 'technical metadata file', 'file_builder' : '_supplementary_'},
-    'qctools' : {'identifiers' : ['.xml.gz', '.qctools.mkv'], 'type' : 'extension', 'role' : 'S', 'label' : 'QCTools report', 'file_builder' : '_supplementary_'},
-    'logfile' : {'identifiers' : ['.log'], 'type' : 'extension', 'role' : 'S', 'label' : 'log file', 'file_builder' : '_supplementary_'},
-    'spectrogram' : {'identifiers' : ['.png', '.PNG'], 'type' : 'extension', 'role' : 'S', 'label' : 'spectrogram file', 'file_builder' : '_supplementary_'},
-    'dpx_checksum' : {'identifiers' : ['dpx.txt'], 'type' : 'extension', 'role' : 'S', 'label' : 'original DPX checksums', 'file_builder' : '_supplementary_'},
-    'access' : {'identifiers' : ['-a.', '_a.', '-am.', '_am.', '_am_', '-am-', '-am_', '.mp4', '_access'], 'type' : 'pattern', 'role' : 'A', 'label' : None, 'file_builder' : '_access_'},
-    'preservation' : {'identifiers' : ['-p.', '_p.', '-pm.', '_pm.', '_pm_', '-pm-', '-pm_', '.mkv', '_preservation'], 'type' : 'pattern', 'role' : 'P', 'label' : None, 'file_builder' : '_preservation_'},'auxiliary' : {'identifiers' : ['.jpg', '.JPG'], 'type' : 'extension', 'role' : 'X', 'label' : 'image', 'file_builder' : '_auxiliary_'}
-    }
+    role_dict = {'framemd5' : {'identifiers' : ['.framemd5'], 'type' : 
+                               'extension', 'role' : 'S', 'label' : 'framemd5 file', 'file_builder' : '_supplementary_'},
+                 'metadata' : {'identifiers' : ['.xml', '.json', '.pdf'], 
+                               'type' : 'extension', 'role' : 'S', 'label' : 'technical metadata file', 'file_builder' : '_supplementary_'},
+                 'qctools' : {'identifiers' : ['.xml.gz', '.qctools.mkv'], 
+                              'type' : 'extension', 'role' : 'S', 'label' : 'QCTools report', 'file_builder' : '_supplementary_'},
+                 'logfile' : {'identifiers' : ['.log'], 'type' : 'extension', 
+                              'role' : 'S', 'label' : 'log file', 'file_builder' : '_supplementary_'},
+                 'spectrogram' : {'identifiers' : ['.png', '.PNG'], 'type' : 
+                                  'extension', 'role' : 'S', 'label' : 'spectrogram file', 'file_builder' : '_supplementary_'},
+                 'dpx_checksum' : {'identifiers' : ['dpx.txt'], 'type' : 
+                                   'extension', 'role' : 'S', 'label' : 'original DPX checksums', 'file_builder' : '_supplementary_'},
+                 'access' : {'identifiers' : ['-a.', '_a.', '-am.', '_am.', 
+                                              '_am_', '-am-', '-am_', '.mp4', '_access'], 'type' : 'pattern', 'role' : 'A', 'label' : None, 'file_builder' : '_access_'},
+                 'preservation' : {'identifiers' : ['-p.', '_p.', '-pm.', 
+                                                    '_pm', '_pm_', '-pm-', '-pm_', '.mkv', '_preservation'], 'type' : 'pattern', 'role' : 'P', 'label' : None, 'file_builder' : '_preservation_'},
+                 'auxiliary' : {'identifiers' : ['.jpg', '.JPG'], 
+                                'type' : 'extension', 'role' : 'X', 'label' : 'image', 'file_builder' : '_auxiliary_'}
+                }
     if not args.aux_parse:
-        aux_dict = {'auxiliary' : {'identifiers' : None, 'type' : None, 'role' : None, 'label' : None, 'file_builder' : None}}
+        aux_dict = {'auxiliary' : {'identifiers' : None, 'type' : None, 'role' 
+                                   : None, 'label' : None, 'file_builder' : None}}
         #add empty aux_dict as generic catch-all to the end of role_dict
         role_dict.update(aux_dict)
     else:
         if 'extension' in args.aux_parse:
-            aux_dict = {
-            'auxiliay' : {'identifiers' : ['.jpg', '.JPG'], 'type' : 'extension', 'role' : 'X', 'label' : 'image', 'file_builder' : '_auxiliary_'}
+            aux_dict = {'auxiliay' : {'identifiers' : ['.jpg', '.JPG'], 
+                                      'type': 'extension', 'role' : 'X', 'label' : 'image', 'file_builder' : '_auxiliary_'}
             }
         elif 'parse' in args.aux_parse:
-            aux_dict = {'auxiliary' : {'identifiers' : ['_Asset', '-Asset', '_Can', '-Can', 'Front.', 'Back.', '_Ephemera', '-Ephemera'], 'type' : 'xparse', 'role' : 'X', 'label' : None, 'file_builder' : '_auxiliary_'}}
+            aux_dict = {'auxiliary' : {'identifiers' : ['_Asset', '-Asset',
+                                                        '_Can', '-Can', 'Front.', 'Back.', '_Ephemera', '-Ephemera'], 'type' : 'xparse', 'role' : 'X', 'label' : None, 'file_builder' : '_auxiliary_'}}
         #add the aux_dict to the beginning of the role_dict
         #this will catch X files that also have a/p identifiers in the filename
         role_dict = {**aux_dict, **role_dict}
@@ -257,30 +297,29 @@ def mig_av_main():
             filename = os.path.join(clean_subdir, file)
             filename = filename.replace(os.sep, posixpath.sep)
             filename = filename.strip('/')
-            meadow_file_dict = {
-            'work_type': None,
-            'work_accession_number': None,
-            'file_accession_number': None,
-            'filename': filename,
-            'description': None,
-            'label': None,
-            'role': None,
-            'work_image': None,
-            'structure': None
-            }
+            meadow_file_dict = {'work_type': None,
+                                'work_accession_number': None,'file_accession_number': None,
+                                'filename': filename,
+                                'description': None,
+                                'label': None,
+                                'role': None,
+                                'work_image': None,
+                                'structure': None
+                                }
 
             #TODO add safety check to make sure there aren't multiple matches for a filename in the accession numbers
             #check for corresponding item in loaded inventory
             #TODO handle cases where there is no inventory
             for item in filename_list:
                 if item in file:
-                    meadow_file_dict.update({'work_accession_number': source_inventory_dict[item]['work_accession_number']})
+                    meadow_file_dict.update({'work_accession_number': 
+                                             source_inventory_dict[item]['work_accession_number']})
                     #load the work type
                     work_type = source_inventory_dict[item]['work_type']
                     meadow_file_dict.update({'work_type': work_type})
                     #load the description or auto-fill if description is empty
                     if not source_inventory_dict[item]['description']:
-                        meadow_file_dict.update({'description': file})
+                       meadow_file_dict.update({'description': file})
                     else:
                         meadow_file_dict.update({'description': source_inventory_dict[item]['description']})
                     #if dictionary does not already have a key corresponding to the item add it
@@ -292,25 +331,32 @@ def mig_av_main():
                     #setting a generic label
                     inventory_label = source_inventory_dict[item]['label']
                     if work_type == "VIDEO" or work_type == "AUDIO":
-                        label,role,file_builder = meadow_parser_funcs.get_label(role_dict, file, inventory_label)
+                        label,role,file_builder = meadow_parser_funcs.get_label
+                        (role_dict, file, inventory_label)
                         meadow_file_dict.update({'role': role})
                         role_count = sum(x.get('role') == role for x in meadow_full_dict.get(item))
                         meadow_file_dict.update({'label': label})
                         if args.prepend:
-                            meadow_file_dict.update({'file_accession_number' : args.prepend + item + file_builder + f'{role_count:03d}'})
+                            meadow_file_dict.update({'file_accession_number' : 
+                                                     args.prepend + item + file_builder + f'{role_count:03d}'})
                         else:
-                            meadow_file_dict.update({'file_accession_number' : item + file_builder + f'{role_count:03d}'})
+                            meadow_file_dict.update({'file_accession_number' : 
+                                                     item + file_builder + f'{role_count:03d}'})
                     else:
-                        meadow_file_dict.update({'role': source_inventory_dict[item]['role']})
+                        meadow_file_dict.update({'role': source_inventory_dict
+                                                 [item]['role']})
                         meadow_file_dict.update({'label': inventory_label})
                         if args.prepend:
-                            meadow_file_dict.update({'file_accession_number' : args.prepend + source_inventory_dict[item]['file_accession_number']})
+                            meadow_file_dict.update({'file_accession_number' : 
+                                                     args.prepend + source_inventory_dict[item]['file_accession_number']})
                         else:
-                            meadow_file_dict.update({'file_accession_number' : source_inventory_dict[item]['file_accession_number']})
+                            meadow_file_dict.update({'file_accession_number' : 
+                                                     source_inventory_dict[item]['file_accession_number']})
             #TODO build out how to handle cases where a file is not found in the inventory
             #allow user to add the file anyway
             if not any(item in file for item in filename_list):
-                print("+++ WARNING: No entry matching " + file + " was found in your inventory +++")
+                print('''"+++ WARNING: No entry matching " + file + " was found 
+                      in your inventory +++"''')
 
     #TODO final check that all ihidden files and folderstems from filename list are accounted for in the final inventory
 
