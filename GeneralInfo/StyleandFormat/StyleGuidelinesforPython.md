@@ -32,11 +32,11 @@ Examples from PEP8
 * No wildcard imports
 * 
 
-### Naming Conventions
+### Naming Conventions (These are ideals.)
 * Functions
 	* Lowercase separate words with underscore between words
 * Variables
-	* Lowercase, single letter (prefer not), words separated with underscore
+	* Lowercase, words separated with underscore
 * Class
 	* Start with capital letter. No underscores
 * Method 
@@ -47,6 +47,8 @@ Examples from PEP8
 	* Short lowercase words separated with underscores
 * Package
 	* Short lowercase words separated. No underscores.
+
+*HOWEVER, if you have anything with an abbreviation, capitalize the whole abbreviation
 
 #### Resources:
 
