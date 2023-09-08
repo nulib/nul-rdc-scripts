@@ -12,6 +12,7 @@ import shutil
 import posixpath
 from dpx2ffv1parameters import args
 
+
 def assign_limit():
     if args.textlimit:
         limit = args.textlimit
@@ -19,24 +20,27 @@ def assign_limit():
         limit = None
     return limit
 
+
 def get_immediate_subdirectories(folder):
-    '''
+    """
     get list of immediate subdirectories of input
-    '''
-    return [name for name in os.listdir(folder)
-        if os.path.isdir(os.path.join(folder, name))]
+    """
+    return [
+        name for name in os.listdir(folder) if os.path.isdir(os.path.join(folder, name))
+    ]
+
 
 def hashlib_md5(filename):
-    '''
+    """
     Uses hashlib to return an MD5 checksum of an input filename
-    '''
+    """
     read_size = 0
     last_percent_done = 0
     chksm = hashlib.md5()
     total_size = os.path.getsize(filename)
-    with open(filename, 'rb') as f:
+    with open(filename, "rb") as f:
         while True:
-            #2**20 is for reading the file in 1 MiB chunks
+            # 2**20 is for reading the file in 1 MiB chunks
             buf = f.read(2**20)
             if not buf:
                 break
@@ -44,18 +48,21 @@ def hashlib_md5(filename):
             chksm.update(buf)
             percent_done = 100 * read_size / total_size
             if percent_done > last_percent_done:
-                sys.stdout.write('[%d%%]\r' % percent_done)
+                sys.stdout.write("[%d%%]\r" % percent_done)
                 sys.stdout.flush()
                 last_percent_done = percent_done
     md5_output = chksm.hexdigest()
     return md5_output
-#this function is from the IFI's scripts with a minor change
-#open(str(filename)), 'rb') as f has been changed to open(filename, 'rb') as f
+
+
+# this function is from the IFI's scripts with a minor change
+# open(str(filename)), 'rb') as f has been changed to open(filename, 'rb') as f
+
 
 def get_folder_size(folder):
-    '''
+    """
     Calculate the folder size
-    '''
+    """
     total_size = 0
     d = os.scandir(folder)
     for entry in d:
@@ -65,56 +72,103 @@ def get_folder_size(folder):
             else:
                 total_size += entry.stat().st_size
         except FileNotFoundError:
-            #file was deleted during scandir
+            # file was deleted during scandir
             pass
         except PermissionError:
             return 0
     return total_size
 
-'''
+
+"""
 #use mediainfo instead of ffprobe (?)
 def dpx2ffv1_ffprobe_report(input_abspath):
         video_output = json.loads(subprocess.check_output([args.ffprobe_path, '-v', 'error', '-select_streams', 'v', '-show_entries', 'stream=codec_name,avg_frame_rate,codec_time_base,width,height,pix_fmt,codec_tag_string', input_file_abspath, '-of', 'json']).decode("ascii").rstrip())
         audio_output = json.loads(subprocess.check_output([args.ffprobe_path, '-v', 'error', '-select_streams', 'a', '-show_entries', 'stream=codec_name,codec_time_base,codec_tag_string', input_file_abspath, '-of', 'json']).decode("ascii").rstrip())
-'''
+"""
+
 
 def list_mkv_attachments(input_file_abspath):
-    #could also identify with -select streams m:filename
-    t_probe_out = json.loads(subprocess.check_output([args.ffprobe_path, '-v', 'error', '-select_streams', 't', '-show_entries', 'stream_tags=filename', input_file_abspath, '-of', 'json']).decode("ascii").rstrip())
-    tags = [streams.get('tags') for streams in (t_probe_out['streams'])]
+    # could also identify with -select streams m:filename
+    t_probe_out = json.loads(
+        subprocess.check_output(
+            [
+                args.ffprobe_path,
+                "-v",
+                "error",
+                "-select_streams",
+                "t",
+                "-show_entries",
+                "stream_tags=filename",
+                input_file_abspath,
+                "-of",
+                "json",
+            ]
+        )
+        .decode("ascii")
+        .rstrip()
+    )
+    tags = [streams.get("tags") for streams in (t_probe_out["streams"])]
     attachment_list = []
     for i in tags:
-        filename = [i.get('filename')]
+        filename = [i.get("filename")]
         attachment_list.extend(filename)
     return attachment_list
 
+
 def get_mkv_video_metadata(input_file_abspath):
-    ffprobe_command = [args.ffprobe_path, '-v', 'error', '-select_streams', 'v',]
-    ffprobe_command += ['-show_entries', 'stream=codec_name,width,height,pix_fmt,sample_aspect_ratio,display_aspect_ratio,r_frame_rate']
-    ffprobe_command += [input_file_abspath, '-of', 'json']
-    video_meta_out = json.loads(subprocess.check_output(ffprobe_command).decode("ascii").rstrip())
+    ffprobe_command = [
+        args.ffprobe_path,
+        "-v",
+        "error",
+        "-select_streams",
+        "v",
+    ]
+    ffprobe_command += [
+        "-show_entries",
+        "stream=codec_name,width,height,pix_fmt,sample_aspect_ratio,display_aspect_ratio,r_frame_rate",
+    ]
+    ffprobe_command += [input_file_abspath, "-of", "json"]
+    video_meta_out = json.loads(
+        subprocess.check_output(ffprobe_command).decode("ascii").rstrip()
+    )
     return video_meta_out
 
+
 def get_mkv_audio_metadata(input_file_abspath):
-    ffprobe_command = [args.ffprobe_path, '-v', 'error', '-select_streams', 'a',]
-    ffprobe_command += ['-show_entries', 'stream=codec_long_name,bits_per_raw_sample,sample_rate,channels']
-    ffprobe_command += [input_file_abspath, '-of', 'json']
-    audio_meta_out = json.loads(subprocess.check_output(ffprobe_command).decode("ascii").rstrip())
+    ffprobe_command = [
+        args.ffprobe_path,
+        "-v",
+        "error",
+        "-select_streams",
+        "a",
+    ]
+    ffprobe_command += [
+        "-show_entries",
+        "stream=codec_long_name,bits_per_raw_sample,sample_rate,channels",
+    ]
+    ffprobe_command += [input_file_abspath, "-of", "json"]
+    audio_meta_out = json.loads(
+        subprocess.check_output(ffprobe_command).decode("ascii").rstrip()
+    )
     return audio_meta_out
 
+
 def get_mkv_format_metadata(input_file_abspath):
-    ffprobe_command = [args.ffprobe_path, '-v', 'error']
-    ffprobe_command += ['-show_entries', 'format=duration,nb_streams']
-    ffprobe_command += [input_file_abspath, '-of', 'json']
-    format_meta_out = json.loads(subprocess.check_output(ffprobe_command).decode("ascii").rstrip())
+    ffprobe_command = [args.ffprobe_path, "-v", "error"]
+    ffprobe_command += ["-show_entries", "format=duration,nb_streams"]
+    ffprobe_command += [input_file_abspath, "-of", "json"]
+    format_meta_out = json.loads(
+        subprocess.check_output(ffprobe_command).decode("ascii").rstrip()
+    )
     return format_meta_out
 
+
 def dpx_md5_compare(dpxfolder):
-    '''
+    """
     Returns two sets
     One from the original DPX sequence's md5 checksum
     The other from the calculated checksums of the decoded DPX sequence
-    '''
+    """
     md5list = []
     orig_md5list = {}
     for i in os.listdir(dpxfolder):
@@ -125,25 +179,41 @@ def dpx_md5_compare(dpxfolder):
             pass
         else:
             y = hashlib_md5(abspath)
-            filehash = y + ' *' + i
+            filehash = y + " *" + i
             md5list.append(filehash)
     compareset = set(md5list)
     return compareset, orig_md5list
 
+
 def grab_runtime(folder, subfolder_identifier, filetype):
-    '''
+    """
     Look for an ac folder containing an video file of specified type
     If found, return the runtime
-    '''
+    """
     itemfolder = os.path.join(folder, subfolder_identifier)
     if os.path.isdir(itemfolder):
-        videofile = glob.glob1(itemfolder, '*' + filetype)
+        videofile = glob.glob1(itemfolder, "*" + filetype)
         filecounter = len(videofile)
         if filecounter == 1:
             for i in videofile:
                 file_abspath = os.path.join(itemfolder, i)
-                runtime = subprocess.check_output([args.ffprobe_path, '-v', 'error', file_abspath, '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1']).decode("ascii").rstrip()
-                #this returns the total runtime in seconds
+                runtime = (
+                    subprocess.check_output(
+                        [
+                            args.ffprobe_path,
+                            "-v",
+                            "error",
+                            file_abspath,
+                            "-show_entries",
+                            "format=duration",
+                            "-of",
+                            "default=noprint_wrappers=1:nokey=1",
+                        ]
+                    )
+                    .decode("ascii")
+                    .rstrip()
+                )
+                # this returns the total runtime in seconds
         elif filecounter < 1:
             runtime = "no " + filetype + " files found in " + itemfolder
         elif filecounter > 1:
@@ -151,8 +221,10 @@ def grab_runtime(folder, subfolder_identifier, filetype):
     else:
         runtime = "no " + subfolder_identifier + "folder found"
     return runtime
-    #when comparing runtimes, you could check if this value is a float, which would allow you to know if there was an error here
-'''
+    # when comparing runtimes, you could check if this value is a float, which would allow you to know if there was an error here
+
+
+"""
 def verification_check(folder):
     verifile = os.path.join(folder, 'pm', "verification_log.txt")
     if not os.path.isfile(verifile):
@@ -201,4 +273,4 @@ def verification_check(folder):
                 print('\t'"pm runtime was not logged")
             elif not "not logged" in pm_runtime and "not logged" in ac_runtime:
                 print('\t'"ac runtime was not logged")
-'''
+"""
