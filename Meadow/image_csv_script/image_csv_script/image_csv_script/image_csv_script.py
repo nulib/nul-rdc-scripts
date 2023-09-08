@@ -19,7 +19,8 @@ def csv_main():
     else:
         if os.path.isdir(indir):
             inventories = glob.glob(os.path.join(indir, "*.csv"))
-            inventorydf = pd.concat([pd.read_csv(inv, skiprows=0, header=0') for inv in inventories])
+            inventorydf = pd.concat 
+            ([pd.read_csv(inv, skiprows=0, header=0') for inv in inventories])
         else:
             print('ERROR: Supplied inventory path is not valid')
             quit()
