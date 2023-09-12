@@ -8,8 +8,7 @@ proj_number = input("What is the project number?    ")
 
 def ask_projnum_again():
     proj_number = input("What is the project number?    ")
-    proj_P_TF = proj_number.startswith("p")
-    if proj_P_TF == True:
+    if proj_number.startswith("p") or proj_number.startswith("j"):
         proj_number_leng = len(proj_number)
         if proj_number_leng != 5:
             print("Please answer with a 4 digit number after 'p'")
@@ -21,16 +20,15 @@ def ask_projnum_again():
         ask_projnum_again()
 
 
-proj_P_TF = proj_number.startswith("p")
-if proj_P_TF == True:
+if proj_number.startswith("p") or proj_number.startswith("j"):
     proj_number_leng = len(proj_number)
     if proj_number_leng != 5:
-        print("Please answer with a 4 digit number after 'p'")
+        print("Please answer with a 4 digit number after 'p' or 'j'")
         ask_projnum_again()
     else:
         print()
 else:
-    print("Please answer with the number prefixed by a p")
+    print("Please answer with the number prefixed by a p or j")
     ask_projnum_again()
 
 
@@ -251,7 +249,7 @@ def ask_new_bOrf():  # function that will ask if you want to add a box or folder
             file_number <= folder_files
         ):  # runs while the file number is less than or equal to the number of files that you need
             # Leading Zeros
-            file_number = str(file_number).zfill(4)
+            file_number = str(file_number).zfill(2)
             # Leading Zeros
 
             inventory = [
@@ -264,7 +262,9 @@ def ask_new_bOrf():  # function that will ask if you want to add a box or folder
                     + box_number
                     + "_"
                     + "f"
-                    + folder_number,
+                    + folder_number
+                    + "_"
+                    + file_number,
                     "file_accession_number": proj_number
                     + "_"
                     + proj_4dig
@@ -277,7 +277,7 @@ def ask_new_bOrf():  # function that will ask if you want to add a box or folder
                     + "_"
                     + file_number
                     + "_"
-                    + "01"
+                    + "0001"
                     + "_"
                     + "a",
                     "filename": proj_number
@@ -292,7 +292,7 @@ def ask_new_bOrf():  # function that will ask if you want to add a box or folder
                     + "_"
                     + file_number
                     + "_"
-                    + "01"
+                    + "0001"
                     + "_"
                     + "a"
                     + ".tif",
@@ -355,8 +355,7 @@ def page_path():  # This script runs when you want to add works with page design
                 + "f"
                 + folder_number
                 + "_"
-                + file
-                + "_",
+                + file,
                 "file_accession_number": proj_number
                 + "_"
                 + proj_4dig
@@ -412,7 +411,7 @@ new_bOrf = 0
 
 if box_other == "y":  # will run box folder version
     pages_yn = input(
-        "Does your folder have works with multiple images? (ex. a 3 page letter) y for Yes and n for No    "
+        "Does your folder have a work with multiple images? (ex. a 3 page letter) y for Yes and n for No    "
     )
     if pages_yn == "y":  # runs if you need to designate page numbers
         with open(csv_name, "a", newline="", encoding="utf-8") as csvfile:
@@ -430,7 +429,7 @@ if box_other == "y":  # will run box folder version
         # Leading Zeros
 
         folder_files = int(
-            input("What is the number of images?      ")
+            input("What is the number of works?      ")
         )  # number to loop by
         with open(csv_name, "a", newline="", encoding="utf-8") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=field_names)
@@ -440,7 +439,7 @@ if box_other == "y":  # will run box folder version
                 file_number <= folder_files
             ):  # runs while the file number is less than or equal to the number of files that you need
                 # Leading Zeros
-                file_number = str(file_number).zfill(4)
+                file_number = str(file_number).zfill(2)
                 # Leading Zeros
 
                 inventory = [
@@ -468,7 +467,7 @@ if box_other == "y":  # will run box folder version
                         + "_"
                         + file_number
                         + "_"
-                        + "01"
+                        + "0001"
                         + "_"
                         + "a",
                         "filename": proj_number
@@ -483,7 +482,7 @@ if box_other == "y":  # will run box folder version
                         + "_"
                         + file_number
                         + "_"
-                        + "01"
+                        + "0001"
                         + "_"
                         + "a"
                         + ".tif",
