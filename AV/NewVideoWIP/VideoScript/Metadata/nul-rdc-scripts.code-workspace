@@ -1,0 +1,14 @@
+{
+    "folders": [
+		{
+			"name": "nul-rdc-scripts",
+			"path": "../../../.."
+		}
+	],
+    "settings": {
+        "[python]": {
+            "editor.defaultFormatter": "ms-python.black-formatter"
+        },
+        "python.formatting.provider": "none"
+    }
+}

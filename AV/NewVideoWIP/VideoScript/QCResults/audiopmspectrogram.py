@@ -1,5 +1,5 @@
 from spectrograms import generate_spectrogram as generate_spectrogram
-from VideoScript.Arguments.Arguments import args
+from VideoScript.SetUp.Arguments import args
 
 if audiostreamCounter > 0 and not args.skip_spectrogram:
     print("*generating QC spectrograms*")

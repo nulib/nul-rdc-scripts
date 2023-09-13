@@ -1,4 +1,3 @@
 def dictionaryJSONoutput():
     data = {}
-    data[baseFilename]={}
-    
+    data[baseFilename] = {}
