@@ -1,11 +1,16 @@
 import json
+from VideoScript.SetUp import createnamestobeused
+
+
+def dictionaryJSONoutput():
+    data = {}
+    data[baseFilename] = {}
 
 
 def create_json(
     jsonAbsPath,
     systemInfo,
     input_metadata,
-    mov_stream_sum,
     mkvHash,
     mkv_stream_sum,
     baseFilename,
