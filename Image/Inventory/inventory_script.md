@@ -17,10 +17,10 @@ This document provides information about running the inventory script, updating 
  3. Paste the address into the Command Prompt window (Figure 2) and press enter
  4. Answer the questions that appear
 
- ![Finding Python Address](../../Images/FindingAddressPythonFile.png)
+ ![Finding Python Address](../../FilesReferenced/FindingAddressPythonFile.png)
     Figure 1
     
- ![Entering Address into Command Prompt](../../Images/CommandPromptPaste.png)
+ ![Entering Address into Command Prompt](../../FilesReferenced/CommandPromptPaste.png)
     Figure 2
 
 ## Running in VSCode Terminal
@@ -28,14 +28,14 @@ This document provides information about running the inventory script, updating 
 2. Select the little carrot next to the triangle in the upper right corner (Figure 3) and select 'Run Python File'
 3. A pop up terminal window will open, follow the prompts given
 
-![Running python file in VSCode Terminal](../../Images/RunTerminalInVSCode.png)
+![Running python file in VSCode Terminal](../../FilesReferenced/RunTerminalInVSCode.png)
     Figure 3
 
 ## Running in VSCode Interactive Window
 1. Follow the same directions in VSCode Terminal option, but select 'Run Python File in Interactive Window' 
 2. A pop up window at the top of the page will give you prompts, answer them in the box below the prompt (Figure 4)
 
-![Running python file in VSCode Interactive Window](../../Images/RunInInteractiveWindow.jpg)
+![Running python file in VSCode Interactive Window](../../FilesReferenced/RunInInteractiveWindow.jpg)
     Figure 4
 
 # Helpful Tips
