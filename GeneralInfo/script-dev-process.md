@@ -32,6 +32,6 @@ The development process should involve two types of review:
  
 ## Feature/Bug reports  
 
-A link will be provided to a list in Sharepoint to a method for reporting bugs or feature requests. 
+A link will be provided to issue reporting in Github to provide a method for reporting bugs or feature requests. 
 The reporter will rank the bug or feature request.  High priority bugs and feature requests will prompt immediate discussion. Lower priority bugs and feature requests will be reviewed at the start of each quarter.  
  
