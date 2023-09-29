@@ -12,7 +12,7 @@ Documentation will include:
 
 - Development meeting notes and decisions 
 
-- Testing scripts 
+- Tests for scripts
 
 ## Development Cycles 
 Changes, updates and modifications of scripts will take place from Fall thru Spring quarters 
