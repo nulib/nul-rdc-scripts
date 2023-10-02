@@ -176,8 +176,8 @@ def mig_av_main():
     else:
         base_folder_name = os.path.basename(indir)
         meadow_csv_file = os.path.join(
-            """indir, base_folder_name + 
-                                       '-meadow_ingest_inventory.csv"""
+            indir, 
+            base_folder_name + '-meadow_ingest_inventory.csv'
         )
     output_check(meadow_csv_file)
 
@@ -467,8 +467,10 @@ def mig_av_main():
                     # setting a generic label
                     inventory_label = source_inventory_dict[item]["label"]
                     if work_type == "VIDEO" or work_type == "AUDIO":
-                        label, role, file_builder = meadow_parser_funcs.get_label
-                        (role_dict, file, inventory_label)
+                        label, role, file_builder = meadow_parser_funcs.get_label(
+                            role_dict, 
+                            file, 
+                            inventory_label)
                         meadow_file_dict.update({"role": role})
                         role_count = sum(
                             x.get("role") == role for x in meadow_full_dict.get(item)
