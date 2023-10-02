@@ -20,11 +20,11 @@ def aja_mov2ffv1_main():
     # the ac identifier will be used as the folder name for the access file
     # it will also be appended to the end of the access copy filename
     ac_identifier = "a"
-    metadata_identifier = "meta"
+    metadata_identifier = "s"
     # identifier appended to the end of the MKV preservation file
     # Replace with "None" to keep the name the same as the input
     if not args.keep_filename:
-        pm_filename_identifier = "-p"
+        pm_filename_identifier = "_p"
     else:
         pm_filename_identifier = None
     inventoryName = "transcode_inventory.csv"
@@ -96,16 +96,16 @@ def aja_mov2ffv1_main():
         )
         mkvFilename = mkvBaseFilename + ".mkv"
         outputAbsPath = os.path.join(pmOutputFolder, mkvFilename)
-        tempMasterFile = os.path.join(pmOutputFolder, baseFilename + "-tmp.mkv")
+        tempMasterFile = os.path.join(pmOutputFolder, baseFilename + "_tmp.mkv")
         framemd5File = mkvBaseFilename + ".framemd5"
         framemd5AbsPath = os.path.join(pmOutputFolder, framemd5File)
         acOutputFolder = os.path.join(baseOutput, ac_identifier)
         acAbsPath = os.path.join(
-            acOutputFolder, baseFilename + "-" + ac_identifier + ".mp4"
+            acOutputFolder, baseFilename + "_" + ac_identifier + ".mp4"
         )
         metaOutputFolder = os.path.join(baseOutput, metadata_identifier)
         jsonAbsPath = os.path.join(
-            metaOutputFolder, baseFilename + "-" + metadata_identifier + ".json"
+            metaOutputFolder, baseFilename + "_s" + ".json"
         )
         pmMD5AbsPath = os.path.join(pmOutputFolder, mkvBaseFilename + ".md5")
 
@@ -230,21 +230,21 @@ def aja_mov2ffv1_main():
                 acHash = corefuncs.hashlib_md5(acAbsPath)
                 with open(
                     os.path.join(
-                        acOutputFolder, baseFilename + "-" + ac_identifier + ".md5"
+                        acOutputFolder, baseFilename + "_" + ac_identifier + ".md5"
                     ),
                     "w",
                     newline="\n",
                 ) as f:
                     print(
                         acHash,
-                        "*" + baseFilename + "-" + ac_identifier + ".mp4",
+                        "*" + baseFilename + "_" + ac_identifier + ".mp4",
                         file=f,
                     )
 
             # log access copy filename if access copy was created
             # TO DO: verify that access copy runtime matches pm runtime?
             if os.path.isfile(acAbsPath):
-                acFilename = baseFilename + "-" + ac_identifier + ".mp4"
+                acFilename = baseFilename + "_" + ac_identifier + ".mp4"
             else:
                 acFilename = "No access copy found"
 

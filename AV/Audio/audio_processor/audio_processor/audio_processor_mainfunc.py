@@ -15,7 +15,7 @@ from audio_processor import corefuncs
 def audio_processor_main():
     pm_identifier = "p"
     ac_identifier = "a"
-    metadata_identifier = "meta"
+    metadata_identifier = "s"
     preservation_extension = ".wav"
     access_extension = ".wav"
     inventoryName = "transcode_inventory.csv"
@@ -168,7 +168,7 @@ def audio_processor_main():
                 # json filename should use the filename found in the inventory
                 json_file_abspath = os.path.join(
                     meta_folder_abspath,
-                    inventory_filename + "-" + metadata_identifier + ".json",
+                    inventory_filename + "_" + metadata_identifier + ".json",
                 )
 
                 # generate ffprobe metadata from input
@@ -281,7 +281,7 @@ def audio_processor_main():
                         "1920",
                         "-o",
                         os.path.join(
-                            meta_folder_abspath, base_filename + "spectrogram" + ".png"
+                            meta_folder_abspath, base_filename + "spectrogram_s.png"
                         ),
                     ]
                     subprocess.run(sox_spectrogram_command)
