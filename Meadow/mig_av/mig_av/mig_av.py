@@ -252,8 +252,8 @@ def mig_av_main():
             "file_builder": "_supplementary_",
         },
         "spectrogram": {
-            "identifiers": [".png", ".PNG"],
-            "type": "extension",
+            "identifiers": ["_spectrogram"],
+            "type": "pattern",
             "role": "S",
             "label": "spectrogram file",
             "file_builder": "_supplementary_",

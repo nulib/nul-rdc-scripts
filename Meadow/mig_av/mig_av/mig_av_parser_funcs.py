@@ -7,34 +7,38 @@ def get_label(role_dict, filename, inventory_label):
     # run through each key in role_dict
     # if it matches on extension, it should be removed and passed to the next check
     label = None
+    print(filename + " " + label_creator(filename, inventory_label))
     for i in role_dict:
-        if not label:
-            if role_dict[i]["type"] == "extension":
-                if filename.endswith(tuple(role_dict[i]["identifiers"])):
-                    role = role_dict[i]["role"]
-                    if not role == "X" and not inventory_label:
-                        label = role_dict[i]["label"]
-                    elif inventory_label:
-                        label = inventory_label + " " + role_dict[i]["label"]
-                    else:
-                        label = "Asset " + role_dict[i]["label"]
-                    file_builder = role_dict[i]["file_builder"]
-            elif role_dict[i]["type"] == "xparse":
-                if any(ext in filename for ext in role_dict[i]["identifiers"]):
-                    label = xparser(
-                        filename, role_dict[i]["identifiers"], inventory_label
-                    )
-                    role = role_dict[i]["role"]
-                    file_builder = role_dict[i]["file_builder"]
-            elif role_dict[i]["type"] == "pattern":
-                if any(ext in filename for ext in role_dict[i]["identifiers"]):
+        #if not label:
+        if role_dict[i]["type"] == "extension":
+            if filename.endswith(tuple(role_dict[i]["identifiers"])):
+                role = role_dict[i]["role"]
+                if not role == "X" and not inventory_label:
+                    label = role_dict[i]["label"]
+                elif inventory_label:
+                    label = inventory_label + " " + role_dict[i]["label"]
+                else:
+                    label = "Asset " + role_dict[i]["label"]
+                file_builder = role_dict[i]["file_builder"]
+        elif role_dict[i]["type"] == "xparse":
+            if any(ext in filename for ext in role_dict[i]["identifiers"]):
+                label = xparser(
+                    filename, role_dict[i]["identifiers"], inventory_label
+                )
+                role = role_dict[i]["role"]
+                file_builder = role_dict[i]["file_builder"]
+        elif role_dict[i]["type"] == "pattern":
+            if any(ext in filename for ext in role_dict[i]["identifiers"]):
+                if role_dict[i]["label"] == None:
                     label = label_creator(filename, inventory_label)
-                    role = role_dict[i]["role"]
-                    file_builder = role_dict[i]["file_builder"]
-            elif not label:
-                label = filename
-                role = "S"
-                file_builder = "_supplementary_"
+                else:
+                    label = label_creator(filename, inventory_label) + " " + role_dict[i]["label"]
+                role = role_dict[i]["role"]
+                file_builder = role_dict[i]["file_builder"]
+        elif not label:
+            label = filename
+            role = "S"
+            file_builder = "_supplementary_"
     return label, role, file_builder
 
 
