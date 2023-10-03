@@ -5,18 +5,12 @@ import re
 
 def get_label(role_dict, filename, inventory_label):
     # run through each key in role_dict
-    # if it matches on extension, it should be removed and passed to the next check
-    label = None
     role_index = -1
     for i in role_dict:
-        if role_dict[i]["type"] == "extension":
-            if filename.endswith(tuple(role_dict[i]["identifiers"])):
-                role_index = i
-                break
-        elif role_dict[i]["type"] == "pattern" or role_dict[i]["type"] == "xparse":
-            if any(ext in filename for ext in role_dict[i]["identifiers"]):
-                role_index = i
-                break
+        if any(ext in filename for ext in role_dict[i]["identifiers"]):
+            role_index = i
+            break
+    
     # base case if role not found
     if role_index == -1:
         label = filename
@@ -26,17 +20,14 @@ def get_label(role_dict, filename, inventory_label):
         role = role_dict[role_index]["role"]
         file_builder = role_dict[i]["file_builder"]
 
-        if role_dict[role_index]["type"] == "xparse":
-            label = xparser(
-                filename, role_dict[i]["identifiers"], inventory_label
-            )
-        elif role_dict[role_index]["label"] == None:
+        if role_dict[role_index]["label"] == None:
             label = label_creator(filename, inventory_label)
         else:
             label = label_creator(filename, inventory_label) + " " + role_dict[role_index]["label"]
 
     return label, role, file_builder
 
+# no longer necessary
 def xparser(filename, pattern_list, inventory_label):
     # TODO use regex instead so numbers could be extracted
     parser_dict = {

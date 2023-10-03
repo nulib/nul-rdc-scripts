@@ -252,7 +252,7 @@ def mig_av_main():
             "file_builder": "_supplementary_",
         },
         "spectrogram": {
-            "identifiers": ["_spectrogram"],
+            "identifiers": ["spectrogram"],
             "type": "pattern",
             "role": "S",
             "label": "spectrogram file",
@@ -274,7 +274,6 @@ def mig_av_main():
                 "_am_",
                 "-am-",
                 "-am_",
-                ".mp4",
                 "_access",
             ],
             "type": "pattern",
@@ -291,7 +290,6 @@ def mig_av_main():
                 "_pm_",
                 "-pm-",
                 "-pm_",
-                ".mkv",
                 "_preservation",
             ],
             "type": "pattern",
@@ -299,30 +297,11 @@ def mig_av_main():
             "label": None,
             "file_builder": "_preservation_",
         },
-        "auxiliary": {
-            "identifiers": [".jpg", ".JPG"],
-            "type": "extension",
-            "role": "X",
-            "label": "image",
-            "file_builder": "_auxiliary_",
-        },
     }
-    if not args.aux_parse:
-        aux_dict = {
-            "auxiliary": {
-                "identifiers": None,
-                "type": None,
-                "role": None,
-                "label": None,
-                "file_builder": None,
-            }
-        }
-        # add empty aux_dict as generic catch-all to the end of role_dict
-        role_dict.update(aux_dict)
-    else:
+    if args.aux_parse:
         if "extension" in args.aux_parse:
             aux_dict = {
-                "auxiliay": {
+                "auxiliary": {
                     "identifiers": [".jpg", ".JPG"],
                     "type": "extension",
                     "role": "X",
@@ -332,38 +311,45 @@ def mig_av_main():
             }
         elif "parse" in args.aux_parse:
             aux_dict = {
-                "auxiliary": {
-                    "identifiers": [
-                        "_Asset",
-                        "-Asset",
-                        "_Can",
-                        "-Can",
-                        "Front.",
-                        "Back.",
-                        "_Ephemera",
-                        "-Ephemera",
-                    ],
-                    "type": "xparse",
+                "asset": {
+                    "identifiers": ["_Asset", "-Asset"],
+                    "type": "pattern",
                     "role": "X",
-                    "label": None,
+                    "label": "asset",
                     "file_builder": "_auxiliary_",
-                }
+                },
+                "can": {
+                    "identifiers": ["_Can", "-Can"],
+                    "type": "pattern",
+                    "role": "X",
+                    "label": "can",
+                    "file_builder": "_auxiliary_",
+                },
+                "front": {
+                    "identifiers": ["Front."],
+                    "type": "pattern",
+                    "role": "X",
+                    "label": "asset front",
+                    "file_builder": "_auxiliary_",
+                },
+                "back": {
+                    "identifiers": ["Back."],
+                    "type": "pattern",
+                    "role": "X",
+                    "label": "asset back",
+                    "file_builder": "_auxiliary_",
+                },
+                "ephemera": {
+                    "identifiers": ["_Ephemera", "-Ephemera"],
+                    "type": "pattern",
+                    "role": "X",
+                    "label": "ephemera",
+                    "file_builder": "_auxiliary_",
+                },
             }
         # add the aux_dict to the beginning of the role_dict
         # this will catch X files that also have a/p identifiers in the filename
         role_dict = {**aux_dict, **role_dict}
-        # add generic catch-all for unexpected file types to the end of role_dict
-        role_dict.update(
-            {
-                "other": {
-                    "identifiers": None,
-                    "type": None,
-                    "role": None,
-                    "label": None,
-                    "file_builder": None,
-                }
-            }
-        )
 
     header_names = [
         "work_type",
