@@ -311,20 +311,6 @@ def mig_av_main():
             }
         elif "parse" in args.aux_parse:
             aux_dict = {
-                "asset": {
-                    "identifiers": ["_Asset", "-Asset"],
-                    "type": "pattern",
-                    "role": "X",
-                    "label": "asset",
-                    "file_builder": "_auxiliary_",
-                },
-                "can": {
-                    "identifiers": ["_Can", "-Can"],
-                    "type": "pattern",
-                    "role": "X",
-                    "label": "can",
-                    "file_builder": "_auxiliary_",
-                },
                 "front": {
                     "identifiers": ["Front."],
                     "type": "pattern",
@@ -337,6 +323,20 @@ def mig_av_main():
                     "type": "pattern",
                     "role": "X",
                     "label": "asset back",
+                    "file_builder": "_auxiliary_",
+                },
+                "asset": {
+                    "identifiers": ["_Asset", "-Asset"],
+                    "type": "pattern",
+                    "role": "X",
+                    "label": "asset",
+                    "file_builder": "_auxiliary_",
+                },
+                "can": {
+                    "identifiers": ["_Can", "-Can"],
+                    "type": "pattern",
+                    "role": "X",
+                    "label": "can",
                     "file_builder": "_auxiliary_",
                 },
                 "ephemera": {
@@ -505,8 +505,8 @@ def mig_av_main():
             # allow user to add the file anyway
             if not any(item in file for item in filename_list):
                 print(
-                    '''"+++ WARNING: No entry matching " + file + " was found 
-                      in your inventory +++"'''
+                    "+++ WARNING: No entry matching " + file + 
+                    " was found in your inventory +++"
                 )
 
     # TODO final check that all ihidden files and folderstems from filename list are accounted for in the final inventory

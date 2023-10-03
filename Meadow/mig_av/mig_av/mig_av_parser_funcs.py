@@ -10,7 +10,7 @@ def get_label(role_dict, filename, inventory_label):
         if any(ext in filename for ext in role_dict[i]["identifiers"]):
             role_index = i
             break
-    
+
     # base case if role not found
     if role_index == -1:
         label = filename
@@ -19,11 +19,11 @@ def get_label(role_dict, filename, inventory_label):
     else:
         role = role_dict[role_index]["role"]
         file_builder = role_dict[i]["file_builder"]
+        label = label_creator(filename, inventory_label)
 
-        if role_dict[role_index]["label"] == None:
-            label = label_creator(filename, inventory_label)
-        else:
-            label = label_creator(filename, inventory_label) + " " + role_dict[role_index]["label"]
+        #append label if role has extra info
+        if role_dict[role_index]["label"]:
+            label += " " + role_dict[role_index]["label"]
 
     return label, role, file_builder
 
