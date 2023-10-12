@@ -1,29 +1,39 @@
 import pandas as pd
 from bs4 import BeautifulSoup 
-import matplotlib as mpl
-
+from tabulate import tabulate
+import json
 file = open("/Users/dcstaff/Documents/GitHub/nul-rdc-scripts/Staging/QCScript/vlc-record-2023-10-05-11h16m25s-test_NONEVIDEOSETTING_QTUNCOMPRESSED-p - Copy.mkv-.avi.qctools.xml")
 contents = file.read()
-
 soup = BeautifulSoup(contents, 'xml')
 framevalues = {}
-framedata = {}
-framedataonly = {}
+framesdata = {}
+framedatapoint = {}
 tagkeylist = []
-
+tagvalueslist = []
+filename = 'filename.csv'
 for frames in soup.find_all('frame'):
-    frametime = frames.get('pkt_pts_time')
     taglist = frames.find_all('tag')
-    framedata['frametime'] = frametime
-    for tag in taglist:
-        tagkey = tag.get('key')
-        tagvalue = tag.get(str('value'))
-        datapoint = tagkey + ':' + tagvalue
-        framedataonly[tagkey] = tagvalue
-        tagkeylist=tagkey
-        framedata['datapoint']=datapoint
-        framedata[frametime]=framedataonly
-        df = pd.DataFrame(framedata, columns=[tagkeylist])
-        df
+    frametime = frames.get('pkt_pts_time')
+    for frame in frametime:
+        for tag in taglist:
+            tagkey = tag.get('key')
+            def tagkeycleaning (tagkey):
+                tagkeyclean1 = tagkey.replace('lavfi.astats','')
+                tagkeyclean2 = tagkeyclean1.replace('lavfi.', '')
+                tagkeyclean3 = tagkeyclean2.replace('signalstats.','')
+                tagkeyclean4 = tagkeyclean3.replace('.',' ')
+                cleanedtagkey = tagkeyclean4.replace('_',' ')
+                return cleanedtagkey
+            cleankey=tagkeycleaning(tagkey)
+            tagvalue = tag.get(str('value'))
+            framedatapoint[cleankey] = tagvalue
     
-    
+        framesdata[frametime] = framedatapoint
+    with open('test.json','w') as fp:
+        json.dump(framesdata, fp)
+
+'''
+    df = pd.DataFrame.from_dict(framesdata, orient='index')
+
+    df.to_csv(filename, encoding = 'utf-8',sep =',')
+    '''
