@@ -147,3 +147,6 @@ Image/Inventory/ExtraNonsenseToKeepForNow/inventory.csv
 #wsl files
 *.deb
 *.deb.1
+*.csv
+*.vscode/
+*.conda

@@ -1,29 +1,58 @@
-import csv
-import glob
-from lxml import etree
-
-def data_parser (xml_source_file):
-    xml_doc = etree.parse(xml_source_file)
-    document_root = xml_doc.getroot()
-    print(etree.tostring(document_root))
-
-    filename = input("Choose a filename")
-
-    if etree.iselement(document_root):
-        output_file = open ("xml_"+ filename + ".csv","w")
-        output_writer = csv.writer(output_file)
-        output_writer.writerow(document_root[0].attrib.keys())
-        for child in document_root:
-            output_writer.writerow(child.attrib.values())
-    output_file.close()
+import pandas as pd
+import keycleaner
+import overallstatistics
+from bs4 import BeautifulSoup
+from tabulate import tabulate
 
 
-def xml_file_given_set (filepath):
-    xml_source_file = open(filepath, 'rb')
-    data_parser(xml_source_file)
+def dataparsingandtabulatingaudio(filepath):
+    audiodata = {}
+    file = open(filepath)
+    contents = file.read()
+    soup = BeautifulSoup(contents, "xml")
+    contents = file.read()
+    for frames in soup.find_all("frame"):
+        taglist = frames.find_all("tag")
+        frametime = frames.get("pkt_pts_time")
+        mediatype = frames.get("media_type")
+        if mediatype == "audio":
+            audiodata[frametime] = {}
+            for tag in taglist:
+                tagkey = tag.get("key")
+                if tagkey == "lavfi.astats.1.Noise_floor":
+                    pass
+                elif tagkey == "lavfi.astats.2.Noise_floor":
+                    pass
+                elif tagkey == "lavfi.astats.Overall.Noise_floor":
+                    pass
+                else:
+                    cleankey = keycleaner.tagkeycleaning(tagkey)
+                    tagvalue = tag.get("value")
+                    audiodata[frametime][cleankey] = float(tagvalue)
+        else:
+            pass
+    audiodf = pd.DataFrame.from_dict(audiodata, orient="index")
+    return audiodf
 
-def directory_given_set (filepath):
-    for i in filepath:
-        data_parser()
 
-
+def dataparsingandtabulatingvideo(filepath):
+    videodata = {}
+    file = open(filepath)
+    contents = file.read()
+    soup = BeautifulSoup(contents, "xml")
+    contents = file.read()
+    for frames in soup.find_all("frame"):
+        taglist = frames.find_all("tag")
+        frametime = frames.get("pkt_pts_time")
+        mediatype = frames.get("media_type")
+        if mediatype == "video":
+            videodata[frametime] = {}
+            for tag in taglist:
+                tagkey = tag.get("key")
+                cleankey = keycleaner.tagkeycleaning(tagkey)
+                tagvalue = tag.get("value")
+                videodata[frametime][cleankey] = float(tagvalue)
+        else:
+            pass
+    videodf = pd.DataFrame.from_dict(videodata, orient="index")
+    return videodf

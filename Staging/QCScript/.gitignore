@@ -1,2 +1,4 @@
 # Prevents CSVs from being uploaded to GitHub and wasting space
 *.csv
+*.conda
+*.vscode
