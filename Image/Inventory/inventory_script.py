@@ -66,6 +66,7 @@ field_names = [
     "filename",
     "label",
     "description",
+    "Checked in? (yes/no)"
     "Capture date",
     "Staff Initials",
     "Container number ex. Box Number",
