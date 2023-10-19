@@ -1,16 +1,18 @@
-import DataParsing
-import passfail
+import dataparsing
+import videoanalysis
 import overallstatistics
 import csvgeneration
 
 filepath = input("Filepath")
 
 
-videodata = DataParsing.dataparsingandtabulatingvideo(filepath)
-audiodata = DataParsing.dataparsingandtabulatingaudio(filepath)
+videodata = dataparsing.dataparsingandtabulatingvideo(filepath)
+audiodata = dataparsing.dataparsingandtabulatingaudio(filepath)
 
 videostats = overallstatistics.videodatastatistics(videodata)
 audiostats = overallstatistics.audiodatastatistics(audiodata)
-print(videostats)
 
 
+"""
+videoanalysis.videoanalyzer(videodata)
+"""

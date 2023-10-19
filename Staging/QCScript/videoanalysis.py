@@ -10,38 +10,32 @@ tenBitVideoValues = {
     "UMin": 0,
     "ULow": 64,
     "UAvg": 512,
-    "UHigh": 940,
+    "UHigh": 960,
     "UMax": 1023,
     "VMin": 0,
     "VLow": 64,
     "VAvg": 512,
-    "VHigh": 940,
+    "VHigh": 960,
     "VMax": 1023,
     "SATMin": 0,
     "SATAvg": 362.04,
     "SATHigh": 512,
     "SATMax": 724.08,
-    "TOUTMin": 0,
-    "TOUTMax": 1,
-    "VREPMin": 0,
-    "VREPMax": 1,
-    "BRNGMin": 0,
+    "TOUTMax": 0.009,
+    "VREPMax": 0.03,
     "BRNGMax": 1,
 }
 
 
+def videoanalyzer(videodata):
+    BRNGcheck(videodata, tenBitVideoValues)
+    TOUTcheck(videodata, tenBitVideoValues)
+    VREPcheck(videodata, tenBitVideoValues)
+
+
 def BRNGcheck(videodata, tenBitVideoValues):
-    minBRNG = tenBitVideoValues["BRNGMin"]
-    videominBRNG = videodata.at[4, "BRNG"]
     maxBRNG = tenBitVideoValues["BRNGMax"]
     videomaxBRNG = videodata.at[8, "BRNG"]
-    if minBRNG > videominBRNG:
-        criteria = "BRNG Min"
-        description = "The video is out of the minimal broadcasting range"
-        value = videominBRNG
-        errortiers.tier1error(criteria, description, value)
-    else:
-        pass
     if maxBRNG < videomaxBRNG:
         criteria = "BRNG Max"
         description = "The video is out of the maximum broadcasting range"
@@ -52,12 +46,24 @@ def BRNGcheck(videodata, tenBitVideoValues):
 
 
 def TOUTcheck(videodata, tenBitVideoValues):
-    minTOUT = tenBitVideoValues["TOUTMin"]
-    videominTOUT = videodata.at[4, "TOUT"]
     maxTOUT = tenBitVideoValues["TOUTMax"]
     videomaxTOUT = videodata.at[8, "TOUT"]
-    if minTOUT > videominTOUT:
-        criteria = "TOUTMin"
-        description = "Your "
-        value = videominTOUT
-        errortiers.tier2error(criteria, description, value)
+    if maxTOUT < videomaxTOUT:
+        criteria = "TOUTMax"
+        description = "Your TOUT maximum is higher than the suggested range"
+        value = videomaxTOUT
+        errortiers.tier2error(criteria, value, description)
+    else:
+        pass
+
+
+def VREPcheck(videodata, tenBitVideoValues):
+    maxVREP = tenBitVideoValues["VREPMax"]
+    videomaxVREP = videodata.at[8, "VREP"]
+    if maxVREP < videomaxVREP:
+        criteria = "VREPMax"
+        value = videomaxVREP
+        description = "Your VREP maximum is outside of the suggested range"
+        errortiers.tier2error(criteria, value, description)
+    else:
+        pass
