@@ -67,6 +67,7 @@ field_names = [
     "label",
     "description",
     "Checked in? (yes/no)"
+    "Packing & Shipping Check in? (yes/no)"
     "Capture date",
     "Staff Initials",
     "Container number ex. Box Number",
