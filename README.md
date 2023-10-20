@@ -1,29 +1,29 @@
 # nul-rdc-scripts
 Scripts used by the Collections Digitization Team aka The Production Team
-When you add a script please be sure to add documentation and make sure to comment it. <br/>
+When you add a script please be sure to add documentation and make sure to comment it.   
 
-## Core Tools <br/>
+## Poetry Setup
+
+In the terminal, `cd` to repository parent folder (nul-rdc-scripts) and run `poetry install`
+
+## Core Tools   
 
 ### Imaging Workflow:
 
-[Image Quality Checker](https://github.com/nulib/nul-rdc-scripts/tree/main/Image/iqc) <br/>
+[Image Quality Checker](/nulrdcscripts/iqc/)   
 
-### Film and Video Workflow:
+### AV Workflow:
 
-[mov2ffv1 Video Transcoder](https://github.com/nulib/nul-rdc-scripts/tree/main/AV/Video) <br/>
-[dpx2ffv1 Film Transcoder](https://github.com/nulib/nul-rdc-scripts/tree/main/AV/Film) <br/>
+[Video Processor](/nulrdcscripts/vproc)   
+[Audio Processor](/nulrdcscripts/aproc)   
 
-### Audio Workflow:
-
-[Audio Processor](https://github.com/nulib/nul-rdc-scripts/tree/main/AV/Audio/audio_processor) <br/>
-
-## Additional Tools <br/>
-
-[Meadow Image CSV Converter](https://github.com/nulib/nul-rdc-scripts/tree/main/Meadow/image_csv_script) <br/>
+### Meadow
+[Meadow Ingest Sheet Generator](/nulrdcscripts/ingest/)   
 
 ### Inventorying:
-[Inventory Creator for Image and Text Works](https://github.com/nulib-rdc-scripts/tree/main/Image/Inventory) <br/>
+[Inventory Creator for Image and Text Works](/nulrdcscripts/inventory/)   
 
-### Mig AV Script
+### Deprecated
 
-[Meadow Ingest Sheet Generator for AV](https://github.com/nulib/nul-rdc-scripts/tree/main/Meadow/mig_av) <br/>
+[dpx2ffv1 Film Transcoder](/nulrdcscripts/fproc/)   
+[Meadow Image CSV Converter](/nulrdcscripts/text/)   
