@@ -168,7 +168,7 @@ def audio_processor_main():
                 # json filename should use the filename found in the inventory
                 json_file_abspath = os.path.join(
                     meta_folder_abspath,
-                    inventory_filename + "-" + metadata_identifier + ".json",
+                    inventory_filename + "_s" + ".json",
                 )
 
                 # generate ffprobe metadata from input
@@ -281,7 +281,7 @@ def audio_processor_main():
                         "1920",
                         "-o",
                         os.path.join(
-                            meta_folder_abspath, base_filename + "spectrogram" + ".png"
+                            meta_folder_abspath, base_filename + "spectrogram_s.png"
                         ),
                     ]
                     subprocess.run(sox_spectrogram_command)

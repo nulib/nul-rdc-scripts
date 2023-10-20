@@ -478,7 +478,7 @@ def generate_spectrogram(input, channel_layout_list, outputFolder, outputName):
     """
     spectrogram_resolution = "1920x1080"
     for index, item in enumerate(channel_layout_list):
-        output = os.path.join(outputFolder, outputName + "_0a" + str(index) + ".png")
+        output = os.path.join(outputFolder, outputName + "_spectrogram0" + str(index) + "_s.png")
         spectrogram_args = [args.ffmpeg_path]
         spectrogram_args += ["-loglevel", "error", "-y"]
         spectrogram_args += ["-i", input, "-lavfi"]
