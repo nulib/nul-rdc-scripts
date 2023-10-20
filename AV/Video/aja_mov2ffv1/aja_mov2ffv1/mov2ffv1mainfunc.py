@@ -20,11 +20,11 @@ def aja_mov2ffv1_main():
     # the ac identifier will be used as the folder name for the access file
     # it will also be appended to the end of the access copy filename
     ac_identifier = "a"
-    metadata_identifier = "meta"
+    metadata_identifier = "meta_s"
     # identifier appended to the end of the MKV preservation file
     # Replace with "None" to keep the name the same as the input
     if not args.keep_filename:
-        pm_filename_identifier = "-p"
+        pm_filename_identifier = "_p"
     else:
         pm_filename_identifier = None
     inventoryName = "transcode_inventory.csv"
@@ -88,38 +88,38 @@ def aja_mov2ffv1_main():
         inputAbsPath = os.path.join(indir, movFilename)
         baseFilename = movFilename.replace(".mov", "")
         baseOutput = os.path.join(outdir, baseFilename)
-        pmOutputFolder = os.path.join(baseOutput, pm_identifier)
         mkvBaseFilename = (
             (baseFilename + pm_filename_identifier)
             if pm_filename_identifier
             else (baseFilename)
         )
         mkvFilename = mkvBaseFilename + ".mkv"
-        outputAbsPath = os.path.join(pmOutputFolder, mkvFilename)
-        tempMasterFile = os.path.join(pmOutputFolder, baseFilename + "-tmp.mkv")
+        outputAbsPath = os.path.join(baseOutput, mkvFilename)
+        tempMasterFile = os.path.join(baseOutput, baseFilename + "_tmp.mkv")
         framemd5File = mkvBaseFilename + ".framemd5"
-        framemd5AbsPath = os.path.join(pmOutputFolder, framemd5File)
-        acOutputFolder = os.path.join(baseOutput, ac_identifier)
+        framemd5AbsPath = os.path.join(baseOutput, framemd5File)
         acAbsPath = os.path.join(
-            acOutputFolder, baseFilename + "-" + ac_identifier + ".mp4"
+            baseOutput, baseFilename + "_" + ac_identifier + ".mp4"
         )
-        metaOutputFolder = os.path.join(baseOutput, metadata_identifier)
         jsonAbsPath = os.path.join(
-            metaOutputFolder, baseFilename + "-" + metadata_identifier + ".json"
+            baseOutput, baseFilename + "_s" + ".json"
         )
-        pmMD5AbsPath = os.path.join(pmOutputFolder, mkvBaseFilename + ".md5")
+        pmMD5AbsPath = os.path.join(baseOutput, mkvBaseFilename + ".md5")
 
         # generate ffprobe metadata from input
         input_metadata = mov2ffv1supportfuncs.ffprobe_report(movFilename, inputAbsPath)
 
-        # create a list of needed output folders and make them
-        if not args.skip_ac:
-            outFolders = [pmOutputFolder, acOutputFolder, metaOutputFolder]
+        #create output folder
+        if not os.path.isdir(baseOutput):
+            try:
+                os.mkdir(baseOutput)
+            except:
+                print("unable to create output folder:", baseOutput)
+                quit()
         else:
-            outFolders = [pmOutputFolder, metaOutputFolder]
-        mov2ffv1supportfuncs.create_transcode_output_folders(baseOutput, outFolders)
+            print(baseOutput, "already exists")
+            print("Proceeding")
 
-        print("\n")
         # get information about item from csv inventory
         print("*checking inventory for", baseFilename + "*")
         item_csvDict = csvDict.get(baseFilename)
@@ -143,7 +143,6 @@ def aja_mov2ffv1_main():
         mov2ffv1supportfuncs.ffv1_lossless_transcode(
             input_metadata, transcode_nameDict, audioStreamCounter
         )
-
         # log transcode finish time
         tftime = datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -230,21 +229,21 @@ def aja_mov2ffv1_main():
                 acHash = corefuncs.hashlib_md5(acAbsPath)
                 with open(
                     os.path.join(
-                        acOutputFolder, baseFilename + "-" + ac_identifier + ".md5"
+                        baseOutput, baseFilename + "_" + ac_identifier + ".md5"
                     ),
                     "w",
                     newline="\n",
                 ) as f:
                     print(
                         acHash,
-                        "*" + baseFilename + "-" + ac_identifier + ".mp4",
+                        "*" + baseFilename + "_" + ac_identifier + ".mp4",
                         file=f,
                     )
 
             # log access copy filename if access copy was created
             # TO DO: verify that access copy runtime matches pm runtime?
             if os.path.isfile(acAbsPath):
-                acFilename = baseFilename + "-" + ac_identifier + ".mp4"
+                acFilename = baseFilename + "_" + ac_identifier + ".mp4"
             else:
                 acFilename = "No access copy found"
 
@@ -280,7 +279,7 @@ def aja_mov2ffv1_main():
                 print("*generating QC spectrograms*")
                 channel_layout_list = input_metadata["techMetaA"]["channels"]
                 mov2ffv1supportfuncs.generate_spectrogram(
-                    outputAbsPath, channel_layout_list, metaOutputFolder, baseFilename
+                    outputAbsPath, channel_layout_list, baseOutput, baseFilename
                 )
 
             # create qctools report

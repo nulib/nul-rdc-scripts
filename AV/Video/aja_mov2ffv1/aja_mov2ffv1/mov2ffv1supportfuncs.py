@@ -11,7 +11,7 @@ import time
 from aja_mov2ffv1 import equipment_dict
 from aja_mov2ffv1.mov2ffv1parameters import args
 
-
+#no longer necessary
 def create_transcode_output_folders(baseOutput, outputFolderList):
     if not os.path.isdir(baseOutput):
         try:
@@ -227,7 +227,7 @@ def ffv1_lossless_transcode(input_metadata, transcode_nameDict, audioStreamCount
     framemd5AbsPath = transcode_nameDict.get("framemd5AbsPath")
     outputAbsPath = transcode_nameDict.get("outputAbsPath")
     framemd5File = transcode_nameDict.get("framemd5File")
-
+    
     # create ffmpeg command
     ffmpeg_command = [args.ffmpeg_path]
     if not args.verbose:
@@ -279,7 +279,7 @@ def ffv1_lossless_transcode(input_metadata, transcode_nameDict, audioStreamCount
     # execute ffmpeg command
     subprocess.run(ffmpeg_command)
 
-    # remux to attach framemd5
+    # remux to attach framemd5)
     if args.embed_framemd5:
         add_attachment = [
             args.ffmpeg_path,
@@ -478,7 +478,7 @@ def generate_spectrogram(input, channel_layout_list, outputFolder, outputName):
     """
     spectrogram_resolution = "1920x1080"
     for index, item in enumerate(channel_layout_list):
-        output = os.path.join(outputFolder, outputName + "_0a" + str(index) + ".png")
+        output = os.path.join(outputFolder, outputName + "_spectrogram0" + str(index) + "_s.png")
         spectrogram_args = [args.ffmpeg_path]
         spectrogram_args += ["-loglevel", "error", "-y"]
         spectrogram_args += ["-i", input, "-lavfi"]
