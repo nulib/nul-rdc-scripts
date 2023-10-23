@@ -17,7 +17,7 @@ if sys.version_info[0] < 3:
 def main():
     pm_identifier = "p"
     ac_identifier = "a"
-    metadata_identifier = "s"
+    metadata_identifier = "meta"
     preservation_extension = ".wav"
     access_extension = ".wav"
     inventoryName = "transcode_inventory.csv"
@@ -170,7 +170,7 @@ def main():
                 # json filename should use the filename found in the inventory
                 json_file_abspath = os.path.join(
                     meta_folder_abspath,
-                    inventory_filename + "_" + metadata_identifier + ".json",
+                    inventory_filename + "_s" + ".json",
                 )
 
                 # generate ffprobe metadata from input
