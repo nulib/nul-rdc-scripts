@@ -132,6 +132,14 @@ parser.add_argument(
     dest="all",
     help="This is equivalent to using -t -m -j -s",
 )
+parser.add_argument(
+    "--skip_coding",
+    default=False,
+    required=False,
+    action="store_true",
+    dest="skip_coding_history",
+    help="To skip coding history creation",
+)
 
 args = parser.parse_args()
 

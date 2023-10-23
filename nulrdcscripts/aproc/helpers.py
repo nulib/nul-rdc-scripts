@@ -239,6 +239,7 @@ def group_lists(original_list):
 
 
 def create_coding_history(row, encoding_chain_fields, append_list):
+    return
     # separates out just the number from the encoding chain field
     # then compares that to the previous entry in the list so that same numbers are grouped
     grouped_field_list = group_lists(encoding_chain_fields)
@@ -320,9 +321,8 @@ def create_coding_history(row, encoding_chain_fields, append_list):
     return coding_history
 
 
-def import_inventories(source_inventories, reference_inventory_list):
+def import_inventories(source_inventories, reference_inventory_list, skip_coding_history):
     csvDict = {}
-    skip_coding_history = False
     for i in source_inventories:
         verify_csv_exists(i)
         with open(i, encoding="utf-8") as f:

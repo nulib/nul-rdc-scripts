@@ -25,7 +25,7 @@ def main():
     global ac_identifier
     ac_identifier = "a"
     global metadata_identifier
-    metadata_identifier = "s"
+    metadata_identifier = "meta"
     # identifier appended to the end of the MKV preservation file
     # Replace with "None" to keep the name the same as the input
     global pm_filename_identifier
