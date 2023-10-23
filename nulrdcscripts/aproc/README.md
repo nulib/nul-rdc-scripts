@@ -26,6 +26,7 @@ A script for processing and performing QC on audio files.
 `--a_policy OUTPUT_POLICY`
                       Mediaconch policy for access files   
 `--all`, `-a`         This is equivalent to using `-t -m -j -s`. Defaults to true. 
+`--skip_coding`,      To skip coding history creation
 
 ## Prerequisites
 In order to use all of the script's functions you will need to have the following programs installed: ffmpeg, ffprobe, SoX, BWFMetaedit, Mediaconch, poetry
