@@ -239,7 +239,6 @@ def group_lists(original_list):
 
 
 def create_coding_history(row, encoding_chain_fields, append_list):
-    return
     # separates out just the number from the encoding chain field
     # then compares that to the previous entry in the list so that same numbers are grouped
     grouped_field_list = group_lists(encoding_chain_fields)
@@ -377,7 +376,7 @@ def import_inventories(source_inventories, reference_inventory_list, skip_coding
                 type = row["Tape Type (Cassette)"]
                 nr = row["Noise Reduction"]
                 speed = row["Speed IPS"]
-                if skip_coding_history is False:
+                if not skip_coding_history:
                     coding_history = create_coding_history(
                         row, encoding_chain_fields, [tapeBrand, type, speed, nr]
                     )

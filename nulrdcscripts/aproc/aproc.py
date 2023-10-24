@@ -78,7 +78,7 @@ def main():
     if args.source_inventory:
         source_inventories = args.source_inventory
         source_inventory_dict = helpers.import_inventories(
-            source_inventories, reference_inventory_list
+            source_inventories, reference_inventory_list, args.skip_coding_history
         )
     else:
         print("\n*** Checking input directory for CSV files ***")
