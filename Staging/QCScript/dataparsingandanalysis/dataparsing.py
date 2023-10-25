@@ -1,6 +1,6 @@
 import pandas as pd
-import keycleaner as keycleaner
-import overallstatistics as overallstatistics
+import cleaners
+import overallstatistics
 from bs4 import BeautifulSoup
 from tabulate import tabulate
 
@@ -26,7 +26,7 @@ def dataparsingandtabulatingaudio(filepath):
                 elif tagkey == "lavfi.astats.Overall.Noise_floor":
                     pass
                 else:
-                    cleankey = keycleaner.tagkeycleaning(tagkey)
+                    cleankey = cleaners.tagkeycleaning(tagkey)
                     tagvalue = tag.get("value")
                     audiodata[frametime][cleankey] = float(tagvalue)
         else:
@@ -49,7 +49,7 @@ def dataparsingandtabulatingvideo(filepath):
             videodata[frametime] = {}
             for tag in taglist:
                 tagkey = tag.get("key")
-                cleankey = keycleaner.tagkeycleaning(tagkey)
+                cleankey = cleaners.tagkeycleaning(tagkey)
                 tagvalue = tag.get("value")
                 videodata[frametime][cleankey] = float(tagvalue)
         else:

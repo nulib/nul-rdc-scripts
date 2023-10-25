@@ -1,0 +1,17 @@
+tenBitVideoValues = {"YMIN": 0, "YLOW": 64, "YAVG": 512,
+    "YHIGH": 940, "YMAX": 1023, "UMIN": 0, "ULOW": 64, "UAVG": 512,
+    "UHIGH": 960,
+    "UMAX": 1023,
+    "VMIN": 0,
+    "VLOW": 64,
+    "VAVG": 512,
+    "VHIGH": 960,
+    "VMAX": 1023,
+    "SATMIN": 0,
+    "SATAVG": 362.04,
+    "SATHIGH": 512,
+    "SATMAX": 724.08,
+    "TOUTMAX": 0.009,
+    "VREPMAX": 0.03,
+    "BRNGMAX": 1
+}
