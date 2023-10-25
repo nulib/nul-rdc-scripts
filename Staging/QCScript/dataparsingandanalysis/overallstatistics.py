@@ -14,3 +14,7 @@ def audiodatastatistics(audiodata):
     audiostats = audiodata.describe()
     audiogeneralstats["audiostats"] = audiostats
     return audiogeneralstats
+
+
+
+# This gets fed back to the run.py file, which then uses this data for generating statistics for the entire video

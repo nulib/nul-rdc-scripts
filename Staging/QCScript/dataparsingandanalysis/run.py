@@ -1,7 +1,8 @@
 import dataparsing
-import videoanalysis
+import videoanalysis as videoanalysis
 import overallstatistics
 import csvgeneration
+
 
 filepath = input("Filepath")
 
@@ -11,6 +12,9 @@ audiodata = dataparsing.dataparsingandtabulatingaudio(filepath)
 
 videostats = overallstatistics.videodatastatistics(videodata)
 audiostats = overallstatistics.audiodatastatistics(audiodata)
+
+csvgeneration.videostatscsv(videostats)
+
 
 
 """

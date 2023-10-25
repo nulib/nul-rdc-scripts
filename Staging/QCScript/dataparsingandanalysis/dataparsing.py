@@ -1,6 +1,6 @@
 import pandas as pd
-import keycleaner
-import overallstatistics
+import keycleaner as keycleaner
+import overallstatistics as overallstatistics
 from bs4 import BeautifulSoup
 from tabulate import tabulate
 
@@ -56,3 +56,6 @@ def dataparsingandtabulatingvideo(filepath):
             pass
     videodf = pd.DataFrame.from_dict(videodata, orient="index")
     return videodf
+
+
+# Dataframes returned contain information about every frame in the video. This will be used on its own and then will also be used to generate descriptive statistics for the entire video
