@@ -8,8 +8,8 @@ def tagkeycleaning(tagkey):
 
 # Makes the criteria more legible so that it can be strung together later for a easy interpretation without relying on acronyms
 
-def cleanCriteria (errorintake):
-    for criteria in errorintake:
+def cleanCriteria (criteria):
+    for i in criteria:
         if criteria.contains("MIN"):
             criteria = criteria.replace ("MIN", "minimum")
         elif criteria.contains ("LOW"):
@@ -26,7 +26,8 @@ def cleanCriteria (errorintake):
         # U has to use the startswith method instead as otherwise it will replace the U in TOUT which is not wanted
         elif criteria.startswith ("U"):
             criteria = criteria.replace("U", "U ")
-        elif criteria.contains ("V"):
+        # V has to use the startswith method instead as otherwise it will replace the V in VREP which is not wanted
+        elif criteria.startswith ("V"):
             criteria = criteria.replace("V", "V ")
         elif criteria.contains ("BRNG"):
             criteria = criteria.replace ("BRNG", "Broadcasting Range ")
@@ -34,4 +35,6 @@ def cleanCriteria (errorintake):
             criteria= criteria.replace ("TOUT", "Temporal Outliers ")
         elif criteria.contains ("SAT"):
             criteria = criteria.replace("SAT", "Saturation")
+        elif criteria.conains ("VREP"):
+            criteria = criteria.replace("VREP", "Vertical Line Repetitions")
     return criteria

@@ -1,4 +1,17 @@
 import json
+tier1errors = ["SAT", "VREP", "BRNG"]
+tier2errors = [""]
+def errorsvideo (summaryvideoerrors):
+    if summaryvideoerrors.contains (tier1errors):
+        pass
+
+
+
+
+
+
+
+
 
 failstier1 = {}
 failstier2 = {}
