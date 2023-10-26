@@ -1,6 +1,5 @@
 import pandas as pd
 import cleaners
-import overallstatistics
 from bs4 import BeautifulSoup
 from tabulate import tabulate
 
