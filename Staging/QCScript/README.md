@@ -1,1 +1,10 @@
 This is the README for the QC Script. It will be added to once things are further along due to the potential for major alterations at this point
+
+
+
+Contributers:
+Alec Bertoy
+Dan Zellner
+Morgan Morel
+Brendan Coates
+Ben Turkus
