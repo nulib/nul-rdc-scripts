@@ -2,7 +2,7 @@
 name = "qcscript"
 version = "0.0.1"
 description = "Script to automate the video QC process"
-authors = "Northwestern University Libraries <repository@northwestern.edu>"
+authors = ["Northwestern University Libraries <repository@northwestern.edu>", "Sophia Francis"]
 license = "MIT"
 readme = "README.md"
 
