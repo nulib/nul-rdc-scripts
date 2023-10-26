@@ -1,6 +1,7 @@
 import dataparsing
 import videoanalysis
 import overallstatistics
+import errortiers
 from data.videovalues10Bit import tenBitVideoValues as tenBitVideoValues
 
 filepath = input("Filepath")
@@ -24,7 +25,8 @@ audiofeedtocsv = overallstatistics.audiostatstocsv(audiostats)
 #Video analysis for summary report
 summaryvideoerrors = videoanalysis.checkAllVideo(videostats, tenBitVideoValues)
 
-
+#Assigns errors to tiers for verbose reporting
+errortiers.errorsvideo(summaryvideoerrors)
 
 
 

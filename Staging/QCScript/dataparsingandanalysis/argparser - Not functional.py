@@ -24,6 +24,7 @@ parser.add_argument(
     help="full path to output folder",
 )
 
+#This may actually be able to come directly from video
 parser.add_argument(
     "--8bit",
     "--8",
@@ -33,5 +34,7 @@ parser.add_argument(
     type=str,
     help="Use to specify what bit depth your video is",
 )
+
+#Need to add one for B/W or Color video option
 
 args = parser.parse_args()
