@@ -59,7 +59,7 @@ run.py --input example.xml -c
 
 
 
-## Contributers:
+## Many thanks to the contributers to this project:
 
 Alec Bertoy
 
@@ -70,3 +70,4 @@ Morgan Morel
 Brendan Coates
 
 Ben Turkus
+
