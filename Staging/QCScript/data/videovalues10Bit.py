@@ -15,6 +15,7 @@ tenBitVideoValues = {
     "VHIGH": 960,
     "VMAX": 1023,
     "SATMIN": 0,
+    "SATLOW": 181.02,
     "SATAVG": 362.04,
     "SATHIGH": 512,
     "SATMAX": 724.08,
