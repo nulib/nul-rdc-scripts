@@ -1,16 +1,23 @@
 import pandas as pd
+from data.videovalues10Bit import tenBitVideoValues
+from data.videovalues8Bit import eightBitVideoValues
 
 
 videoerrors = {}
-def checkAllVideo (videostats, tenBitVideoValues):
-    MINsCheck(videostats, tenBitVideoValues)
-    LOWsCheck(videostats, tenBitVideoValues)
-    AVGsCheck(videostats, tenBitVideoValues)
-    HIGHsCheck(videostats, tenBitVideoValues)
-    MAXsCheck(videostats, tenBitVideoValues)
+def checkAllVideo (videostats, videobitdepth):
+    if videobitdepth == "--10bit" or videobitdepth == "-10":
+        standardvalues = tenBitVideoValues
+    elif videobitdepth == "--8bit" or videobitdepth == "-8":
+        standardvalues = eightBitVideoValues
 
-    def check (criteria, videostats, tenBitVideoValues):
-        setcriteria = tenBitVideoValues.get[criteria]
+    MINsCheck(videostats, standardvalues)
+    LOWsCheck(videostats, standardvalues)
+    AVGsCheck(videostats, standardvalues)
+    HIGHsCheck(videostats, standardvalues)
+    MAXsCheck(videostats, standardvalues)
+
+    def check (criteria, videostats, standardvalues):
+        setcriteria = standardvalues.get[criteria]
         lowEnd = videostats.at[3, criteria]
         highEnd = videostats.at[8, criteria]
         if highEnd < setcriteria > lowEnd:
