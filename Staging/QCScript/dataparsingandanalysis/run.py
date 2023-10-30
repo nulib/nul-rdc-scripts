@@ -1,32 +1,17 @@
-import dataparsing
-import videoanalysis
-import overallstatistics
-import errortiers
-from data.videovalues10Bit import tenBitVideoValues as tenBitVideoValues
+import setup
+import file
+import folder
+from argparser import args
 
-filepath = input("Filepath")
+inputPath = args.input_path
+outputPath = args.output_path
+#filepath = input("Filepath")
+fileType = setup.inputCheck(inputPath)
 
-#Parses the raw XML into individual readings by frame (determined by frametime)
-videodata = dataparsing.dataparsingandtabulatingvideo(filepath)
-audiodata = dataparsing.dataparsingandtabulatingaudio(filepath)
+if fileType == "Folder":
+    folder(inputPath)
+elif fileType == "File":
+    file(inputPath)
 
-#Collects the video summary data - outputs CSV and Dictionary
-videostats = overallstatistics.videodatastatistics(videodata)
-
-videofeedtodict = overallstatistics.videostatstodict(videostats)
-videofeedtocsv = overallstatistics.videostatstocsv(videostats)
-
-#Collects the audio summary data - outputs CSV and Dictionary
-audiostats = overallstatistics.audiodatastatistics(audiodata)
-
-audiofeedtodict = overallstatistics.audiostatstodict(audiostats)
-audiofeedtocsv = overallstatistics.audiostatstocsv(audiostats)
-
-#Video analysis for summary report
-summaryvideoerrors = videoanalysis.checkAllVideo(videostats, tenBitVideoValues)
-
-#Assigns errors to tiers for verbose reporting
-errortiers.errorsvideo(summaryvideoerrors)
-
-
+savePath = setup.outputCheck(outputPath, inputPath)
 
