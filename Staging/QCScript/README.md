@@ -4,7 +4,7 @@ Document Owner: Sophia Francis <br>
 
 Software Used: Terminal or Command Prompt, VSCode (optional), QCTools (requires the output files not the software itself), Excel (or other CSV reader if accessing CSV file)
 
-Packages required (also see .toml file): pandas, lxml, beautifulsoup4, tabulate, json, os, numpy
+Packages required (also see .toml file): pandas, lxml, beautifulsoup4, tabulate, json, os, 
 
 Description:<br>
 This document provides information about running the QC Script and what information is required in order to do so.
