@@ -54,8 +54,31 @@ run.py --input example.xml --color
 run.py --input example.xml -c
 ```
 
+### 5. Depending on what bitdepth you are utilizing, different values need to be used. To select:
 
+- Use ```--10bit``` or ```-10``` for 10 Bit video
 
+- Use ```--8bit``` or ```-8``` for 8 Bit Video
+
+Adding to the example above, for a color video this would look like:
+
+#### 10 Bit Video
+
+```
+run.py --input example.xml --color --10bit
+```
+```
+run.py --input example.xml --color -10
+```
+
+#### 8 Bit Video
+
+```
+run.py --input example.xml --color --8bit
+```
+```
+run.py --input example.xml --color -8
+```
 
 
 
