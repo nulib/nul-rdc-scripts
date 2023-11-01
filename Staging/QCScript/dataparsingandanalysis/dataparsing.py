@@ -40,20 +40,24 @@ def dataparsingandtabulatingvideo(filepath):
     contents = file.read()
     soup = BeautifulSoup(contents, "xml")
     contents = file.read()
+    frame = 0
     for frames in soup.find_all("frame"):
         taglist = frames.find_all("tag")
         frametime = frames.get("pkt_pts_time")
         mediatype = frames.get("media_type")
         if mediatype == "video":
-            videodata[frametime] = {}
+            frame = frame + 1
+            videodata[frame] = {}
             for tag in taglist:
                 tagkey = tag.get("key")
                 cleankey = cleaners.tagkeycleaning(tagkey)
                 tagvalue = tag.get("value")
-                videodata[frametime][cleankey] = float(tagvalue)
+                videodata[frame]["Frame Time"] = float(frametime)
+                videodata[frame][cleankey] = float(tagvalue)
         else:
             pass
     videodf = pd.DataFrame.from_dict(videodata, orient="index")
+    videodf = videodf.rename_axis("Frame")
     return videodf
 
 
