@@ -7,6 +7,10 @@ satB = 0
 suffix = ["MIN", "MAX", "HIGH", "LOW", "AVG"]
 lumaChroma = ["Y", "U", "V"]
 
+YErrors = {}
+UErrors = {}
+VErrors = {}
+
 
 def checkerrors(videodata, videobitdepth):
     def setStandardValues():
@@ -17,7 +21,7 @@ def checkerrors(videodata, videobitdepth):
         return standardvalues
 
     standardvalues = setStandardValues(videobitdepth)
-    checkSAT(standardvalues, videodata)
+    checkMINs(standardvalues, videodata)
 
     def checksfbf(videodata, standardvalues):
         pass
@@ -26,17 +30,13 @@ def checkerrors(videodata, videobitdepth):
         for i in suffix:
             criteria = lumaChroma[i] + "MIN"
             criteriastandard = standardvalues.get[criteria]
-            errorBRNG = []
+            criteriaequation = '"' + criteria + "<" + criteriastandard + '"'
+            errorsMINdf = videodata.query(criteriaequation)
+            if errorsMINdf.empty:
+                pass
+            else:
+                pass
 
-    def checkSAT(videodata, standardvalues):
-        for i in suffix:
-            criteria = "SAT" + suffix[i]
-            criteriaChecking = standardvalues.get[criteria]
-            satOutRNG = []
-            for index, row in videodata.iterrows():
-                """if value > value:
-                    satOutRNG.append(row[index])
-                    satI = satI + 1
-                else:
-                    pass
-                """
+    def writetolumaChromadict(criteria):
+        if criteria == "Y":
+            pass
