@@ -1,8 +1,9 @@
 import pandas as pd
+from argparser import args
 from data.videovalues10Bit import tenBitVideoValues
 from data.videovalues8Bit import eightBitVideoValues
 
-
+videobitdepth = args.videobitdepth
 videoerrors = {}
 def checkAllVideo (videostats, videobitdepth):
     if videobitdepth == "--10bit" or videobitdepth == "-10":

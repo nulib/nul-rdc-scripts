@@ -1,10 +1,10 @@
 import pandas as pd
 from data.videovalues10Bit import tenBitVideoValues as tenBitVideoValues
 from data.videovalues8Bit import eightBitVideoValues as eightBitVideoValues
+from argparser import args
 
-satI = 0
-satB = 0
-suffix = ["MIN", "MAX", "HIGH", "LOW", "AVG"]
+videobitdepth = args.videobitdepth
+
 def checkerrors (videodata, videobitdepth, eightBitVideoValues, tenBitVideoValues):
 
     def setStandardValues (eightBitVideoValues, tenBitVideoValues):
@@ -71,9 +71,9 @@ def checkerrors (videodata, videobitdepth, eightBitVideoValues, tenBitVideoValue
               lowBRNGErrors.assign(errortype="Low BRNG")
         return lowBRNGErrors
 
-    standardvalues = setStandardValues(videobitdepth)
-    checkLuma (standardvalues,videodata)
-    checkChromaU (standardvalues,videodata)
-    checkChromaV (standardvalues,videodata)
+    standardvalues = setStandardValues(videobitdepth, eightBitVideoValues, tenBitVideoValues)
+    YErrors = checkLuma (standardvalues,videodata)
+    UErrors = checkChromaU (standardvalues,videodata)
+    VErrors = checkChromaV (standardvalues,videodata)
     
 

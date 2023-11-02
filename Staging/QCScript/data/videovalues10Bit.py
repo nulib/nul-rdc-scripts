@@ -7,7 +7,7 @@ tenBitVideoValues = {
     'VLOW': {'BRNGOut':64, 'clipping':0},
     'VHIGH': {'BRNGOut':960, 'clipping': 1023},
     'VAVG': {'lowend':341, 'highend':682},
-    'TOUTMAX': {'ideal': 0.009, 'MAX':0.009},
+    'TOUTMAX': {'ideal': 0, 'MAX':0.009},
     'VREP': {'ideal':0, 'MAX':0.03},
     'BRNG': {'ideal':0, 'MAX':1}, 
     'SAT75' : {'lowend':0, 'highend':354.8}, #good

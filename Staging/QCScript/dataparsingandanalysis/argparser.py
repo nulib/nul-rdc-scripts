@@ -32,6 +32,7 @@ parser.add_argument('videobitdepth', choices = ['-10', '--10bit', '-8, --8bit'],
     action="store",
     default="--10bit",
     dest = "videobitdepth",
+    required = True,
     type=str,
     help="Use to specify what bit depth your video is",
 )
