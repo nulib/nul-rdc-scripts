@@ -1,33 +1,21 @@
 eightBitVideoValues = {
-    "YMIN": 0,
-    "YLOW": 16,
-    "YAVG": 128,
-    "YHIGH": 235,
-    "YMAX": 255,
-    "UMIN": 0,
-    "ULOW": 16,
-    "UAVG": 128,
-    "UHIGH": 235,
-    "UMAX": 255,
-    "VMIN": 0,
-    "VLOW": 16,
-    "VAVG": 128,
-    "VHIGH": 235,
-    "VMAX": 255,
-    "SATMIN": 0,
-    "SATAVG": 90.51,
-    "SATHIGH": 128,
-    "SATMAX": 181.02,
-    "TOUTMAX": 0.009,
-    "VREPMAX": 0.03,
-    "BRNGMAX": 1,
-}
-
-eightBitVideo = {
     "YLOW": {"BRNGOut": 16, "clipping": 0},
     "YHIGH": {"BRNGOut": 235, "clipping": 255},
+    "YAVG": 128,
     "ULOW": {"BRNGOut": 16, "clipping": 0},
-    "UHIGH": {"BRNGOut": 235, "clipping": 255},
+    "UHIGH": {"BRNGOut": 240, "clipping": 255},
     "VLOW": {"BRNGOut": 16, "clipping": 0},
-    "VHIGH": {"BRNGOut": 235, "clipping": 255},
+    "VHIGH": {"BRNGOut": 240, "clipping": 255},
+    "VAVG": {"lowend": 85, "highend":170},
+    "TOUTMAX": {"ideal":0, "MAX":0.009},
+    "VREP": {"ideal":0, "MAX":0.03},
+    "SAT75": {"lowend":0, "highend":88.7}, #good
+    "SAT100": {"lowend": 88.71,"highend": 118.2}, #moderate
+    "SATIllegal": {"lowend":118.2, "highend":181.02}, #critical
+    "BRNG": {"ideal":0, "MAX":1},
+    "MSEf": {"ideal":0}, # close to zero as possible
+    "PSNRideal": {"lowend":30, "highend":50},
+    "PSNRMax": {"low": 0, "high": 60}
+
+
 }
