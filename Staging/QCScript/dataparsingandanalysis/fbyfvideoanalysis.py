@@ -20,23 +20,4 @@ def checkerrors(videodata, videobitdepth):
             standardvalues = tenBitVideoValues
         return standardvalues
 
-    standardvalues = setStandardValues(videobitdepth)
-    checkMINs(standardvalues, videodata)
-
-    def checksfbf(videodata, standardvalues):
-        pass
-
-    def checkMINs(videodata, standardvalues):
-        for i in suffix:
-            criteria = lumaChroma[i] + "MIN"
-            criteriastandard = standardvalues.get[criteria]
-            criteriaequation = '"' + criteria + "<" + criteriastandard + '"'
-            errorsMINdf = videodata.query(criteriaequation)
-            if errorsMINdf.empty:
-                pass
-            else:
-                pass
-
-    def writetolumaChromadict(criteria):
-        if criteria == "Y":
-            pass
+   
