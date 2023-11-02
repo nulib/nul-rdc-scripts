@@ -1,11 +1,11 @@
 eightBitVideoValues = {
-    "YMIN": 0, 
-    "YLOW": 16, 
+    "YMIN": 0,
+    "YLOW": 16,
     "YAVG": 128,
-    "YHIGH": 235, 
-    "YMAX": 255, 
-    "UMIN": 0, 
-    "ULOW": 16, 
+    "YHIGH": 235,
+    "YMAX": 255,
+    "UMIN": 0,
+    "ULOW": 16,
     "UAVG": 128,
     "UHIGH": 235,
     "UMAX": 255,
@@ -20,5 +20,14 @@ eightBitVideoValues = {
     "SATMAX": 181.02,
     "TOUTMAX": 0.009,
     "VREPMAX": 0.03,
-    "BRNGMAX": 1
+    "BRNGMAX": 1,
+}
+
+eightBitVideo = {
+    "YLOW": {"BRNGOut": 16, "clipping": 0},
+    "YHIGH": {"BRNGOut": 235, "clipping": 255},
+    "ULOW": {"BRNGOut": 16, "clipping": 0},
+    "UHIGH": {"BRNGOut": 235, "clipping": 255},
+    "VLOW": {"BRNGOut": 16, "clipping": 0},
+    "VHIGH": {"BRNGOut": 235, "clipping": 255},
 }
