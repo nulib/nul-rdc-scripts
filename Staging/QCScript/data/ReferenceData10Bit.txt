@@ -10,8 +10,8 @@ Vav: ~512
 TOUT: 0 - 0.009
 TOUTc: <10
 SAT Ideal Range: 0 - 88.7
-SATb: <1000
-SATi: <1000
+SATb: <1000 frames
+SATi: <1000 frames
 Hue Ideal Range: 480 - 588 (for skin tones)
 BRNGav: <0.02
 BRNGc: <1000

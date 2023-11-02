@@ -5,6 +5,7 @@ from argparser import args
 
 inputPath = args.input_path
 outputPath = args.output_path
+
 #filepath = input("Filepath")
 fileType = setup.inputCheck(inputPath)
 

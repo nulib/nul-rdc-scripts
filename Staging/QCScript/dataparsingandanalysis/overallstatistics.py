@@ -13,7 +13,7 @@ def videostatstodict (videostats):
 
 #Outputs summary video stats as a csv
 def videostatstocsv (videostats):
-    summarydatavideocsv = videostats.to_csv("videosummarystats.csv", index=True )
+    summarydatavideocsv = videostats.to_csv("videosummarystats.csv", index=True)
     return summarydatavideocsv
 
 #Gathers general audio data for summary report
