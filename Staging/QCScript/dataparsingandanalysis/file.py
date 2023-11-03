@@ -2,31 +2,28 @@ import dataparsing
 import errortiers
 import overallstatistics
 import videoanalysis
-import fbyfYUV
+from argparser import args
 
-def run(videoBitDepth, inputpath):
-    #Parses the raw XML into individual readings by frame (determined by frametime)
-    videodata = dataparsing.dataparsingandtabulatingvideo(inputpath)
-    audiodata = dataparsing.dataparsingandtabulatingaudio(inputpath)
+filepath = args.input_file
 
-    #Collects the video summary data - outputs CSV and Dictionary
-    videostats = overallstatistics.videodatastatistics(videodata)
+#Parses the raw XML into individual readings by frame (determined by frametime)
+videodata = dataparsing.dataparsingandtabulatingvideo(filepath)
+audiodata = dataparsing.dataparsingandtabulatingaudio(filepath)
 
-    videofeedtodict = overallstatistics.videostatstodict(videostats)
-    videofeedtocsv = overallstatistics.videostatstocsv(videostats)
+#Collects the video summary data - outputs CSV and Dictionary
+videostats = overallstatistics.videodatastatistics(videodata)
 
-    #Collects the audio summary data - outputs CSV and Dictionary
-    audiostats = overallstatistics.audiodatastatistics(audiodata)
+videofeedtodict = overallstatistics.videostatstodict(videostats)
+videofeedtocsv = overallstatistics.videostatstocsv(videostats)
 
-    audiofeedtodict = overallstatistics.audiostatstodict(audiostats)
-    audiofeedtocsv = overallstatistics.audiostatstocsv(audiostats)
+#Collects the audio summary data - outputs CSV and Dictionary
+audiostats = overallstatistics.audiodatastatistics(audiodata)
 
-    # Frame by frame video analysis
-    videoErrors = fbfYUV.checkerrors(videoBitDepth)
+audiofeedtodict = overallstatistics.audiostatstodict(audiostats)
+audiofeedtocsv = overallstatistics.audiostatstocsv(audiostats)
 
-    
-    #Video analysis for summary report
-    summaryvideoerrors = videoanalysis.checkAllVideo(videostats, videoBitDepth)
+#Video analysis for summary report
+summaryvideoerrors = videoanalysis.checkAllVideo(videostats, args.videobitdepth)
 
-    #Assigns errors to tiers for verbose reporting
-    errortiers.errorsvideo(summaryvideoerrors)
+#Assigns errors to tiers for verbose reporting
+errortiers.errorsvideo(summaryvideoerrors)

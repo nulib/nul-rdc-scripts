@@ -5,17 +5,14 @@ from argparser import args
 
 inputPath = args.input_path
 outputPath = args.output_path
-videoBitDepth = args.videobitdepth
 
 #filepath = input("Filepath")
-fileType = setup.inputCheck(inputPath) # allows for either a file or a directory to be run
-
-bitDepth = setup.setBitDepth(videoBitDepth) #selects which bit depth to calculate against
+fileType = setup.inputCheck(inputPath)
 
 if fileType == "Folder":
-    folder.run(inputPath, bitDepth)
+    folder(inputPath)
 elif fileType == "File":
-    file.run(inputPath, bitDepth)
+    file(inputPath)
 
 savePath = setup.outputCheck(outputPath, inputPath)
 

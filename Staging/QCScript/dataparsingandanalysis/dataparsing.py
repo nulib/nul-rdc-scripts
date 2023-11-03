@@ -4,9 +4,9 @@ from bs4 import BeautifulSoup
 from tabulate import tabulate
 
 
-def dataparsingandtabulatingaudio(inputpath):
+def dataparsingandtabulatingaudio(filepath):
     audiodata = {}
-    file = open(inputpath)
+    file = open(filepath)
     contents = file.read()
     soup = BeautifulSoup(contents, "xml")
     contents = file.read()
@@ -33,10 +33,11 @@ def dataparsingandtabulatingaudio(inputpath):
     audiodf = pd.DataFrame.from_dict(audiodata, orient="index")
     return audiodf
 
-#inputpath = "example.xml"
-def dataparsingandtabulatingvideo(inputpath):
+
+# filepath = "example.xml"
+def dataparsingandtabulatingvideo(filepath):
     videodata = {}
-    file = open(inputpath)
+    file = open(filepath)
     contents = file.read()
     soup = BeautifulSoup(contents, "xml")
     contents = file.read()
@@ -59,8 +60,6 @@ def dataparsingandtabulatingvideo(inputpath):
     videodf = pd.DataFrame.from_dict(videodata, orient="index")
     videodf = videodf.rename_axis("Frame")
     return videodf
-#videodf = dataparsingandtabulatingvideo(inputpath)
-#value = "YHIGH >= 350"
-#subdfYHigh=videodf.query(value)
-#subdfYHigh.to_csv("YHighData.csv", index=True)
+
+
 # Dataframes returned contain information about every frame in the video. This will be used on its own and then will also be used to generate descriptive statistics for the entire video
