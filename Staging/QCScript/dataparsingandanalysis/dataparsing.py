@@ -33,7 +33,8 @@ def dataparsingandtabulatingaudio(filepath):
     audiodf = pd.DataFrame.from_dict(audiodata, orient="index")
     return audiodf
 
-filepath = "test_NONEVIDEOSETTING_QTUNCOMPRESSED-p.mkv.qctools.xml"
+
+# filepath = "example.xml"
 def dataparsingandtabulatingvideo(filepath):
     videodata = {}
     file = open(filepath)
@@ -59,8 +60,6 @@ def dataparsingandtabulatingvideo(filepath):
     videodf = pd.DataFrame.from_dict(videodata, orient="index")
     videodf = videodf.rename_axis("Frame")
     return videodf
-videodf = dataparsingandtabulatingvideo(filepath)
 
-subdfYHigh=videodf.query("YHIGH => 1023 ")
-subdfYHigh.to_csv("YHighData.csv", index=True)
+
 # Dataframes returned contain information about every frame in the video. This will be used on its own and then will also be used to generate descriptive statistics for the entire video
