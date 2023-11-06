@@ -99,3 +99,5 @@ def checkerrors(videodata, videoBitDepth):
     YErrors = checkLuma(videoBitDepth, videodata)
     UErrors = checkChromaU(videoBitDepth, videodata)
     VErrors = checkChromaV(videoBitDepth, videodata)
+
+    return YErrors, UErrors, VErrors
