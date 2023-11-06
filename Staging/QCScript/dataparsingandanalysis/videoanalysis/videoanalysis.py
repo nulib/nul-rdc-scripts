@@ -1,28 +1,18 @@
 import pandas as pd
 from argparser import args
-from Staging.QCScript.dataparsingandanalysis.testbuild.videovalues10Bit import (
-    tenBitVideoValues,
-)
-from data.videovalues8Bit import eightBitVideoValues
 
-videobitdepth = args.videobitdepth
 videoerrors = {}
 
 
-def checkAllVideo(videostats, videobitdepth):
-    if videobitdepth == "--10bit" or videobitdepth == "-10":
-        standardvalues = tenBitVideoValues
-    elif videobitdepth == "--8bit" or videobitdepth == "-8":
-        standardvalues = eightBitVideoValues
+def checkAllVideo(videostats, videoBitDepth):
+    MINsCheck(videostats, videoBitDepth)
+    LOWsCheck(videostats, videoBitDepth)
+    AVGsCheck(videostats, videoBitDepth)
+    HIGHsCheck(videostats, videoBitDepth)
+    MAXsCheck(videostats, videoBitDepth)
 
-    MINsCheck(videostats, standardvalues)
-    LOWsCheck(videostats, standardvalues)
-    AVGsCheck(videostats, standardvalues)
-    HIGHsCheck(videostats, standardvalues)
-    MAXsCheck(videostats, standardvalues)
-
-    def check(criteria, videostats, standardvalues):
-        setcriteria = standardvalues.get[criteria]
+    def check(criteria, videostats, videoBitdepth):
+        setcriteria = videoBitDepth.get[criteria]
         lowEnd = videostats.at[3, criteria]
         highEnd = videostats.at[8, criteria]
         if highEnd < setcriteria > lowEnd:
