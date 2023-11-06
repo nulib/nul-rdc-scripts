@@ -16,7 +16,7 @@ def checkerrors(videodata, videoBitDepth):
         fullCriteria = runHIGH(criteria)
         checkLOWHIGH (videodata, videoBitDepth, fullCriteria)
 
-    def checkChromaV(videodata, videobitdepth):
+    def checkChromaV(videodata, videoBitDepth):
         criteria = "V"
         fullCriteria = runLOW(criteria)
         checkLOWHIGH (videodata,videoBitDepth, fullCriteria)
@@ -28,7 +28,7 @@ def checkerrors(videodata, videoBitDepth):
         criteria = criteria + "LOW"
         return criteria
 
-    def runHIGH (videodata,videoBitDepth, criteria):
+    def runHIGH (criteria):
         criteria = criteria + "HIGH"
         return criteria
 

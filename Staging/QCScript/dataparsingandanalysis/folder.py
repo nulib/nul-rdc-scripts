@@ -1,20 +1,15 @@
-import dataparsing
-import overallstatistics
-import videoanalysis
-import errortiers
-import fbyfvideoanalysis
-from argparser import args
+from parseandclean import dataparsing
+from videoanalysis import errortiers, fbyfYUV, overallstatistics, videoanalysis
 
-folderpath = args.input_file
-videobitdepth = args.videobitdepth
 
-for file in folderpath:
+
+for file in inputpath:
      #Parses the raw XML into individual readings by frame (determined by frametime)
-    videodata = dataparsing.dataparsingandtabulatingvideo(folderpath)
-    audiodata = dataparsing.dataparsingandtabulatingaudio(folderpath)
+    videodata = dataparsing.dataparsingandtabulatingvideo(inputpath)
+    audiodata = dataparsing.dataparsingandtabulatingaudio(inputpath)
     
 	#Video analysis frame by frame
-    fbferrors = fbyfvideoanalysis.checkerrors(videodata, videobitdepth)
+    fbferrors = fbyfYUV.checkerrors(videodata, videoBitDepth)
     
 	#Collects the video summary data - outputs CSV and Dictionary
     videostats = overallstatistics.videodatastatistics(videodata)
@@ -29,7 +24,7 @@ for file in folderpath:
     audiofeedtocsv = overallstatistics.audiostatstocsv(audiostats)
 
     #Video analysis for summary report
-    summaryvideoerrors = videoanalysis.checkAllVideo(videostats, videobitdepth)
+    summaryvideoerrors = videoanalysis.checkAllVideo(videostats, videoBitDepth)
 
 	
     #Assigns errors to tiers for verbose reporting
