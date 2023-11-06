@@ -4,9 +4,9 @@ from bs4 import BeautifulSoup
 from tabulate import tabulate
 
 
-def dataparsingandtabulatingaudio(filepath):
+def dataparsingandtabulatingaudio(inputpath):
     audiodata = {}
-    file = open(filepath)
+    file = open(inputpath)
     contents = file.read()
     soup = BeautifulSoup(contents, "xml")
     contents = file.read()
@@ -35,9 +35,9 @@ def dataparsingandtabulatingaudio(filepath):
 
 
 # filepath = "example.xml"
-def dataparsingandtabulatingvideo(filepath):
+def dataparsingandtabulatingvideo(inputpath):
     videodata = {}
-    file = open(filepath)
+    file = open(inputpath)
     contents = file.read()
     soup = BeautifulSoup(contents, "xml")
     contents = file.read()
