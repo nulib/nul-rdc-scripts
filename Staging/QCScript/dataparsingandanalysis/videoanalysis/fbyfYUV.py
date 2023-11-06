@@ -4,20 +4,17 @@ import pandas as pd
 def checkerrors(videodata, videoBitDepth):
     def checkLuma(videodata, videoBitDepth):
         criteria = "Y"
-        fullCriteria = runLOW(criteria)
-        checkLOWHIGH (videodata,videoBitDepth, fullCriteria)
-        fullCriteria = runHIGH(criteria)
-        checkLOWHIGH (videodata, videoBitDepth, fullCriteria)
+        check(videodata, videoBitDepth, criteria)
 
     def checkChromaU(videodata, videoBitDepth):
         criteria = "U"
-        fullCriteria = runLOW(criteria)
-        checkLOWHIGH (videodata,videoBitDepth, fullCriteria)
-        fullCriteria = runHIGH(criteria)
-        checkLOWHIGH (videodata, videoBitDepth, fullCriteria)
+        check(videodata, videoBitDepth, criteria)
 
     def checkChromaV(videodata, videoBitDepth):
         criteria = "V"
+        check(criteria, videodata, videoBitDepth)
+
+    def check(criteria, videodata, videoBitDepth):
         fullCriteria = runLOW(criteria)
         checkLOWHIGH (videodata,videoBitDepth, fullCriteria)
         fullCriteria = runHIGH(criteria)

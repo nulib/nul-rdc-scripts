@@ -11,8 +11,12 @@ TOUT = {"ideal": 0, "MAX": 0.009}
 VREP = {"ideal": 0, "MAX": 0.03}
 BRNG = {"ideal": 0, "MAX": 1}
 SAT75 = {"lowend": 0, "highend": 354.8}  # good
-SAT100 = {"lowend": 354.8, "highend": 472.8}  # moderate
-SATIllegal = {"lowend": 472.8, "highend": 724.08}  # critical
+
+SAT100 = {"lowend": 354.8, "highend": 472.8}  #moderate
+
+SATIllegal = {"lowend": 472.8, "highend": 724.08} #critical
+
 MSEf = {"ideal": 0}  # close to zero as possible
+
 PSNRideal = {"lowend": 30, "highend": 50}
 PSNRMax = {"low": 0, "high": 60}
