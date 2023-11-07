@@ -1,5 +1,7 @@
 import BorF
 import choose
+import savepath
+import saveCSV
 import setupquestions
 import inputvalidation
 
@@ -15,11 +17,17 @@ project_4lettID = setupquestions.ask_4lettID()
 # Verifies the 4 letter id
 project_4lettID = inputvalidation.project_4letterID_validation(project_4lettID)
 
+csvname = savepath.setFilename(project_number, project_4lettID)
+
 box_other = setupquestions.boxor_other()
 box_other = box_other.lower()
 
 if box_other == "y":
-    BorF.BorFPath(project_number, project_4lettID)
+    inventory = BorF.BorFPath(project_number, project_4lettID, csvname)
+
 
 elif box_other == "n":
-    choose.choosePath(project_number, project_4lettID)
+    inventory = choose.choosePath(project_number, project_4lettID)
+
+
+saveCSV.opencsv(csvname)
