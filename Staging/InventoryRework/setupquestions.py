@@ -28,6 +28,6 @@ def ask_pages():
     return pages_yn
 
 
-def ask_newBoxFolder(project_number, project_4lettID, box_number, folder_number):
+def ask_newBoxFolder():
     new_boxFolder = input("Do you want to add a new work - y for yes, n for no")
     return new_boxFolder

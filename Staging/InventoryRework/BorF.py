@@ -42,3 +42,11 @@ def BorFPath(project_number, project_4lettID):
         for data in inventory:
             csv.writer.writerows(inventory)
             file_number = int(file_number) + 1
+    new_BorF = setupquestions.ask_newBoxFolder()
+    new_BorF = new_BorF.lower()
+    if new_BorF == "y":
+        BorFPath(project_number, project_4lettID)
+    elif new_BorF == "n":
+        pass
+
+    return inventory
