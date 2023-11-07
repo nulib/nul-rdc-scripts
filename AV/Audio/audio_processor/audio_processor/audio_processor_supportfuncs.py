@@ -390,6 +390,10 @@ def import_inventories(source_inventories, reference_inventory_list):
                         "Work Accession Number": row["work_accession_number"],
                         "Box/Folder/Alma Number": row["Box/Folder\nAlma number"],
                         "Barcode": row["Barcode"],
+                        "Checked in? (yes/no)": row["Checked in? (yes/no)"],
+                        "Packing & Shipping Check in? (yes/no)": row[
+                            "Packing & Shipping Check in? (yes/no)"
+                        ],
                         "Inventory Title": row["inventory_title"],
                         "Record Date": record_date,
                         "Container Markings": container_markings,
