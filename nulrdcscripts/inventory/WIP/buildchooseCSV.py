@@ -1,3 +1,6 @@
+import csv
+
+
 def createchooseinventory(project_number, project_4letterID, file_number, work_info):
     inventory = [
         {
@@ -32,6 +35,6 @@ def createchooseinventory(project_number, project_4letterID, file_number, work_i
     ]
 
     for data in inventory:
-        writer.writerows(inventory)
+        csv.writer.writerows(inventory)
         # Below increments the row and file up by one
         file_number = int(file_number) + 1
