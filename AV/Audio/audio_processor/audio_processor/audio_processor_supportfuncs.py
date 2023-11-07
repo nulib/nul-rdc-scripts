@@ -193,8 +193,8 @@ def generate_system_log():
 def qc_results(inventoryCheck, mediaconchResults):
     QC_results = {}
     QC_results["QC"] = {
-        "Inventory Check": inventoryCheck,
-        "Mediaconch Results": mediaconchResults,
+        "inventory check": inventoryCheck,
+        "mediaconch results": mediaconchResults,
     }
     return QC_results
 
@@ -387,25 +387,25 @@ def import_inventories(source_inventories, reference_inventory_list):
                 # TODO separate out metadata that is specifically needed for embedding vs json file metadata
                 csvData = {
                     "Inventory Metadata": {
-                        "Work Accession Number": row["work_accession_number"],
-                        "Box/Folder/Alma Number": row["Box/Folder\nAlma number"],
-                        "Barcode": row["Barcode"],
-                        "Checked in? (yes/no)": row["Checked in? (yes/no)"],
-                        "Packing & Shipping Check in? (yes/no)": row[
-                            "Packing & Shipping Check in? (yes/no)"
+                        "work_accession_number": row["work_accession_number"],
+                        "box/folder alma number": row["box/folder alma number"],
+                        "barcode": row["barcode"],
+                        "checked in? (yes/no)": row["checked in? (yes/no)"],
+                        "packing & shipping check in? (yes/no)": row[
+                            "packing & shipping check in? (yes/no)"
                         ],
-                        "Inventory Title": row["inventory_title"],
-                        "Record Date": record_date,
-                        "Container Markings": container_markings,
-                        "Condition Notes": row["Condition Notes"],
-                        "Digitization Operator": row["Digitizer"],
-                        "Capture Date": captureDate,
-                        "Sound Note": sound,
-                        "Capture Notes": row["Digitizer Notes"],
+                        "inventory title": row["inventory_title"],
+                        "record date": record_date,
+                        "container markings": container_markings,
+                        "condition notes": row["condition notes"],
+                        "digitization operator": row["digitizer"],
+                        "capture date": captureDate,
+                        "sound note": sound,
+                        "capture notes": row["digitizer notes"],
                     },
                     "BWF Metadata": {
-                        "Format": format,
-                        "Coding History": coding_history,
+                        "format": format,
+                        "coding history": coding_history,
                     },
                 }
                 csvDict.update({name: csvData})

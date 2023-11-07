@@ -104,14 +104,14 @@ def audio_processor_main():
 
     csvHeaderList = [
         "filename",
-        "Shot Sheet Check",
-        "Date",
-        "File Format & Metadata Verification",
-        "Date",
-        "File Inspection",
-        "Date",
-        "QC Notes",
-        "Runtime",
+        "shot sheet check",
+        "date",
+        "file format & metadata verification",
+        "date",
+        "file inspection",
+        "date",
+        "QC notes",
+        "runtime",
     ]
     print("***STARTING PROCESS***")
 
@@ -182,10 +182,10 @@ def audio_processor_main():
                     inventory_bwf_metadata = loaded_metadata[inventory_filename][
                         "BWF Metadata"
                     ]
-                    source_format = inventory_bwf_metadata["Format"].lower()
+                    source_format = inventory_bwf_metadata["format"].lower()
                     bwf_dict["ISRF"]["write"] = source_format
                     # TODO coding history needs to be updated accordingly
-                    coding_history = inventory_bwf_metadata["Coding History"]
+                    coding_history = inventory_bwf_metadata["coding history"]
                     if input_metadata["file metadata"]["channels"] == 1:
                         file_sound_mode = "mono"
                     elif input_metadata["file metadata"]["channels"] == 2:
@@ -351,9 +351,9 @@ def audio_processor_main():
                 # should correspond to the csvHeaderList earlier in the script
                 csvWriteList = [
                     file,
-                    qcResults["QC"]["Inventory Check"],
+                    qcResults["QC"]["inventory check"],
                     qcDate,
-                    qcResults["QC"]["Mediaconch Results"],
+                    qcResults["QC"]["mediaconch results"],
                     qcDate,
                     None,
                     None,
