@@ -94,6 +94,8 @@ Brendan Coates
 
 Ben Turkus
 
+Dave Rice
+
 
 
 ## Some of the reference material utilized:
