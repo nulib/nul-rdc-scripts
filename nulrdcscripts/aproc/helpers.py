@@ -363,19 +363,19 @@ def import_inventories(source_inventories, reference_inventory_list, skip_coding
                     quit()
             for row in reader:
                 name = row["filename"]
-                record_date = row["Record Date/Time"]
-                container_markings = row["Housing/Container Markings"]
+                record_date = row["record date/time"]
+                container_markings = row["housing/container markings"]
                 container_markings = container_markings.split("\n")
-                format = row["Format"].lower()
-                captureDate = row["Capture Date"]
+                format = row["format"].lower()
+                captureDate = row["capture date"]
                 # try to format date as yyyy-mm-dd if not formatted correctly
                 if captureDate:
                     captureDate = str(guess_date(captureDate))
-                tapeBrand = row["Tape Brand"]
-                sound = row["Sound"]
-                type = row["Tape Type (Cassette)"]
-                nr = row["Noise Reduction"]
-                speed = row["Speed IPS"]
+                tapeBrand = row["tape brand"]
+                sound = row["sound"]
+                type = row["tape type (cassette)"]
+                nr = row["noise reduction"]
+                speed = row["speed IPS"]
                 if not skip_coding_history:
                     coding_history = create_coding_history(
                         row, encoding_chain_fields, [tapeBrand, type, speed, nr]
@@ -386,21 +386,25 @@ def import_inventories(source_inventories, reference_inventory_list, skip_coding
                 # TODO separate out metadata that is specifically needed for embedding vs json file metadata
                 csvData = {
                     "Inventory Metadata": {
-                        "Work Accession Number": row["work_accession_number"],
-                        "Box/Folder/Alma Number": row["Box/Folder\nAlma number"],
-                        "Barcode": row["Barcode"],
-                        "Inventory Title": row["inventory_title"],
-                        "Record Date": record_date,
-                        "Container Markings": container_markings,
-                        "Condition Notes": row["Condition Notes"],
-                        "Digitization Operator": row["Digitizer"],
-                        "Capture Date": captureDate,
-                        "Sound Note": sound,
-                        "Capture Notes": row["Digitizer Notes"],
+                        "work_accession_number": row["work_accession_number"],
+                        "box/folder alma number": row["box/folder alma number"],
+                        "barcode": row["barcode"],
+                        "checked in? (yes/no)": row["checked in? (yes/no)"],
+                        "packing & shipping check in? (yes/no)": row[
+                            "packing & shipping check in? (yes/no)"
+                        ],
+                        "inventory title": row["inventory_title"],
+                        "record date": record_date,
+                        "container markings": container_markings,
+                        "condition notes": row["condition notes"],
+                        "digitization operator": row["digitizer"],
+                        "capture date": captureDate,
+                        "sound note": sound,
+                        "capture notes": row["digitizer notes"],
                     },
                     "BWF Metadata": {
-                        "Format": format,
-                        "Coding History": coding_history,
+                        "format": format,
+                        "coding history": coding_history,
                     },
                 }
                 csvDict.update({name: csvData})
