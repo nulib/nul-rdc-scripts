@@ -16,7 +16,7 @@ If you are planning on running this in batch form (one folder with multiple xml 
 
 ### _Regarding Summarization Stats from QCTools:_
 
-Due to the nature of the summarization stats from the QCTools worksheet, these have been adapted so that they are less likely to incur skewing due to framecount (this concept has been communicated a developer of QCTools.) That being said, in order to see the documentation about how these numbers came to be see [this] (summarizationStats.md) document
+Due to the nature of the summarization stats from the QCTools worksheet, these have been adapted so that they are less likely to incur skewing due to framecount (this concept has been communicated a developer of QCTools.) That being said, in order to see the documentation about how these numbers came to be see [this] (/summarizationStats.md) document
 
 ## Running with Parser (still in development - not functional):
 
