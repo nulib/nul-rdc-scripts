@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "nul-rdc-scripts"
+version = "0.1.0"
+description = "Scripts that RDC digitization team uses"
+authors = ["Northwestern University Libraries <repository@northwestern.edu", "Sophia Francis", "Alec Bertoy", "Josh Yocum (until Oct 2022)"
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
