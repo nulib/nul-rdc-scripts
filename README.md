@@ -4,10 +4,10 @@ When you add a script please be sure to add documentation and make sure to comme
 
 ## Core Tools <br/>
 
-### Current Staging Branches:
+### Current Staging Branches:</br>
 
-[VideoQCScript](https://github.com/nulib/nul-rdc-scripts/tree/QCScript)<br>
-[InventoryUpdatedWork_Restructure](https://github.com/nulib/nul-rdc-scripts/tree/InventoryUpdateWork_Restructure)<br>
+[VideoQCScript](https://github.com/nulib/nul-rdc-scripts/tree/QCScript)<br/>
+[InventoryUpdatedWork_Restructure](https://github.com/nulib/nul-rdc-scripts/tree/InventoryUpdateWork_Restructure)<br/>
 
 ### Imaging Workflow:
 
