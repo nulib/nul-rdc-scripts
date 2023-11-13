@@ -3,7 +3,7 @@ name = "nul-rdc-scripts"
 version = "0.1.0"
 description = "Scripts for NUL RDC Digitization Team"
 authors = [
-    "Northwestern University Libraries <repository@northwestern.edu",
+    "Northwestern University Libraries <repository@northwestern.edu>",
     "Sophia Francis",
     "Alec Bertoy",
     "Joshua Yocum (until Oct 2022)",

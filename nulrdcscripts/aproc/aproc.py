@@ -101,7 +101,7 @@ def main():
         else:
             print("Inventories found\n")
             source_inventory_dict = helpers.import_inventories(
-                source_inventories, reference_inventory_list
+                source_inventories, reference_inventory_list, args.skip_coding_history
             )
 
     csvHeaderList = [

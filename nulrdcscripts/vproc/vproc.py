@@ -280,11 +280,11 @@ def single_video(input, output):
             # create the list that will go in the qc log csv file
             # should correspond to the csvHeaderList earlier in the script
             csvWriteList = [
-                qcResults["QC"]["Inventory Check"],
+                qcResults["QC"]["inventory check"],
                 qcDate,
-                qcResults["QC"]["Lossless Check"],
+                qcResults["QC"]["lossless check"],
                 qcDate,
-                qcResults["QC"]["Mediaconch Results"],
+                qcResults["QC"]["mediaconch results"],
                 qcDate,
                 None,
                 None,
