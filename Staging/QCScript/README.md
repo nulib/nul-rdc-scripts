@@ -13,6 +13,11 @@ This document provides information about running the QC Script and what informat
 
 If you are planning on running this in batch form (one folder with multiple xml files), make sure that if there are a mix of black and white videos and color videos, they are in separate folders and run separately to ensure the proper tests get run.
 
+
+### _Regarding Summarization Stats from QCTools:_
+
+Due to the nature of the summarization stats from the QCTools worksheet, these have been adapted so that they are less likely to incur skewing due to framecount (this concept has been communicated a developer of QCTools.) That being said, in order to see the documentation about how these numbers came to be see [this] (summarizationStats.md) document
+
 ## Running with Parser (still in development - not functional):
 
 ### 1. Drag and drop the run.py file into the terminal
