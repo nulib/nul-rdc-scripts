@@ -3,12 +3,14 @@ name = "nul-rdc-scripts"
 version = "0.1.0"
 description = "Scripts for NUL RDC Digitization Team"
 authors = [
-    "NUL RDC <dl_nul_rdc@e.northwestern.edu>",
-    "Joshua Yocum",
+    "Northwestern University Libraries <repository@northwestern.edu",
     "Sophia Francis <sophia.francis@northwestern.edu>",
     "Alec Bertoy <alec.bertoy@northwestern.edu>",
+    "Joshua Yocum (until Oct 2022)",
 ]
 packages = [{include = "nulrdcscripts"}]
+license = "MIT"
+readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
