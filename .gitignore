@@ -143,7 +143,7 @@ Image/Inventory/ExtraNonsenseToKeepForNow/inventory.csv
 
 # ffmpeg stuff
 .log.mbtree
+*.1ffmpeg2pass-0.log.mbtree
 
 #wsl files
 *.deb
-*.1ffmpeg2pass-0.log.mbtree
