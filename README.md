@@ -1,28 +1,37 @@
 # nul-rdc-scripts
-Scripts used by the RDC Digitization Team.   
+Scripts used by the Collections Digitization Team
+When you add a script please be sure to add documentation and make sure to comment it. <br/>
 
-## Poetry Setup
+## Core Tools <br/>
 
-In the terminal, `cd` to repository parent folder (nul-rdc-scripts) and run `poetry install`
+### Current Staging Branches:</br>
 
-## Core Tools   
+[VideoQCScript](https://github.com/nulib/nul-rdc-scripts/tree/QCScript)<br/>
+[InventoryUpdatedWork_Restructure](https://github.com/nulib/nul-rdc-scripts/tree/InventoryUpdateWork_Restructure)<br/>
 
 ### Imaging Workflow:
 
-[Image Quality Checker - iqc](/nulrdcscripts/iqc/)   
+[Image Quality Checker](https://github.com/nulib/nul-rdc-scripts/tree/main/Image/iqc) - IQC script<br/>
 
-### AV Workflow:
+### Film and Video Workflow:
 
-[Video Processor - vproc](/nulrdcscripts/vproc)   
-[Audio Processor - aproc](/nulrdcscripts/aproc)   
+[mov2ffv1 Video Transcoder](https://github.com/nulib/nul-rdc-scripts/tree/main/AV/Video) - Video Processor<br/>
+[dpx2ffv1 Film Transcoder](https://github.com/nulib/nul-rdc-scripts/tree/main/AV/Film) - Film Processor <br/>
 
-### Meadow
-[Meadow Ingest Sheet Generator - ingest](/nulrdcscripts/ingest/)   
+### Audio Workflow:
+
+[Audio Processor](https://github.com/nulib/nul-rdc-scripts/tree/main/AV/Audio/audio_processor) - Audio Processor<br/>
+
+## Additional Tools <br/>
+
+[Meadow Image CSV Converter](https://github.com/nulib/nul-rdc-scripts/tree/main/Meadow/image_csv_script) <br/>
 
 ### Inventorying:
-[Inventory Creator for Image and Text Works - inventory](/nulrdcscripts/inventory/)   
+[Inventory Creator for Image and Text Works](https://github.com/nulib-rdc-scripts/tree/main/Image/Inventory) - Inventory Script <br/>
 
-### Deprecated
+### Text Workflow:
+[PackagingScript](https://github.com/nulib/nul-rdc-scripts/tree/main/nulrdcscripts/text) - Text Packaging Script
 
-[dpx2ffv1 Film Transcoder - fproc](/nulrdcscripts/fproc/)   
-[Meadow Image CSV Converter - text](/nulrdcscripts/text/)   
+### Mig AV Script
+
+[Meadow Ingest Sheet Generator for AV](https://github.com/nulib/nul-rdc-scripts/tree/main/Meadow/mig_av) - MigAV <br/>
