@@ -10,20 +10,20 @@ In the terminal, `cd` to repository parent folder (nul-rdc-scripts) and run `poe
 
 ### Imaging Workflow:
 
-[Image Quality Checker](/nulrdcscripts/iqc/)   
+[Image Quality Checker - iqc](/nulrdcscripts/iqc/)   
 
 ### AV Workflow:
 
-[Video Processor](/nulrdcscripts/vproc)   
-[Audio Processor](/nulrdcscripts/aproc)   
+[Video Processor - vproc](/nulrdcscripts/vproc)   
+[Audio Processor - aproc](/nulrdcscripts/aproc)   
 
 ### Meadow
-[Meadow Ingest Sheet Generator](/nulrdcscripts/ingest/)   
+[Meadow Ingest Sheet Generator - ingest](/nulrdcscripts/ingest/)   
 
 ### Inventorying:
-[Inventory Creator for Image and Text Works](/nulrdcscripts/inventory/)   
+[Inventory Creator for Image and Text Works - inventory](/nulrdcscripts/inventory/)   
 
 ### Deprecated
 
-[dpx2ffv1 Film Transcoder](/nulrdcscripts/fproc/)   
-[Meadow Image CSV Converter](/nulrdcscripts/text/)   
+[dpx2ffv1 Film Transcoder - fproc](/nulrdcscripts/fproc/)   
+[Meadow Image CSV Converter - text](/nulrdcscripts/text/)   
