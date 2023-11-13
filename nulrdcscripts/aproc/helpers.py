@@ -66,7 +66,7 @@ def load_item_metadata(file, source_inventory_dict):
 
 def ffprobe_report(filename, input_file_abspath):
     """
-    returns nested dictionary with ffprobe metadata
+    returns nested dictionary with ffprobe metadata  
     """
     audio_output = json.loads(
         subprocess.check_output(

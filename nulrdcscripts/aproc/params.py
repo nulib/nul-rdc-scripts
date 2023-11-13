@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Argument parser for in-house AJA v210/mov to ffv1/mkv script
+Argument parser for in-house AJA v210/mov to ffv1/mkv script  
 """
 
 import argparse

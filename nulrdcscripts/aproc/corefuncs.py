@@ -15,7 +15,7 @@ from nulrdcscripts.aproc.params import args
 
 def input_check():
     """
-    Checks if input was provided and if it is a directory that exists
+    Checks if input was provided and if it is a directory that exists  
     """
     if args.input_path:
         indir = args.input_path

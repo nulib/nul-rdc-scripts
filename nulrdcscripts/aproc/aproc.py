@@ -22,7 +22,7 @@ def main():
     access_extension = ".wav"
     inventoryName = "transcode_inventory.csv"
 
-    # assign mediaconch policies to use
+    # assign mediaconch policies to use  
     if not args.input_policy:
         p_wav_policy = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
