@@ -1,8 +1,13 @@
 [tool.poetry]
 name = "nul-rdc-scripts"
 version = "0.1.0"
-description = "Scripts for NUL RDC Production Team"
-authors = ["Your Name <you@example.com>"]
+description = "Scripts for NUL RDC Digitization Team"
+authors = [
+    "NUL RDC <dl_nul_rdc@e.northwestern.edu>",
+    "Joshua Yocum",
+    "Sophia Francis <sophia.francis@northwestern.edu>",
+    "Alec Bertoy <alec.bertoy@northwestern.edu>",
+]
 packages = [{include = "nulrdcscripts"}]
 
 [tool.poetry.dependencies]
