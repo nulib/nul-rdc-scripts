@@ -140,3 +140,10 @@ Image/Inventory/Images/Screenshot 2023-02-20 141418.png
 Image/Inventory/ExtraNonsenseToKeepForNow/inventory.csv
 *.csv
 *.vscode/
+
+# ffmpeg stuff
+.log.mbtree
+*.1ffmpeg2pass-0.log.mbtree
+
+#wsl files
+*.deb
