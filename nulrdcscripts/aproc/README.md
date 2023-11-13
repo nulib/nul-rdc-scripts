@@ -32,7 +32,8 @@ A script for processing and performing QC on audio files.
 In order to use all of the script's functions you will need to have the following programs installed: ffmpeg, ffprobe, SoX, BWFMetaedit, Mediaconch, poetry
 
 ## Usage
-Embed BWF metadata, transcode access files, generate spectrograms, and create sidecar json file. Correctly formatted inventory present in base of input directory.
+Embed BWF metadata, transcode access files, generate spectrograms, and create sidecar json file. Correctly formatted inventory present in base of input directory.  
+In the terminal, cd to the nul-rdc-scripts folder and run the aproc script. Example below.
 ```
 poetry run aproc -i INPUT_PATH
 ```
