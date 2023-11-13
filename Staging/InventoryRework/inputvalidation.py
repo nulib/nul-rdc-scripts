@@ -26,32 +26,44 @@ def project_4letterID_validation(project_4letterID):
     try:
         project_4letterID.isalpha()
     except:
-        print("Please use a project ID with letters only")
-        quit()
+        raise("Please use a project ID with letters only")
+        
     project_4letterID_length = len(project_4letterID)
     try:
         project_4letterID_length == 4
     except:
-        print("Please use 4 letters for your project ID")
+        raise("Please use 4 letters for your project ID")
 
 
 def check_boxnumber(box_number):
     try:
         box_numberInt = int(box_number)
     except:
-        print("Please enter an integer for box number")
-        (quit)
-
-    box_number = str(box_number).zfill(3)
-    return box_number
+        raise ("Please enter an integer for box number")
+    finally:
+        box_number = str(box_number).zfill(3)
+        return box_number
 
 
 def check_foldernumber(folder_number):
     try:
         folder_numberINT = int(folder_number)
     except:
-        print("Please enter an integer for folder number")
-        (quit)
+        raise("Please enter an integer for folder number")
+    finally:        
+        folder_number = str(folder_number).zfill(2)
+        return folder_number
 
-    folder_number = str(box_number).zfill(2)
-    return folder_number
+def check_numberworks(number_works):
+    try:
+        number_worksINT = int(number_works)
+        pass
+    except:
+        raise ("Please enter an integer for number of works")
+    
+def check_worknumber(worknumber):
+    try:
+        worknumberINT = int(worknumber)
+        pass
+    except:
+        raise ("Please enter an integer for the work number")

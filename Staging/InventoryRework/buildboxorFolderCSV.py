@@ -1,11 +1,11 @@
 def build_boxOrFolder_inventory(
-    project_number, project_4lettID, box_number, folder_number, file_number
+    project_number, project_4letterID, box_number, folder_number, file_number
 ):
     inventory = [
         {
             "work_accession_number": project_number
             + "_"
-            + project_4lettID
+            + project_4letterID
             + "_"
             + "b"
             + box_number
@@ -16,7 +16,7 @@ def build_boxOrFolder_inventory(
             + file_number,
             "file_accession_number": project_number
             + "_"
-            + project_4lettID
+            + project_4letterID
             + "_"
             + "b"
             + box_number
@@ -31,7 +31,7 @@ def build_boxOrFolder_inventory(
             + "a",
             "filename": project_number
             + "_"
-            + project_4lettID
+            + project_4letterID
             + "_"
             + "b"
             + box_number

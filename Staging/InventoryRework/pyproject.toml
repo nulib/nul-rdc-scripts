@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "Inventory Script"
+version = "0.2.0"
+description = "Inventory creation script that is used to generate inventories for the imaging workflow at RDC."
+authors = ["Northwestern University Libraries <repository@northwestern.edu>", "Sophia Francis"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

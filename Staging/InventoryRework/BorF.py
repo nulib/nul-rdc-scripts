@@ -5,7 +5,7 @@ import pagePath
 import setupquestions
 
 
-def BorFPath(project_number, project_4lettID):
+def BorFPath(project_number, project_4letterID):
     file_number = 1
     # Asks the box number
     box_number = setupquestions.askbox_number()
@@ -22,19 +22,16 @@ def BorFPath(project_number, project_4lettID):
     pages_yn = setupquestions.ask_pages()
 
     if pages_yn == "y":
-        pagePath.pageTrue(project_4lettID, project_number, box_number, folder_number)
+        pagePath.pageTrue(project_4letterID, project_number, box_number, folder_number)
     else:
-        number_of_works = input("How many works?    ")
-        try:
-            number_of_works = int(number_of_works)
-        except:
-            raise ("Please enter an integer for number of works")
+        number_of_works = setupquestions.ask_numberworks # number to loop by
+        inputvalidation(number_of_works)
 
         while file_number <= number_of_works:
             file_number = str(file_number).zfill(2)
             inventory = buildboxorFolderCSV.build_boxOrFolder_inventory(
                 project_number,
-                project_4lettID,
+                project_4letterID,
                 box_number,
                 folder_number,
                 file_number,
@@ -43,9 +40,8 @@ def BorFPath(project_number, project_4lettID):
             csv.writer.writerows(inventory)
             file_number = int(file_number) + 1
     new_BorF = setupquestions.ask_newBoxFolder()
-    new_BorF = new_BorF.lower()
     if new_BorF == "y":
-        BorFPath(project_number, project_4lettID)
+        BorFPath(project_number, project_4letterID)
     elif new_BorF == "n":
         pass
 
