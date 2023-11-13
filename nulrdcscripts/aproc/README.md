@@ -1,6 +1,28 @@
 # aproc
 A script for processing and performing QC on audio files.
 
+## Prerequisites
+In order to use all of the script's functions you will need to have the following programs installed: ffmpeg, ffprobe, SoX, BWFMetaedit, Mediaconch, poetry
+
+## Usage
+In the terminal, navigate to the `nul-rdc-scripts` folder before running.  
+*Example command:* embed BWF metadata, transcode access files, generate spectrograms, and create sidecar json file.
+```
+poetry run aproc -i INPUT_PATH
+```
+### Example File Structure
+```
+project folder (script input)
+├── inventory.csv
+├── item_1
+│   └── p
+│       └── item_1_v01_p.wav
+└── item_2
+    └── p
+        ├── item_2_v01s01_p.wav
+        └── item_2_v01s02_p.wav
+```
+
 ## Commands
 `-h`, `--help`            show help message and exit   
 `--input INPUT_PATH`, `-i INPUT_PATH`
@@ -27,61 +49,3 @@ A script for processing and performing QC on audio files.
                       Mediaconch policy for access files   
 `--all`, `-a`         This is equivalent to using `-t -m -j -s`. Defaults to true. 
 `--skip_coding`,      To skip coding history creation
-
-## Prerequisites
-In order to use all of the script's functions you will need to have the following programs installed: ffmpeg, ffprobe, SoX, BWFMetaedit, Mediaconch, poetry
-
-## Usage
-Embed BWF metadata, transcode access files, generate spectrograms, and create sidecar json file. Correctly formatted inventory present in base of input directory.  
-In the terminal, cd to the nul-rdc-scripts folder and run the aproc script. Example below.
-```
-poetry run aproc -i INPUT_PATH
-```
-### Example File Structure
-```
-project folder (script input)
-├── inventory.csv
-├── item_1
-│   └── p
-│       └── item_1_v01_p.wav
-└── item_2
-    └── p
-        ├── item_2_v01s01_p.wav
-        └── item_2_v01s02_p.wav
-```
-
-**Note:** Inventory column names MUST use the following names for the script to work (a reference inventory is provided in the data folder for this script and should reflect the most recent requirements):
-```
-work_accession_number
-filename
-label
-inventory_title
-Record Date/Time
-Housing/Container Markings
-Condition Notes
-Barcode
-Box/Folder
-Alma number
-Format
-Running time (mins)
-Tape Brand
-Speed IPS
-Tape Thickness
-Base (acetate/polyester)
-Track Configuration
-Sound
-Length/Reel Size
-Tape Type (Cassette)
-Noise Reduction
-Capture Date
-Digitizer
-Digitizer Notes
-Shot Sheet Check
-Date
-File Format & Metadata Verification
-Date
-File Inspection
-Date
-QC Notes
-Notes for the Metadata Record
-```

@@ -3,6 +3,11 @@ Scripts used by the RDC Digitization Team.
 
 ## Poetry Setup
 
+Install poetry with the following command.
+```
+curl -sSL https://install.python-poetry.org | python3 -
+```
+After it installs, it will say in the command line where poetry was installed. **Manually add this folder to your path (if on Windows) and reopen terminal.**  
 In the terminal, `cd` to repository parent folder (nul-rdc-scripts) and run `poetry install`
 
 ## Core Tools   
