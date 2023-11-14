@@ -4,20 +4,32 @@ A script for transcoding video files
 ## Prerequisites
 In order to use all of the script's functions you will need to have the following programs installed: ffmpeg, ffprobe, qcli, Mediaconch, poetry
 
-## Usage
-Place the transcode_inventory.csv file in the input folder and add any associated inventory information.  
-**Note:** Make sure the values in the 'filename' column correspond with the base filename for the video file.  
-Run the following command from the `nul-rdc-scripts` folder. Include any desired arguments  
-`poetry run vproc -i INPUT_PATH`
+## Usage  
 
-**Note:** file structure must be as follows   
+In the terminal, [navigate](#terminal-help) to the `nul-rdc-scripts` folder before running. 
+
+**Note:** make sure valid transcode_inventory.csv is in the input folder
+
+### Single video
+
+```
+poetry run vproc -i INPUT_PATH
+```
+Example file structure
 ```
 input_folder
+├── transcode_inventory.csv
 └── item.mov
 ```
-Or for batch transcoding
+### Batch videos
+
+```
+poetry run vproc -i INPUT_PATH -b
+```
+Example file structure
 ```
 input_folder
+├── transcode_inventory.csv
 ├── item_1
 │   └── item_1.mov
 └── item_2
@@ -41,3 +53,18 @@ input_folder
 `--ffprobe FFPROBE_PATH`  
 `--qcli QCLI_PATH`  
 `--mediaconch MEDIACONCH_PATH`  
+
+## Terminal help
+Change directory with `cd FILEPATH`
+- can be relative to current directory `cd folder`
+- or absolute `cd C:\folder\subfolder`
+- go back one folder with `cd ..`
+- and return to your user folder with just `cd`  
+
+See contents of current directory
+- `dir` (WINDOWS)
+- `ls` (LINUX)
+
+Clear terminal
+- `cls` (WINDOWS)
+- `clear` (LINUX)

@@ -5,7 +5,9 @@ A script for processing and performing QC on audio files.
 In order to use all of the script's functions you will need to have the following programs installed: ffmpeg, ffprobe, SoX, BWFMetaedit, Mediaconch, poetry
 
 ## Usage
-In the terminal, navigate to the `nul-rdc-scripts` folder   
+In the terminal, [navigate](#terminal-help) to the `nul-rdc-scripts` folder before running.  
+
+**Note: make sure valid inventory csv is in the input folder**
 
 ### Basic usage (--all defaults true)
 ```
@@ -61,3 +63,19 @@ project folder (script input)
                       mediaconch policy for preservation files   
 `--a_policy OUTPUT_POLICY`
                       mediaconch policy for access files   
+
+
+## Terminal help
+Change directory with `cd FILEPATH`
+- can be relative to current directory `cd folder`
+- or absolute `cd C:\folder\subfolder`
+- go back one folder with `cd ..`
+- and return to your user folder with just `cd`  
+
+See contents of current directory
+- `dir` (WINDOWS)
+- `ls` (LINUX)
+
+Clear terminal
+- `cls` (WINDOWS)
+- `clear` (LINUX)
