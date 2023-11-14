@@ -3,21 +3,38 @@ A script for creating Meadow ingest sheets.
 
 ## Usage
 
-Run the following commands from the `nul-rdc-scripts` folder   
-Basic usage.
+In the terminal, [navigate](#terminal-help) to the `nul-rdc-scripts` folder before running.  
+
+### Basic usage
 ```
 poetry run ingest -i INPUT_PATH
 ```
 
-Using specified inventory.
+### Using specified output
+```
+poetry run ingest -i INPUT_PATH -o OUTPUT_FILEPATH
+```
+
+### Using specified inventory
 ```
 poetry run ingest -i INPUT_PATH -l INVENTORY_PATH
 ```
 
-Skip ".md5" files.
+### Skip ".md5" files
 ```
 poetry run ingest -i INPUT_PATH -s .md5
 ```
+
+### Custom description
+```
+poetry run ingest -i INPUT_PATH -d "Date/Time" "Barcode"
+```
+
+### Parse x files by filename
+```
+poetry run ingest -i INPUT_PATH -x parse
+```
+
 ### Example File Structure
 ```
 input_folder
@@ -36,41 +53,40 @@ input_folder
 `--load_inventory INVENTORY_PATH`, `-l INVENTORY_PATH`
     full path of inventory csv. If not specified the script will look in the input for inventories.   
 `--skip`, `-s`
-    Defines patterns to ignore. For example, `-s .mp3` would prevent the script from adding any .mp3 files it finds to the ingest sheet.   
+    Defines patterns to ignore. 
 `--description`, `-d`
-    Use to specify column names to populate Meadow description field with. Can take multiple inputs. Information from each column will be separated by a ";" in the description. Example usage: `-d "Date/Time" "Barcode"`. If not specified, script will default to looking for the column "inventory_title"  
+    Use to specify column names to populate Meadow description field with. Can take multiple inputs. If not specified, script will default to looking for the column "inventory_title"  
 `--auxiliary`, `-x` Sets how to parse auxiliary files. Options include: `extension` (by extension; i.e. ".jpg"), `parse` (by word; i.e. "_Asset_Front"), `none` (no aux files). Default is `none`.   
 `--prepend_accession`, `-p` Set a string to be added to the beginning of the file accession number when it is generated
 
 ## File Type Designations
 
-**A** _am, -am, -a, _a, _am\_, -am-
+|A|P|S|X|  
+|:-------:|:-------:|:-------:|:-------:|  
+|-a or _a|-p or _p|-s or _s|-x or _x|
+|-am or _am|-pm or _pm|spectrogram|-Asset or _Asset|
+|-am- or _am\_|-pm- or _pm\_|.json|Back.|
+|||.log|-Can or _Can|
+|||.pdf|-Ephemera or _Ephemera|
+|||.xml|Front.|
+|||.xml.gz|
+|||.framemd5|
+|||.qctool.mkv|
+|||dpx.txt|
 
-**P** _pm, -pm, -p, _p, _pm\_, -pm-
+Anything that can't be identified will be set to 'S'
 
-**S** .framemd5, .xml, .json, .pdf, .xml.gz, .qctools.mkv, .log, .png, .PNG, dpx.txt
+## Terminal help
+Change directory with `cd FILEPATH`
+- can be relative to current directory `cd folder`
+- or absolute `cd C:\folder\subfolder`
+- go back one folder with `cd ..`
+- and return to your user folder with just `cd`  
 
-**X** .jpg, .jpeg, _Asset, -Asset, _Can, -Can, Front., Back., _Ephemera, -Ephemera
+See contents of current directory
+- `dir` (WINDOWS)
+- `ls` (LINUX)
 
-|File Type|File Role|
-|:-------:|:-------:|
-|-a or _a| A|
-|-am or _am| A|
-|-am- or _am\_| A|
-|-Asset or _Asset|X|
-|Back.| X|
-|-can or _Can| X|
-|dpx.txt|S|
-|-Ephemera or _Ephemera| X|
-|.framemd5| S|
-|Front.|X|
-|.json|S|
-|.log|S|
-|-p or _p|P|
-|.pdf| S|
-|-pm or _pm| P|
-|-pm- or _pm\_| P|
-|.png or .PNG| S|
-|.qctool.mkv|S|
-|.xml| S|
-|.xml.gz| S|
+Clear terminal
+- `cls` (WINDOWS)
+- `clear` (LINUX)
