@@ -138,7 +138,6 @@ ehthumbs.db
 Thumbs.db
 Image/Inventory/Images/Screenshot 2023-02-20 141418.png
 Image/Inventory/ExtraNonsenseToKeepForNow/inventory.csv
-*.csv
 *.vscode/
 
 # ffmpeg stuff
@@ -147,3 +146,4 @@ Image/Inventory/ExtraNonsenseToKeepForNow/inventory.csv
 
 #wsl files
 *.deb
+*.deb.1

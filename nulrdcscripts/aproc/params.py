@@ -133,7 +133,7 @@ parser.add_argument(
     help="This is equivalent to using -t -m -j -s",
 )
 parser.add_argument(
-    "--skip_coding",
+    "--skip_coding_history",
     default=False,
     required=False,
     action="store_true",
