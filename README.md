@@ -32,7 +32,7 @@ Install poetry with the following command.
 curl -sSL https://install.python-poetry.org | python3 -
 ```
 **Windows**: after it installs, it will list the install directory in the terminal as `Actual Location`. 
-Copy this path up to the `Scripts` folder and add it to your path.
+Copy this path up to the `Scripts` folder and add it to your path.  
 **Note:** If you have an admin account, **add to System Path not User Path**  
 
 Restart the terminal for this change to take effect.  
