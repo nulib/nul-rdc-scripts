@@ -1,9 +1,7 @@
 # nul-rdc-scripts
-Scripts used by the RDC Digitization Team.   
+Scripts used by the RDC Digitization Team.  
 
-## Poetry Setup
-
-In the terminal, `cd` to repository parent folder (nul-rdc-scripts) and run `poetry install`
+*Note: poetry is required for all scripts. See [Poetry Setup](#poetry-setup) to install poetry*
 
 ## Core Tools   
 
@@ -26,3 +24,40 @@ In the terminal, `cd` to repository parent folder (nul-rdc-scripts) and run `poe
 
 [dpx2ffv1 Film Transcoder - fproc](/nulrdcscripts/fproc/)   
 [Meadow Image CSV Converter - text](/nulrdcscripts/text/)   
+
+## Poetry Setup
+
+Install poetry with the following command.
+```
+curl -sSL https://install.python-poetry.org | python3 -
+```
+**Windows**: after it installs, it will list the install directory in the terminal as `Actual Location`. Copy this path up to the `Scripts` folder and run the following command to add it to your current users path.  
+```
+setx path "%path%;C:\poetry\path\up\to\Scripts\"
+```
+or add to system path (all users) with
+```
+setx /M path "%path%;C:\poetry\path\up\to\Scripts\"
+```
+**Note:** If you add to path manually through settings and have an admin account, **add to System Path not User Path**  
+
+Restart the terminal for this change to take effect.  
+Finally in the terminal, [navigate](#terminal-help) to repository parent folder (nul-rdc-scripts) and run the following command 
+```
+poetry install
+```
+
+## Terminal help
+Change directory with `cd FILEPATH`
+- can be relative to current directory `cd folder`
+- or absolute `cd C:\folder\subfolder`
+- go back one folder with `cd ..`
+- and return to your user folder with just `cd`  
+
+See contents of current directory
+- `dir` (WINDOWS)
+- `ls` (LINUX)
+
+Clear terminal
+- `cls` (WINDOWS)
+- `clear` (LINUX)
