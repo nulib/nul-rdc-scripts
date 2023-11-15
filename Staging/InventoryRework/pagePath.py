@@ -1,9 +1,12 @@
-import setupquestions
+import setup
+import inputvalidation
 import csv
 
+
 def pageTrue(project_number, project_4letterID, box_number, folder_number):
-    file = setupquestions.ask_worknumber  
-    pages = setupquestions.ask_pages # number to loop by
+    file = setup.ask_worknumber
+    pages = setup.ask_pages  # number to loop by
+    pages = inputvalidation.checkpages(pages)
     page_number = 1
     while (
         page_number <= pages
@@ -43,7 +46,7 @@ def pageTrue(project_number, project_4letterID, box_number, folder_number):
                 + "a",
                 "filename": project_number
                 + "_"
-                +project_4letterID
+                + project_4letterID
                 + "_"
                 + "b"
                 + box_number

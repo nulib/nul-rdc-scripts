@@ -1,18 +1,17 @@
 import inputvalidation
-import setupquestions
+import setup
 import csv
-import savepath
-import csvinput 
+import csvinput
 
-def chooseYourOwnAdventure(project_number, project_4letterID):
-    workinfo = setupquestions.ask_workinfo()
-    number_works = setupquestions.ask_numberworks()
+
+def chooseYourOwnAdventure(project_number, project_4letterID, csvname):
+    workinfo = setup.ask_workinfo()
+    number_works = setup.ask_numberworks()
     inputvalidation.check_numberworks(number_works)
     field_names = csvinput.field_names
     file_number = 1
-    csv_name = savepath.setFilename(project_number, project_4letterID)
 
-    with open(csv_name, "a", newline="", encoding="utf-8") as csvfile:
+    with open(csvname, "a", newline="", encoding="utf-8") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=field_names)
         writer.writeheader()
         while (
@@ -57,5 +56,3 @@ def chooseYourOwnAdventure(project_number, project_4letterID):
                 writer.writerows(inventory)
                 # Below increments the row and file up by one
                 file_number = int(file_number) + 1
-
-        
