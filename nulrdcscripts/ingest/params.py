@@ -26,7 +26,7 @@ parser.add_argument(
     required=False,
     nargs="*",
     action="store",
-    dest="source_inventory",
+    dest="inventory_path",
     help="Use to specify an object inventory. If not specified the script will look in the base folder of the input for object inventories. If no inventories are found the script will leave some fields blank.",
 )
 parser.add_argument(

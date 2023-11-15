@@ -1,10 +1,20 @@
 import re
 import nulrdcscripts.ingest.ingest_data as data
 
+"""
+Helpers related to ingest sheet fields
+"""
+
 def get_role_dict(aux_parse):
     """
-    creates role dictionary based on aux_parse
-    role_dict sets rules for how files are given roles
+    Builds role_dict
+
+    Note:
+        Uses dictionaries found in ingest_data.py
+
+    Args:
+        aux_parse (str): sets how x files should be parsed
+            "extension", "parse", or None
     """
     role_dict = data.role_dict
 
@@ -20,7 +30,7 @@ def get_role_dict(aux_parse):
             quit()
     return role_dict
 
-def ingest_label_creator(filename, inventory_label):
+def ingest_label_creator(filename: str, inventory_label: str):
     """
     parses item side information from filenames and updates the label accordingly
     label_creator("P001-TEST-f01i01_v01s02.wav", "Reel 1")
@@ -50,13 +60,13 @@ def ingest_label_creator(filename, inventory_label):
         label = filename
     return label
 
-def parse_ingest_label(filename_regex_string):
+def parse_ingest_label(filename_regex: str):
     """
     Parses info to create addition to ingest label
     """
     filename_labels = []
     for key in data.pattern_dict.keys():
-        component_number_full = re.search(data.pattern_dict[key], filename_regex_string)
+        component_number_full = re.search(data.pattern_dict[key], filename_regex)
         # strip leading zero from the (\d{2}) of the matched pattern
         if component_number_full:
             component_number_clean = component_number_full[1].lstrip("0")
@@ -67,7 +77,29 @@ def parse_ingest_label(filename_regex_string):
         filename_labels.append(component_string)
     return filename_labels
 
+def get_ingest_description(item, filename: str):
+    """
+    Get file description for ingest sheet
+
+    Args:
+        item (dict of str: str): inventory row for file
+        filename (str): input filename
+
+    Returns:
+        (str): label for ingest sheet
+    """
+    if not item["description"]:
+        return filename
+    else:
+        return item["description"]
+
 def get_fields():
+    """
+    Gets column names for ingest sheet
+
+    Returns:
+        (list of str): fieldnames for ingest sheet
+    """
     return data.header_names
 
 # no longer necessary

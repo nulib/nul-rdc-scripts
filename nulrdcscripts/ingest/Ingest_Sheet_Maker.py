@@ -5,7 +5,6 @@ Contains class for creating an ingest sheet csv file
 """
 
 import os
-from nulrdcscripts.ingest.params import args
 import nulrdcscripts.ingest.helpers as helpers
 import nulrdcscripts.ingest.inventory_helpers as inv_helpers
 import nulrdcscripts.ingest.ingest_helpers as ing_helpers
@@ -14,25 +13,52 @@ class Ingest_Sheet_Maker:
     """
     a class for creating ingest sheet csv files
 
+    Note:
+        Uses args from params.py
+
     Attributes:
         indir (str): fullpath to input directory
         outfile (str): fullpath to output csv file
         role_dict (dict of str: str): contains rules for role assignment
         num_roles (dict of str: int): counter for number of each role
         inventory_dictlist (list of dict of str: str): contains inventory data
-        ingest_sheet_dict (list of dict of str: str): contains ingest sheet data
+        ingest_dictlist (list of dict of str: str): contains ingest sheet data
         work_type (str): type of work ingest sheet is for
+
+    Methods:
+        run(): Walks through input directory and analyzes valid files before creating ingest csv
     """
-    def __init__(self):
+    def __init__(
+            self, 
+            input_path: str, 
+            output_path: str, 
+            inventory_path,
+            skip,
+            desc,
+            aux_parse: str,
+            prepend: str
+        ):
         """
-        sets up ingest sheet maker
+        Initializes Ingest_Sheet_Maker
+
+        Args:
+            input_path (str): fullpath to input folder
+            output_path (str): fullpath to output csv file
+            inventory_path (list of str): fullpath to inventory csv file
+            skip (list of str): contains file types to skip 
+            desc (str): contains inventory fields to use in ingest label
+            aux_parse (str): sets how x files are parsed
+            prepend (str): added to beginning of file_accession_number
         """
         self.indir, self.outfile = helpers.init_io(
-            args.input_path,
-            args.output_path
+            input_path,
+            output_path
         )
-        self.role_dict = ing_helpers.get_role_dict(args.aux_parse)
-        self.init_inventory(args.source_inventory)
+        self.skip = skip
+        self.desc = desc
+        self.prepend = prepend
+        self.role_dict = ing_helpers.get_role_dict(aux_parse)
+        self.init_inventory(inventory_path)
         # track # of each role for file_accession_number creation
         self.num_roles = {
             "A": 0,
@@ -45,24 +71,24 @@ class Ingest_Sheet_Maker:
         """
         Walks through input directory and analyzes valid files before creating ingest csv
         """
-        self.ingest_sheet_dict = {}
+        self.ingest_dictlist = {}
         for subdir, dirs, files in os.walk(self.indir):
             # files and subdirs are "cleaned" in separate functions before analyzing
-            for file in helpers.clean_files(files, args.skip):
+            for file in helpers.clean_files(files, self.skip):
                 self.analyze_file(
                     file, 
                     helpers.clean_subdir(subdir, self.indir), 
-                    args.prepend
+                    self.prepend
                 )
         helpers.write_csv(
             self.outfile, 
             ing_helpers.get_fields(), 
-            self.ingest_sheet_dict
+            self.ingest_dictlist
         )
         print("Process complete!")
         print("Meadow inventory located at: " + self.outfile)
 
-    def init_inventory(self, source_inventory):
+    def init_inventory(self, inventory_path: str):
         """
         Creates inventory_dictlist used to create ingest sheet
 
@@ -70,36 +96,41 @@ class Ingest_Sheet_Maker:
             Will search for inventory in indir if none is given
 
         Args:
-            source_inventory (str): fullpath to inventory
+            inventory_path (str): fullpath to inventory or None
         """
         self.inventory_dictlist = []
-        if not source_inventory:
+        if not inventory_path:
             inventory_path = inv_helpers.find_inventory(self.indir)
             print("Inventory found in input directory")
         else:
-            # index source_inventory at 0 because of argparse formatting
-            inv_helpers.check_inventory(source_inventory[0])
-            inventory_path = source_inventory
+            # index given_inventory_path at 0 because of argparse formatting
+            inv_helpers.check_inventory(inventory_path[0])
+            inventory_path = inventory_path
             print("Inventory found")
 
         self.inventory_dictlist, self.work_type = inv_helpers.load_inventory(
-            inventory_path, args.desc
+            inventory_path, self.desc
         )
 
-    def analyze_file(self, file, subdir, prepend):
+    def analyze_file(self, filename: str, parent_dir: str, prepend: str = ""):
         """
         Analyzes file and appends data to ingest sheet dictionary
+
+        Args:
+            file (str): name of file to be analyzed
+            parent_dir (str): fullpath to parent directory of file
+            prepend (str): added to beginning of file_accession_number
         """
         # TODO add safety check to make sure there aren't multiple matches for a filename in the accession numbers
         # TODO handle cases where there is no inventory
         for item in self.inventory_dictlist:
-            if not item["filename"] in file:
+            if not item["filename"] in filename:
                 return
             
             # if corresponding item is found
-            filename = helpers.get_unix_fullpath(file, subdir)
+            u_file = helpers.get_unix_fullpath(filename, parent_dir)
             work_accession_number = item["work_accession_number"]
-            description = self.get_ingest_description(item, file)
+            description = ing_helpers.get_ingest_description(item, filename)
             
             #options for image or AV
             if self.work_type == "IMAGE":
@@ -108,9 +139,9 @@ class Ingest_Sheet_Maker:
                 file_accession_number = item["file_accession_number"]
             else:
                 label, role, file_builder = self.get_ingest_LRF(
-                    file, item["label"]
+                    filename, item["label"]
                 )
-                file_accession_number = filename + file_builder + f'{self.num_roles[role]:03d}'
+                file_accession_number = u_file + file_builder + f'{self.num_roles[role]:03d}'
             # prepend to file_accession_number
             if prepend:
                 file_accession_number = prepend + file_accession_number
@@ -119,39 +150,39 @@ class Ingest_Sheet_Maker:
                 "work_type": self.work_type,
                 "work_accession_number": work_accession_number,
                 "file_accession_number": file_accession_number,
-                "filename": filename,
+                "filename": u_file,
                 "description": description,
                 "label": label,
                 "role": role,
                 "work_image": None,
                 "structure": None,
             }
-            # Add file to ingest_sheet_dict
+            # Add file to ingest_dictlist
             # Either creating a new key or using an existing one
-            if item["filename"] not in self.ingest_sheet_dict:
-                self.ingest_sheet_dict[item["filename"]] = [meadow_file_dict]
+            if item["filename"] not in self.ingest_dictlist:
+                self.ingest_dictlist[item["filename"]] = [meadow_file_dict]
             else:
-                self.ingest_sheet_dict[item["filename"]].append(meadow_file_dict)
+                self.ingest_dictlist[item["filename"]].append(meadow_file_dict)
         # TODO build out how to handle cases where a file is not found in the inventory
         # allow user to add the file anyway
-        if not any(item["filename"] in file for item in self.inventory_dictlist):
+        if not any(item["filename"] in filename for item in self.inventory_dictlist):
             print(
-                "+++ WARNING: No entry matching " + file + 
+                "+++ WARNING: No entry matching " + filename + 
                 " was found in your inventory +++"
             )
 
-    def get_ingest_description(self, item, file):
-        """
-        return the item description or auto-fill if description is empty
-        """
-        if not item["description"]:
-            return file
-        else:
-            return item["description"]
-
     def get_ingest_LRF(self, filename, inventory_label):
         """
-        Returns meadow role, label, and file_builder
+        Gets label, role, and file builder for ingest sheet
+
+        Args:
+            filename (str): name of input file
+            inventory_label (str): label created from inventory
+
+        Returns:
+            label (str): label for ingest sheet
+            role (str): role for ingest sheet
+            file_builder (str): used for file_access_number creation
         """
         # run through each key in role_dict
         role_index = -1

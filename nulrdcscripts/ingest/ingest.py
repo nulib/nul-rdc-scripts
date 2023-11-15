@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
+from nulrdcscripts.ingest.params import args
 from nulrdcscripts.ingest.Ingest_Sheet_Maker import Ingest_Sheet_Maker
 
 if sys.version_info[0] < 3:
@@ -8,7 +9,15 @@ if sys.version_info[0] < 3:
 
 def main():
 
-    ingester = Ingest_Sheet_Maker()
+    ingester = Ingest_Sheet_Maker(
+        args.input_path,
+        args.output_path,
+        args.inventory_path,
+        args.skip,
+        args.desc,
+        args.aux_parse,
+        args.prepend,
+    )
     ingester.run()
 
     # TODO error out if duplicate filenames are found
