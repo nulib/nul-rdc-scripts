@@ -326,11 +326,9 @@ def import_inventories(source_inventories, reference_inventory_list, skip_coding
         verify_csv_exists(i)
         with open(i, encoding="utf-8") as f:
             reader = csv.DictReader(f, delimiter=",")
-            print(reference_inventory_list)
             cleaned_fieldnames = [
                 a for a in reader.fieldnames if not "encoding chain" in a.lower()
             ]
-            print(cleaned_fieldnames)
             encoding_chain_fields = sorted(
                 [a for a in reader.fieldnames if "encoding chain" in a.lower()]
             )

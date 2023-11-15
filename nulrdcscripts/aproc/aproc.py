@@ -83,7 +83,7 @@ def main():
     else:
         print("\n*** Checking input directory for CSV files ***")
         source_inventories = glob.glob(os.path.join(indir, "*.csv"))
-        source_inventories = [i for i in source_inventories if not "qc_log.csv" in i]
+        source_inventories = [i for i in source_inventories if not ("qc_log.csv" in i or "ingest.csv" in i) ]
         if not source_inventories:
             print("\n+++ WARNING: Unable to CSV inventory file +++")
             print("CONTINUE? (y/n)")
