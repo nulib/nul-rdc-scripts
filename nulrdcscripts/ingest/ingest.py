@@ -156,13 +156,6 @@ def main():
             }
         elif "parse" in args.aux_parse:
             aux_dict = {
-                "auxiliary": {
-                    "identifiers": ["_x","-x"],
-                    "type": "pattern",
-                    "role": "X",
-                    "label": "auxiliary file",
-                    "file_builder": "_auxiliary_",
-                },
                 "front": {
                     "identifiers": ["front"],
                     "type": "pattern",
@@ -196,6 +189,13 @@ def main():
                     "type": "pattern",
                     "role": "X",
                     "label": "ephemera",
+                    "file_builder": "_auxiliary_",
+                },
+                "auxiliary": {
+                    "identifiers": ["_x","-x"],
+                    "type": "pattern",
+                    "role": "X",
+                    "label": "auxiliary file",
                     "file_builder": "_auxiliary_",
                 },
             }
