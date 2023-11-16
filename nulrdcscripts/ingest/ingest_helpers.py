@@ -5,7 +5,7 @@ import nulrdcscripts.ingest.ingest_data as data
 Helpers related to ingest sheet fields
 """
 
-def get_role_dict(aux_parse):
+def get_role_dict(aux_parse: str):
     """
     Builds role_dict
 
@@ -32,9 +32,14 @@ def get_role_dict(aux_parse):
 
 def ingest_label_creator(filename: str, inventory_label: str):
     """
-    parses item side information from filenames and updates the label accordingly
-    label_creator("P001-TEST-f01i01_v01s02.wav", "Reel 1")
-    'Reel 1 Side 2'
+    Creates ingest label based on information in filename
+
+    Args:
+        filename (str): name of file to create label for
+        inventory_label (str): item label from inventory
+    
+    Returns:
+        label (str): label for file in ingest sheet
     """
     label_list = [inventory_label]
     # print(pattern_dict['Side']['abbreviation'])
@@ -51,7 +56,7 @@ def ingest_label_creator(filename: str, inventory_label: str):
     else:
         # convert findall results to string
         filename_regex_string = "".join(filename_regex)
-        filename_labels = parse_ingest_label(filename_regex_string)
+        filename_labels = parse_filename_regex(filename_regex_string)
     # Append side string to Label string
     if filename_labels:
         label_list.extend(filename_labels)
@@ -60,9 +65,12 @@ def ingest_label_creator(filename: str, inventory_label: str):
         label = filename
     return label
 
-def parse_ingest_label(filename_regex: str):
+def parse_filename_regex(filename_regex: list[str]):
     """
-    Parses info to create addition to ingest label
+    Parses regex info from filename to get label info
+
+    Args:
+        filename_regex (str): 
     """
     filename_labels = []
     for key in data.pattern_dict.keys():

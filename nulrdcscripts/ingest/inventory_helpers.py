@@ -4,6 +4,17 @@ import csv
 import nulrdcscripts.ingest.helpers as helpers
 
 def load_inventory(inventory_path: str, desc_arg: list[str]):
+    """
+    finds work type to call image_load_inventory() or av_load_inventory()
+
+    Args:
+        inventory_path (str): fullpath to inventory csv
+        desc_arg: (list of str): inventory fields to use for making description
+
+    Returns:
+        inventory_dictlist (list of dicts of str: str): inventory data
+        work_type (str): IMAGE, AUDIO, or VIDEO
+    """
     work_type = get_work_type(inventory_path)
     if work_type == "IMAGE":
         inventory_dictlist = image_load_inventory(inventory_path)
@@ -11,12 +22,40 @@ def load_inventory(inventory_path: str, desc_arg: list[str]):
         inventory_dictlist = av_load_inventory(inventory_path, desc_arg)
     return inventory_dictlist, work_type
 
-def image_load_inventory(source_inventory):
+def image_load_inventory(inventory_path: str):
     """
-    reads directly from inventory data to create inventory dictlist
+    Loads image inventory
+
+    Args:
+        inventory_path (str):  fullpath to inventory csv
+    
+    Returns:
+        inventory_dictlist (list of dicts of str: str)
+
+    Note:
+        Structure of inventory_dictlist is as follows
+
+        image_inventory_dictlist = [
+            {
+                "filename": "filename",
+                "label": "label",
+                "work_accession_number": "work_accession_number",
+                "file_accession_number": "file_accession_number",
+                "role": "role",
+                "description": "description",
+            },
+            {
+                "filename": "filename",
+                "label": "label",
+                "work_accession_number": "work_accession_number",
+                "file_accession_number": "file_accession_number",
+                "role": "role",
+                "description": "description",
+            }
+        ]
     """
     inventory_dictlist = []
-    with open(source_inventory, encoding="utf-8") as f:
+    with open(inventory_path, encoding="utf-8") as f:
         reader = csv.DictReader(f, delimiter=",")
         for row in reader:
             row_data = {
@@ -30,12 +69,36 @@ def image_load_inventory(source_inventory):
             inventory_dictlist.append(row_data)
     return inventory_dictlist
     
-def av_load_inventory(source_inventory, desc_arg):
+def av_load_inventory(inventory_path: str, desc_arg: list[str]):
     """
-    creates inventory dictlist
+    Loads av inventory
+
+    Args:
+        inventory_path (str):  fullpath to inventory csv
+    
+    Returns:
+        inventory_dictlist (list of dicts of str: str)
+
+    Note:
+        Structure of inventory_dictlist is as follows
+        
+        av_inventory_dictlist = [
+            {
+                "filename": "filename",
+                "work_accession_number": "work_accession_number",
+                "description": "description",
+                "label": "label",
+            },
+            {
+                "filename": "filename",
+                "work_accession_number": "work_accession_number",
+                "description": "description",
+                "label": "label",
+            },
+        ]
     """
     inventory_dictlist = []
-    with open(source_inventory, encoding="utf-8") as f:
+    with open(inventory_path, encoding="utf-8") as f:
         reader = csv.DictReader(f, delimiter=",")
         description_fields = get_description_fields(desc_arg, reader.fieldnames)
         for row in reader:         
@@ -48,24 +111,34 @@ def av_load_inventory(source_inventory, desc_arg):
             inventory_dictlist.append(row_data)
     return inventory_dictlist
 
-def check_inventory(filepath):
+def check_inventory(inventory_path: str):
     """
-    checks given inventory is a csv and exists
+    Checks given inventory is a csv and exists. 
+    Prints an error and quits if not.
+
+    Args:
+        inventory_path (str):  fullpath to inventory csv
     """
-    if not filepath.endswith(".csv"):
-        print("\n--- ERROR: " + filepath + " is not a csv file ---\n")
+    if not inventory_path.endswith(".csv"):
+        print("\n--- ERROR: " + inventory_path + " is not a csv file ---\n")
         quit()
-    if not os.path.isfile(filepath):
-        print("\n--- ERROR: " + filepath + " is not a file ---\n")
+    if not os.path.isfile(inventory_path):
+        print("\n--- ERROR: " + inventory_path + " is not a file ---\n")
         quit()
 
-def find_inventory(indir):
+def find_inventory(dir: str):
     """
-    searches for inventory csv in input directory
-    will choose the first valid file it finds
-        valid file: not ingest sheet or qc log
+    Searches for inventory csv in given directory.
+    Quits if no inventory is found.
+
+    Note:
+        Will choose the first valid file it finds.
+        Valid file: csv that is not ingest sheet or qc log
+
+    Args:
+        dir (str): fullpath to search directory
     """
-    csv_files = glob.glob(os.path.join(indir, "*.csv"))
+    csv_files = glob.glob(os.path.join(dir, "*.csv"))
     for f in csv_files:
         if not ("_ingest.csv" in f or "qc_log.csv" in f):
             return f
@@ -73,9 +146,16 @@ def find_inventory(indir):
     print("\n--- ERROR: Unable to find inventory in input directory")
     quit()
 
-def get_inventory_description(row, description_fields):
+def get_inventory_description(row: dict[str: str], description_fields: list[str]):
     """
     Generates inventory description based on description fields
+
+    Args:
+        row (dict of str: str): inventory dict for item
+        description_fields: (list of str): inventory fields to use for making description
+
+    Returns:
+        description (str): inventory description for file
     """
     description_list = []
     for header in description_fields:
@@ -83,11 +163,17 @@ def get_inventory_description(row, description_fields):
     description = "; ".join(i for i in description_list if i)
     return description
 
-def get_work_type(source_inventory):
+def get_work_type(inventory_path: str):
     """
-    Returns work type
+    Determines work type based on inventory fieldnames
+
+    Args:
+        inventory_path (str): fullpath to inventory csv
+
+    Returns:
+        (str): IMAGE, AUDIO, or VIDEO
     """
-    with open(source_inventory, encoding="utf-8") as f:
+    with open(inventory_path, encoding="utf-8") as f:
         reader = csv.DictReader(f, delimiter=",")
         inventory_fields = reader.fieldnames
     if "Width (cm.)" in inventory_fields:
@@ -104,9 +190,18 @@ def get_work_type(source_inventory):
         print('VIDEO: "Region" or "Stock"')
         quit() 
 
-def get_description_fields(desc_arg, inventory_fields):
+def get_description_fields(desc_arg: list[str], inventory_fields: list[str]):
     """
-    Returns valid description fields and inventories with missing info
+    Checks the inventory contains necessary fields for description creation.
+    Prompts user to continue if there are missing fields.
+    If the user continues, removes missing fields from description fields
+
+    Args:
+        desc_arg: (list of str): description fields to check
+        inventory_fields (list of str): fields in inventory
+
+    Returns:
+        description_fields (list of str): valid description fields
     """
     if not desc_arg:
         return ["inventory_title"]
