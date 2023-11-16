@@ -24,7 +24,7 @@ parser.add_argument(
     "--load_inventory",
     "-l",
     required=False,
-    nargs="*",
+    type=str,
     action="store",
     dest="inventory_path",
     help="Use to specify an object inventory. If not specified the script will look in the base folder of the input for object inventories. If no inventories are found the script will leave some fields blank.",
@@ -52,9 +52,10 @@ parser.add_argument(
     "--auxiliary",
     "-x",
     required=False,
-    nargs=1,
+    type=str,
     action="store",
     dest="aux_parse",
+    choices=['extension','parse'],
     help="Sets how to parse auxiliary files. Options include: extension (by extension), parse (by word), none (no aux files). Default is none.",
 )
 parser.add_argument(

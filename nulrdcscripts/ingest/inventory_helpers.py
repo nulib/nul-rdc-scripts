@@ -3,12 +3,12 @@ import os
 import csv
 import nulrdcscripts.ingest.helpers as helpers
 
-def load_inventory(source_inventory, desc_arg):
-    work_type = get_work_type(source_inventory)
+def load_inventory(inventory_path: str, desc_arg: list[str]):
+    work_type = get_work_type(inventory_path)
     if work_type == "IMAGE":
-        inventory_dictlist = image_load_inventory(source_inventory)
+        inventory_dictlist = image_load_inventory(inventory_path)
     else:
-        inventory_dictlist = av_load_inventory(source_inventory, desc_arg)
+        inventory_dictlist = av_load_inventory(inventory_path, desc_arg)
     return inventory_dictlist, work_type
 
 def image_load_inventory(source_inventory):

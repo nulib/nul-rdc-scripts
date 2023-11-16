@@ -32,9 +32,9 @@ class Ingest_Sheet_Maker:
             self, 
             input_path: str, 
             output_path: str, 
-            inventory_path,
-            skip,
-            desc,
+            inventory_path: str,
+            skip: list[str],
+            desc: list[str],
             aux_parse: str,
             prepend: str
         ):
@@ -103,8 +103,7 @@ class Ingest_Sheet_Maker:
             inventory_path = inv_helpers.find_inventory(self.indir)
             print("Inventory found in input directory")
         else:
-            # index given_inventory_path at 0 because of argparse formatting
-            inv_helpers.check_inventory(inventory_path[0])
+            inv_helpers.check_inventory(inventory_path)
             inventory_path = inventory_path
             print("Inventory found")
 
@@ -171,7 +170,7 @@ class Ingest_Sheet_Maker:
                 " was found in your inventory +++"
             )
 
-    def get_ingest_LRF(self, filename, inventory_label):
+    def get_ingest_LRF(self, filename: str, inventory_label: str):
         """
         Gets label, role, and file builder for ingest sheet
 
