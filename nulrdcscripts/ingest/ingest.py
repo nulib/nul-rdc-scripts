@@ -156,36 +156,43 @@ def main():
             }
         elif "parse" in args.aux_parse:
             aux_dict = {
+                "auxiliary": {
+                    "identifiers": ["_x","-x"],
+                    "type": "pattern",
+                    "role": "X",
+                    "label": "auxiliary file",
+                    "file_builder": "_auxiliary_",
+                },
                 "front": {
-                    "identifiers": ["Front."],
+                    "identifiers": ["front"],
                     "type": "pattern",
                     "role": "X",
                     "label": "asset front",
                     "file_builder": "_auxiliary_",
                 },
                 "back": {
-                    "identifiers": ["Back."],
+                    "identifiers": ["back"],
                     "type": "pattern",
                     "role": "X",
                     "label": "asset back",
                     "file_builder": "_auxiliary_",
                 },
                 "asset": {
-                    "identifiers": ["_Asset", "-Asset"],
+                    "identifiers": ["_asset", "-asset"],
                     "type": "pattern",
                     "role": "X",
                     "label": "asset",
                     "file_builder": "_auxiliary_",
                 },
                 "can": {
-                    "identifiers": ["_Can", "-Can"],
+                    "identifiers": ["_can", "-can"],
                     "type": "pattern",
                     "role": "X",
                     "label": "can",
                     "file_builder": "_auxiliary_",
                 },
                 "ephemera": {
-                    "identifiers": ["_Ephemera", "-Ephemera"],
+                    "identifiers": ["_ephemera", "-ephemera"],
                     "type": "pattern",
                     "role": "X",
                     "label": "ephemera",
