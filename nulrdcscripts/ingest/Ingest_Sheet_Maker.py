@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Contains class for creating an ingest sheet csv file
+Contains class for creating an ingest sheet csv file.
 """
 
 import os
@@ -19,46 +19,38 @@ class Ingest_Sheet_Maker:
     Attributes:
         indir (str): fullpath to input directory
         outfile (str): fullpath to output csv file
-        role_dict (dict of str: str): contains rules for role assignment
+        role_dict (list of dict): contains rules for role assignment
         num_roles (dict of str: int): counter for number of each role
         inventory_dictlist (list of dict of str: str): contains inventory data
         ingest_dictlist (list of dict of str: str): contains ingest sheet data
         work_type (str): type of work ingest sheet is for
 
     Methods:
-        run(): Walks through input directory and analyzes valid files before creating ingest csv
+        load_inventory(inventory_path, description_fields): loads inventory data from csv
+        run(skip, prepend): creates ingest csv from files in input directory
     """
     def __init__(
             self, 
-            input_path: str, 
-            output_path: str, 
-            inventory_path: str,
-            skip: list[str],
-            desc: list[str],
-            aux_parse: str,
-            prepend: str
+            indir: str, 
+            outfile: str, 
+            x_parse: str,
         ):
         """
-        Initializes Ingest_Sheet_Maker
+        Initializes Ingest_Sheet_Maker input, output, role assignment rules,
+        and starts counter for number of roles.
 
         Args:
-            input_path (str): fullpath to input folder
-            output_path (str): fullpath to output csv file
-            inventory_path (list of str): fullpath to inventory csv file
-            skip (list of str): contains file types to skip 
-            desc (str): contains inventory fields to use in ingest label
-            aux_parse (str): sets how x files are parsed
-            prepend (str): added to beginning of file_accession_number
+            indir (str): fullpath to input folder
+            outfile (str): fullpath to output csv file
+            x_parse (str): sets how x files are parsed
+                "extension" or "parse"
         """
         self.indir, self.outfile = helpers.init_io(
-            input_path,
-            output_path
+            indir,
+            outfile
         )
-        self.skip = skip
-        self.desc = desc
-        self.prepend = prepend
-        self.role_dict = ing_helpers.get_role_dict(aux_parse)
-        self.init_inventory(inventory_path)
+        self.inventory_dictlist = None
+        self.role_dict = ing_helpers.get_role_dict(x_parse)
         # track # of each role for file_accession_number creation
         self.num_roles = {
             "A": 0,
@@ -67,28 +59,7 @@ class Ingest_Sheet_Maker:
             "X": 0,
         }
 
-    def run(self):
-        """
-        Walks through input directory and analyzes valid files before creating ingest csv
-        """
-        self.ingest_dictlist = {}
-        for subdir, dirs, files in os.walk(self.indir):
-            # files and subdirs are "cleaned" in separate functions before analyzing
-            for file in helpers.clean_files(files, self.skip):
-                self.analyze_file(
-                    file, 
-                    helpers.clean_subdir(subdir, self.indir), 
-                    self.prepend
-                )
-        helpers.write_csv(
-            self.outfile, 
-            ing_helpers.get_fields(), 
-            self.ingest_dictlist
-        )
-        print("Process complete!")
-        print("Meadow inventory located at: " + self.outfile)
-
-    def init_inventory(self, inventory_path: str):
+    def load_inventory(self, inventory_path: str, description_fields: list[str]):
         """
         Creates inventory_dictlist used to create ingest sheet
 
@@ -97,19 +68,51 @@ class Ingest_Sheet_Maker:
 
         Args:
             inventory_path (str): fullpath to inventory or None
+            description_fields (list of str): contains inventory fields to use in ingest label
         """
         self.inventory_dictlist = []
         if not inventory_path:
             inventory_path = inv_helpers.find_inventory(self.indir)
-            print("Inventory found in input directory")
+            if not inventory_path:
+                print("\n--- WARNING: Unable to find inventory in input directory ---")
+                if not helpers.yn_check("Continue?"):
+                    quit()
+            else:
+                print("Inventory found in input directory")
         else:
             inv_helpers.check_inventory(inventory_path)
             inventory_path = inventory_path
             print("Inventory found")
 
         self.inventory_dictlist, self.work_type = inv_helpers.load_inventory(
-            inventory_path, self.desc
+            inventory_path, description_fields
         )
+
+    def run(self, skip: list[str], prepend: str):
+        """
+        Walks through input directory and analyzes valid files before creating ingest csv
+
+        Args:
+            skip (list of str): contains file types to skip
+            prepend (str): added to beginning of file_accession_number
+        """
+
+        self.ingest_dictlist = {}
+        for subdir, dirs, files in os.walk(self.indir):
+            # files and subdirs are "cleaned" in separate functions before analyzing
+            for file in helpers.clean_files(files, skip):
+                self.analyze_file(
+                    file, 
+                    helpers.clean_subdir(subdir, self.indir), 
+                    prepend
+                )
+        helpers.write_csv(
+            self.outfile, 
+            ing_helpers.get_fields(), 
+            self.ingest_dictlist
+        )
+        print("Process complete!")
+        print("Meadow inventory located at: " + self.outfile)
 
     def analyze_file(self, filename: str, parent_dir: str, prepend: str = ""):
         """

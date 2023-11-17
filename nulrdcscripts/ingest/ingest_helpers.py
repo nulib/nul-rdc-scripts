@@ -1,20 +1,23 @@
+"""
+Helper functions related to ingest sheet fields.
+"""
+
 import re
 import nulrdcscripts.ingest.ingest_data as data
-
-"""
-Helpers related to ingest sheet fields
-"""
 
 def get_role_dict(aux_parse: str):
     """
     Builds role_dict
 
     Note:
-        Uses dictionaries found in ingest_data.py
+        See ingest_data.py for structure of role_dict.
 
     Args:
         aux_parse (str): sets how x files should be parsed
             "extension", "parse", or None
+
+    Returns:
+        role_dict (list of dict): represents rules for role assignment
     """
     role_dict = data.role_dict
 
@@ -110,7 +113,7 @@ def get_fields():
     """
     return data.header_names
 
-# no longer necessary
+"""
 def xparser(filename, pattern_list, inventory_label):
     # TODO use regex instead so numbers could be extracted
     parser_dict = {
@@ -134,3 +137,4 @@ def xparser(filename, pattern_list, inventory_label):
     if not label:
         label = filename
     return label
+"""

@@ -1,6 +1,19 @@
 #!/usr/bin/env python3
 
-# TODO may want to convert role to lowercase so you don't risk running into errors
+"""
+Contains lists and dictionaries used in Ingest_Sheet_Maker class
+
+Default rules for assigning roles.
+
+Attributes:
+    role_dict (list of dict): default rules for assigning roles to files
+    x_extension_dict (list of dict): rules for identifying x by file extension
+    x_parse_dict (list of dict): rules for identifying x by filename patterns
+    header_names (list of str): header names used in ingest csv file
+    pattern_dict (dict of str: str): patterns used to identify sides, regions, etc.
+"""
+
+# Contains default rules for assigning roles to files.
 role_dict = {
     "framemd5": {
         "identifiers": [".framemd5"],
@@ -86,6 +99,7 @@ x_extension_dict = {
         "file_builder": "_auxiliary_",
     }
 }
+# Contains rules for assigning x files based on filename patterns.
 x_parse_dict = {
     "front": {
         "identifiers": ["Front."],
@@ -124,6 +138,7 @@ x_parse_dict = {
     },
 }
 
+# Contains header names used in the ingest sheet csv file.
 header_names = [
     "work_type",
     "work_accession_number",
@@ -136,6 +151,8 @@ header_names = [
     "structure",
 ]
 
+# Contains patterns to be identified in filenames and their corresponding meaning
+# side 1 is denoted by s01, etc.
 pattern_dict = {
     "side": "s(\d{2})",
     "part": "p(\d{2})",

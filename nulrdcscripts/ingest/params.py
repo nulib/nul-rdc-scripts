@@ -10,7 +10,7 @@ parser.add_argument(
     action="store",
     dest="input_path",
     type=str,
-    help="full path to input folder",
+    help="Full path to input folder. Uses current folder if none is provided.",
 )
 parser.add_argument(
     "--output",
@@ -18,7 +18,7 @@ parser.add_argument(
     action="store",
     dest="output_path",
     type=str,
-    help="full path to output csv file",
+    help="Full path to output csv file. Creates one in input folder if none is provided.",
 )
 parser.add_argument(
     "--load_inventory",
@@ -27,7 +27,7 @@ parser.add_argument(
     type=str,
     action="store",
     dest="inventory_path",
-    help="Use to specify an object inventory. If not specified the script will look in the base folder of the input for object inventories. If no inventories are found the script will leave some fields blank.",
+    help="Full path to inventory csv. If not specified the script will look in the base folder of the input for inventories. If no inventories are found the script will leave some fields blank.",
 )
 parser.add_argument(
     "--skip",
@@ -52,11 +52,12 @@ parser.add_argument(
     "--auxiliary",
     "-x",
     required=False,
+    default="extension",
     type=str,
     action="store",
-    dest="aux_parse",
-    choices=['extension','parse'],
-    help="Sets how to parse auxiliary files. Options include: extension (by extension), parse (by word), none (no aux files). Default is none.",
+    dest="x_parse",
+    choices=["extension","parse", None],
+    help="Sets how to parse auxiliary files. Default is extension.",
 )
 parser.add_argument(
     "--prepend_accession",
