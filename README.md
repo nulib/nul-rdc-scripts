@@ -1,9 +1,7 @@
 # nul-rdc-scripts
-Scripts used by the RDC Digitization Team.   
+Scripts used by the RDC Digitization Team.  
 
-## Poetry Setup
-
-In the terminal, `cd` to repository parent folder (nul-rdc-scripts) and run `poetry install`
+*Note: poetry is required for all scripts. See [Poetry Setup](#poetry-setup) to install poetry*
 
 ## Core Tools   
 
@@ -31,7 +29,39 @@ In the terminal, `cd` to repository parent folder (nul-rdc-scripts) and run `poe
 [dpx2ffv1 Film Transcoder - fproc](/nulrdcscripts/fproc/)   
 [Meadow Image CSV Converter - text](/nulrdcscripts/text/)   
 
-### Current Staging Branches:</br>
 
-[VideoQCScript](https://github.com/nulib/nul-rdc-scripts/tree/QCScript)<br/>
-[InventoryUpdatedWork_Restructure](https://github.com/nulib/nul-rdc-scripts/tree/InventoryUpdateWork_Restructure)<br/>
+### Current Staging Branches:  
+
+[VideoQCScript](https://github.com/nulib/nul-rdc-scripts/tree/QCScript)  
+[InventoryUpdatedWork_Restructure](https://github.com/nulib/nul-rdc-scripts/tree/InventoryUpdateWork_Restructure)  
+
+## Poetry Setup
+
+Install poetry with the following command.
+```
+curl -sSL https://install.python-poetry.org | python3 -
+```
+**Windows**: after it installs, it will list the install directory in the terminal as `Actual Location`. 
+Copy this path up to the `Scripts` folder and add it to your path.  
+**Note:** If you have an admin account, **add to System Path not User Path**  
+
+Restart the terminal for this change to take effect.  
+Finally in the terminal, [navigate](#terminal-help) to repository parent folder (nul-rdc-scripts) and run the following command 
+```
+poetry install
+```
+
+## Terminal help
+Change directory with `cd FILEPATH`
+- can be relative to current directory `cd folder`
+- or absolute `cd C:\folder\subfolder`
+- go back one folder with `cd ..`
+- and return to your user folder with just `cd`  
+
+See contents of current directory
+- `dir` (WINDOWS)
+- `ls` (LINUX)
+
+Clear terminal
+- `cls` (WINDOWS)
+- `clear` (LINUX)

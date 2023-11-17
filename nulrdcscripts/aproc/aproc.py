@@ -83,7 +83,7 @@ def main():
     else:
         print("\n*** Checking input directory for CSV files ***")
         source_inventories = glob.glob(os.path.join(indir, "*.csv"))
-        source_inventories = [i for i in source_inventories if not "qc_log.csv" in i]
+        source_inventories = [i for i in source_inventories if not ("qc_log.csv" in i or "ingest.csv" in i) ]
         if not source_inventories:
             print("\n+++ WARNING: Unable to CSV inventory file +++")
             print("CONTINUE? (y/n)")
@@ -101,19 +101,19 @@ def main():
         else:
             print("Inventories found\n")
             source_inventory_dict = helpers.import_inventories(
-                source_inventories, reference_inventory_list
+                source_inventories, reference_inventory_list, args.skip_coding_history
             )
 
     csvHeaderList = [
         "filename",
-        "Shot Sheet Check",
-        "Date",
-        "File Format & Metadata Verification",
-        "Date",
-        "File Inspection",
-        "Date",
-        "QC Notes",
-        "Runtime",
+        "shot sheet check",
+        "date",
+        "file format & metadata verification",
+        "date",
+        "file inspection",
+        "date",
+        "QC notes",
+        "runtime",
     ]
     print("***STARTING PROCESS***")
 
@@ -184,10 +184,10 @@ def main():
                     inventory_bwf_metadata = loaded_metadata[inventory_filename][
                         "BWF Metadata"
                     ]
-                    source_format = inventory_bwf_metadata["Format"].lower()
+                    source_format = inventory_bwf_metadata["format"].lower()
                     bwf_dict["ISRF"]["write"] = source_format
                     # TODO coding history needs to be updated accordingly
-                    coding_history = inventory_bwf_metadata["Coding History"]
+                    coding_history = inventory_bwf_metadata["coding history"]
                     if input_metadata["file metadata"]["channels"] == 1:
                         file_sound_mode = "mono"
                     elif input_metadata["file metadata"]["channels"] == 2:
@@ -353,9 +353,9 @@ def main():
                 # should correspond to the csvHeaderList earlier in the script
                 csvWriteList = [
                     file,
-                    qcResults["QC"]["Inventory Check"],
+                    qcResults["QC"]["inventory check"],
                     qcDate,
-                    qcResults["QC"]["Mediaconch Results"],
+                    qcResults["QC"]["mediaconch results"],
                     qcDate,
                     None,
                     None,
