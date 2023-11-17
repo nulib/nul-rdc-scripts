@@ -74,9 +74,12 @@ class Ingest_Sheet_Maker:
         if not inventory_path:
             inventory_path = inv_helpers.find_inventory(self.indir)
             if not inventory_path:
-                print("\n--- WARNING: Unable to find inventory in input directory ---")
-                if not helpers.yn_check("Continue?"):
-                    quit()
+                print("\n--- ERROR: Unable to find inventory in input directory ---")
+                quit()
+                # commmented out until this feature is added
+                # print("\n--- WARNING: Unable to find inventory in input directory ---")
+                # if not helpers.yn_check("Continue?"):
+                #     quit()
             else:
                 print("Inventory found in input directory")
         else:

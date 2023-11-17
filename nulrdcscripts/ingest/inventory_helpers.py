@@ -147,9 +147,6 @@ def find_inventory(dir: str):
         if not ("_ingest.csv" in f or "qc_log.csv" in f):
             return f
     # will only reach here if no valid file is found
-    print("\n--- WARNING: Unable to find inventory in input directory")
-    if not helpers.yn_check("Continue?"):
-        quit()
     return None
 
 def get_inventory_description(row: dict[str: str], description_fields: list[str]):
@@ -184,9 +181,9 @@ def get_work_type(inventory_path: str):
         inventory_fields = reader.fieldnames
     if "Width (cm.)" in inventory_fields:
         return "IMAGE"
-    elif "Speed IPS" in inventory_fields:
+    elif "speed IPS" in inventory_fields:
         return "AUDIO"
-    elif "Region" or "Stock" in inventory_fields:
+    elif "region" or "stock" in inventory_fields:
         return "VIDEO"
     else:
         print("\n---ERROR: Unable to determine work_type. ---\n")
