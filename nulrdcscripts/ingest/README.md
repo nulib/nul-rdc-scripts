@@ -20,7 +20,7 @@ poetry run ingest -i INPUT_PATH -o OUTPUT_FILEPATH
 poetry run ingest -i INPUT_PATH -l INVENTORY_PATH
 ```
 
-### Parse x files by pattern
+### Parse x files by filename
 ```
 poetry run ingest -i INPUT_PATH -x parse
 ```
@@ -33,11 +33,6 @@ poetry run ingest -i INPUT_PATH -s .md5
 ### Custom description
 ```
 poetry run ingest -i INPUT_PATH -d "date/time" "barcode"
-```
-
-### Parse x files by filename
-```
-poetry run ingest -i INPUT_PATH -x parse
 ```
 
 ### Example File Structure
