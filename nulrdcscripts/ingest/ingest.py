@@ -157,40 +157,47 @@ def main():
         elif "parse" in args.aux_parse:
             aux_dict = {
                 "front": {
-                    "identifiers": ["Front."],
+                    "identifiers": ["front", "Front"],
                     "type": "pattern",
                     "role": "X",
                     "label": "asset front",
                     "file_builder": "_auxiliary_",
                 },
                 "back": {
-                    "identifiers": ["Back."],
+                    "identifiers": ["back", "Back"],
                     "type": "pattern",
                     "role": "X",
                     "label": "asset back",
                     "file_builder": "_auxiliary_",
                 },
                 "asset": {
-                    "identifiers": ["_Asset", "-Asset"],
+                    "identifiers": ["_asset", "-asset", "_Asset", "-Asset"],
                     "type": "pattern",
                     "role": "X",
                     "label": "asset",
                     "file_builder": "_auxiliary_",
                 },
                 "can": {
-                    "identifiers": ["_Can", "-Can"],
+                    "identifiers": ["_can", "-can", "_Can", "-Can"],
                     "type": "pattern",
                     "role": "X",
                     "label": "can",
                     "file_builder": "_auxiliary_",
                 },
                 "ephemera": {
-                    "identifiers": ["_Ephemera", "-Ephemera"],
+                    "identifiers": ["_ephemera", "-ephemera", "_Ephemera", "-Ephemera"],
                     "type": "pattern",
                     "role": "X",
                     "label": "ephemera",
                     "file_builder": "_auxiliary_",
                 },
+                "auxiliary": {
+                    "identifiers": ["_x", "-x"],
+                    "type": "pattern",
+                    "role": "X",
+                    "label": "image",
+                    "file_builder": "_auxiliary_",
+                }
             }
         # add the aux_dict to the beginning of the role_dict
         # this will catch X files that also have a/p identifiers in the filename
@@ -439,9 +446,9 @@ def import_inventories(source_inventories):
                         # work type is assumed by the presence of format-specific column headers
                         if "Width (cm.)" in reader.fieldnames:
                             work_type = "IMAGE"
-                        elif "Speed IPS" in reader.fieldnames:
+                        elif "speed IPS" or "Speed IPS" in reader.fieldnames:
                             work_type = "AUDIO"
-                        elif "Region" or "Stock" in reader.fieldnames:
+                        elif "region" or "Region" or "stock" or "Stock" in reader.fieldnames:
                             work_type = "VIDEO"
                         else:
                             print(
