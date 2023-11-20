@@ -1,3 +1,4 @@
+
 YLOW = {"BRNGOut": 64, "clipping": 0}
 YHIGH = {"BRNGOut": 940, "clipping": 1023}
 YAVG = 512
@@ -16,3 +17,26 @@ SATIllegal = {"lowend": 472.8, "highend": 724.08} #critical
 MSEf = {"ideal": 0}  # close to zero as possible
 PSNRideal = {"lowend": 30, "highend": 50}
 PSNRMax = {"low": 0, "high": 60}
+
+'''video10BitValues = {
+        "YLOW": YLOW,
+        "YHIGH": YHIGH, 
+        "YAVG": YAVG,
+        "ULOW": ULOW, 
+        "UHIGH": UHIGH, 
+        "UAVG": UAVG,
+        "VLOW": VLOW, 
+        "VHIGH": VHIGH,
+        "VAVG": VAVG,
+        "TOUT": TOUT, 
+        "VREP": VREP,
+        "BRNG": BRNG,
+        "SAT75": SAT75, 
+        "SAT100": SAT100,
+        "SATIllegal": SATIllegal, 
+        "MSEf": MSEf, 
+        "PSNRideal": PSNRideal, 
+        "PSNRMax": PSNRMax
+    }
+    return video10BitValues
+'''

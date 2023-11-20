@@ -1,12 +1,19 @@
+import videovalues10Bit
 levels = ["ideal", "MAX"]
 criteria = ["TOUT", "VREP"]
 level = 0
 item = 0
+
+videodata = "YHighData.csv"
+videoBitDepth = videovalues10Bit
+
+
 def runCriteria (videoBitDepth, videodata):
     while item <= criteria:
         criteriaToCheck = criteria[item]
-        runLevels(videoBitDepth, videodata, criteriaToCheck)
+        errors = runLevels(videoBitDepth, videodata, criteriaToCheck)
         item = item + 1
+        print(errors)
 
 def runLevels (videoBitDepth,videodata, criteriaToCheck):
     while level <= levels:
@@ -20,19 +27,21 @@ def setUpCheckErrors (criteria, levelToCheck, criteriaToCheck, videoBitDepth, vi
     criteriaValue = videoBitDepth.get(criteria[levelToCheck])
     data = setColumn(videodata,criteriaToCheck)
     equationSign = setEquationSign(criteriaValue)
-    Equation = setEquation(equationSign, criteria, criteriaValue)
+    equation = setEquation(equationSign, criteria, criteriaValue)
     errorType = setErrorType(criteriaToCheck)
-    checkErrors(Equation,data, errorType)
+    errors=checkErrors(equation,data, errorType)
+    return errors
 
 def checkErrors(Equation, data, errorType):
     errors = data.query(Equation)
     errors = assignETColumn(data,errorType)
+    print(errors)
     return errors
-
+    
 
 def setEquation(equationSign, criteriaValue, criteria):
-    Equation = ""+criteria+equationSign+criteriaValue+""
-    return Equation
+    equation = ""+criteria+equationSign+criteriaValue+""
+    return equation
    
 def setEquationSign (criteriaValue):
     #Ideal Value

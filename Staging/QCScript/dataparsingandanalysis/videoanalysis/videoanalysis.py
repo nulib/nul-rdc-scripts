@@ -11,7 +11,7 @@ def checkAllVideo(videostats, videoBitDepth):
     HIGHsCheck(videostats, videoBitDepth)
     MAXsCheck(videostats, videoBitDepth)
 
-    def check(criteria, videostats, videoBitdepth):
+    def check(criteria, videostats, videoBitDepth):
         setcriteria = videoBitDepth.get[criteria]
         lowEnd = videostats.at[3, criteria]
         highEnd = videostats.at[8, criteria]

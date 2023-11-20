@@ -1,0 +1,5 @@
+vREP = "CRITICAL"
+tOUT = "CRITICAL"
+BRNGOut = "MODERATE"
+Clipping = "CRITICAL"
+
