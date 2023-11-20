@@ -20,6 +20,11 @@ poetry run ingest -i INPUT_PATH -o OUTPUT_FILEPATH
 poetry run ingest -i INPUT_PATH -l INVENTORY_PATH
 ```
 
+### Parse x files by filename
+```
+poetry run ingest -i INPUT_PATH -x parse
+```
+
 ### Skip ".md5" files
 ```
 poetry run ingest -i INPUT_PATH -s .md5
@@ -27,12 +32,7 @@ poetry run ingest -i INPUT_PATH -s .md5
 
 ### Custom description
 ```
-poetry run ingest -i INPUT_PATH -d "Date/Time" "Barcode"
-```
-
-### Parse x files by filename
-```
-poetry run ingest -i INPUT_PATH -x parse
+poetry run ingest -i INPUT_PATH -d "date/time" "barcode"
 ```
 
 ### Example File Structure
@@ -64,15 +64,15 @@ input_folder
 |A|P|S|X|  
 |:-------:|:-------:|:-------:|:-------:|  
 |-a or _a|-p or _p|-s or _s|-x or _x|
-|-am or _am|-pm or _pm|spectrogram|-Asset or _Asset|
-|-am- or _am\_|-pm- or _pm\_|.json|Back.|
-|||.log|-Can or _Can|
-|||.pdf|-Ephemera or _Ephemera|
-|||.xml|Front.|
-|||.xml.gz|
-|||.framemd5|
-|||.qctool.mkv|
-|||dpx.txt|
+|-am or _am|-pm or _pm|spectrogram|-asset or _asset|
+|-am- or _am\_|-pm- or _pm\_|.json|-Asset or _Asset|
+|||.log|back or Back|
+|||.pdf|front or Front|
+|||.xml|-can or _can|
+|||.xml.gz|-Can or _Can|
+|||.framemd5|-ephemera or _ephemera|
+|||.qctool.mkv|-Ephemera or _Ephemera|
+|||dpx.txt|.jpg|
 
 Anything that can't be identified will be set to 'S'
 
