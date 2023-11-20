@@ -15,7 +15,7 @@ from functools import reduce
 import hashlib
 import subprocess
 from PIL import Image
-from iqc.iqcparameters import args
+from nulrdcscripts.iqc.iqcparameters import args
 
 column_to_match = "filename"
 target_identifiers = ["target_", "_target.tif"]

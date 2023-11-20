@@ -1,4 +1,13 @@
-# IQC - Image Quality Checker
+# General Information
+Version Date: 11/20/23
+
+Document Owner: Sophia Francis ; Josh Yocum (formerly) <br>
+Hardware Used: N/A <br>
+Software Used: Exif Tools, Poetry, Pandas, Pillow <br>
+Location: RDC offices <br>
+
+
+# Description
 Python tools for running various automated QC functions on NUL RDC image projects. <br/>
 
 ## Installation Instructions
@@ -6,9 +15,11 @@ Python tools for running various automated QC functions on NUL RDC image project
   - Download and install ExifTool from the ExifTool website: https://exiftool.org/
   - If on Windows, make sure that ExifTool is in your PATH. Otherwise you will need to specify the path to the ExifTool executable using `--exiftool` when running IQC (see Commands section for more information).
 - IQC Installation instructions
-  - Download the latest IQC release from the releases page.
-  - The release will be a .zip folder.
-  - To install the script and dependencies open the command line or terminal, cd to the folder containing the zipped folder and run `pip install iqc.zip`.
+  1. Make sure that poetry is installed on your computer [Installation Information Here](README.md)
+  2. To run IQC with poetry:
+    <!--- -->
+        poetry run iqc -i [path to folder] + any other commands          
+    
 
 ## Additional Installation Notes
 - This script uses ExifTool and Python 3 with the Pandas and Pillow libraries.

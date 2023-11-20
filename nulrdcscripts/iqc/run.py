@@ -7,7 +7,7 @@ if sys.version_info[0] < 3:
 
 
 def main():
-    import iqc.iqc as iqc
+    import nulrdcscripts.iqc as iqc
 
     iqc.iqc_main()
 
