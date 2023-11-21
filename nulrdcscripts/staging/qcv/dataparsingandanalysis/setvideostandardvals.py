@@ -1,8 +1,9 @@
 import pandas as pd
 from pandasgui import show
 
-csv8Bit = "QCScript\data\Video8BitValues.csv"
-csv10Bit = "QCScript\data\Video10BitValues.csv"
+
+csv8Bit = "nulrdcscripts\staging\qcv\data\Video8BitValues.csv"
+csv10Bit = "nulrdcscripts\staging\qcv\data\Video10BitValues.csv"
 bitDepth = 10
 
 
