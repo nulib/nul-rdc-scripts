@@ -13,10 +13,16 @@ This document provides information about running the QC Script and what informat
 
 If you are planning on running this in batch form (one folder with multiple xml files), make sure that if there are a mix of black and white videos and color videos, they are in separate folders and run separately to ensure the proper tests get run.
 
+### Changing Value ranges:
+If you want to edit the value ranges that are used, then you can edit the CSVs Video8BitValues and Video10BitValues. However, caution must be used as these are used in equations throughout the script. I _do not_ recommend this.
+
+### _Regarding the YAvg reporting_:
+
+There are no ranges that are supplied for YAvg in the QCTools documentation. I have tried my best to modify the values that are from UAvg and Vavg, if there is a more correct range, please contact me (Sophia) at repository@northwestern.edu.
 
 ### _Regarding Summarization Stats from QCTools:_
 
-Due to the nature of the summarization stats from the QCTools worksheet, these have been adapted so that they are less likely to incur skewing due to framecount (this concept has been communicated a developer of QCTools.) That being said, in order to see the documentation about how these numbers came to be see [this](summarizationStats.md) document
+Due to the nature of the summarization stats from the QCTools worksheet, these have been adapted so that they are less likely to incur skewing due to framecount (this concept has been communicated a developer of QCTools.) That being said, in order to see the documentation about how these numbers came to be see [this](summarizationStats.md) document. If you have any better values for these statistics, please contact me (Sophia) at repository@northwestern.edu
 
 ## Running with Parser (still in development - not functional):
 
