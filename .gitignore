@@ -137,10 +137,13 @@ dmypy.json
 ehthumbs.db
 Thumbs.db
 Image/Inventory/Images/Screenshot 2023-02-20 141418.png
-*.csv
+Image/Inventory/ExtraNonsenseToKeepForNow/inventory.csv
 *.vscode/
-*.conda
 
-#Exceptions
-!Video10BitValues.csv
-!Video8BitValues.csv
+# ffmpeg stuff
+.log.mbtree
+*.1ffmpeg2pass-0.log.mbtree
+
+#wsl files
+*.deb
+*.deb.1
