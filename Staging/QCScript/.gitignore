@@ -2,3 +2,8 @@
 *.csv
 *.conda
 *.vscode
+
+
+# Exceptions
+!Video8BitValues.csv
+!Video10BitValues.csv

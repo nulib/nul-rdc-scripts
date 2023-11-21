@@ -1,6 +1,6 @@
 import os
-from data import videovalues8Bit
-from data import videovalues10Bit
+import setvideostandardvals
+
 
 def inputCheck(inputPath):
     if not os.path.isdir(inputPath):
@@ -18,9 +18,11 @@ def outputCheck(outputPath, inputPath):
     return outputPath
 
 
-def setVideoBitDepth (videobitdepth):
+def setVideoBitDepth(videobitdepth):
     if videobitdepth == "--8bit" or "-8":
-        standardvalues = videovalues8Bit
+        bitDepth = 8
+        standardsDF = setvideostandardvals.setvideobitdepthstandards(bitDepth)
     elif videobitdepth == "--10bit" or "-10":
-        standardvalues = videovalues10Bit
-    return standardvalues
+        bitDepth = 10
+        standardsDF = setvideostandardvals.setvideobitdepthstandards(bitDepth)
+    return standardsDF

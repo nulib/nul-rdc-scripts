@@ -2,12 +2,14 @@ import videovalues10Bit
 
 videodata = "baddata.csv"
 
-def runLOW (criteria):
-    criteria = criteria + "LOW"
+
+def runLOW(criteria):
+    criteria = criteria + "low"
     return criteria
 
-def runHIGH (criteria):
-    criteria = criteria + "HIGH"
+
+def runHIGH(criteria):
+    criteria = criteria + "high"
     return criteria
 
 
@@ -15,9 +17,7 @@ def checkLOWHIGH(videodata, videoBitDepth, fullCriteria):
     criteriaBRNG = videoBitDepth.get(fullCriteria["BRNG"])
     criteriaClipping = videoBitDepth.get(fullCriteria["clipping"])
     selectColumns = "" + fullCriteria + "," + "Frame Time" + ""
-    BRNGErrors = setAndRunBRNG(
-        criteriaBRNG, fullCriteria, selectColumns, videodata
-    )
+    BRNGErrors = setAndRunBRNG(criteriaBRNG, fullCriteria, selectColumns, videodata)
     clippingErrors = setAndRunClipping(
         criteriaClipping, fullCriteria, selectColumns, videodata
     )
@@ -33,6 +33,7 @@ def checkLOWHIGH(videodata, videoBitDepth, fullCriteria):
         videoYUVErrors = [clippingErrors, BRNGErrors]
     return videoYUVErrors
 
+
 def setAndRunClipping(criteria, criteriaClipping, selectColumns, videodata):
     criteriaEquation = "" + criteria + "==" + criteriaClipping + ""
     clippingErrors = {}
@@ -42,19 +43,20 @@ def setAndRunClipping(criteria, criteriaClipping, selectColumns, videodata):
     if subDF.empty:
         pass
     else:
-        if criteria.contains ("LOW"):
+        if criteria.contains("low"):
             errortype = "Low Clipping"
-        elif criteria.contains ("HIGH"):
+        elif criteria.contains("high"):
             errortype = "High Clipping"
         clippingErrors.assign(errortype)
 
     return clippingErrors
 
+
 def setAndRunBRNG(criteria, criteriaBRNG, selectColumns, videodata):
-    if criteria.contains ("LOW"):
+    if criteria.contains("low"):
         firstOp = "=<"
         clipVal = 0
-    elif criteria.contains ("HIGH"):
+    elif criteria.contains("high"):
         firstOp = ">="
         clipVal = 1023
     criteriaEquation = (
@@ -67,20 +69,22 @@ def setAndRunBRNG(criteria, criteriaBRNG, selectColumns, videodata):
     if BRNGErrors.isEmpty:
         pass
     else:
-        if criteria.contains ("LOW"):
+        if criteria.contains("low"):
             errortype = "Low BRNG"
-        elif criteria.contains ("HIGH"):
+        elif criteria.contains("high"):
             errortype = "High BRNG"
         BRNGErrors.assign(errortype)
     return BRNGErrors
+
 
 def check():
     videodata = "baddata.csv"
     criteria = "Y"
     videoBitDepth = videovalues10Bit
     fullCriteria = runLOW(criteria)
-    checkLOWHIGH (videodata,videoBitDepth, fullCriteria)
+    checkLOWHIGH(videodata, videoBitDepth, fullCriteria)
     fullCriteria = runHIGH(criteria)
-    checkLOWHIGH (videodata, videoBitDepth, fullCriteria)
+    checkLOWHIGH(videodata, videoBitDepth, fullCriteria)
+
 
 check()

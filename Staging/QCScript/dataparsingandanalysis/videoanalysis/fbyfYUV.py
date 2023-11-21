@@ -1,100 +1,107 @@
 import pandas as pd
 
+videodata = "baddata.csv"
+
 
 def checkerrors(videodata, videoBitDepth):
-    def checkLuma(videodata, videoBitDepth):
-        criteria = "Y"
-        check(videodata, videoBitDepth, criteria)
-
-    def checkChromaU(videodata, videoBitDepth):
-        criteria = "U"
-        check(videodata, videoBitDepth, criteria)
-
-    def checkChromaV(videodata, videoBitDepth):
-        criteria = "V"
-        check(criteria, videodata, videoBitDepth)
-
-    def check(criteria, videodata, videoBitDepth):
-        fullCriteria = runLOW(criteria)
-        checkLOWHIGH (videodata,videoBitDepth, fullCriteria)
-        fullCriteria = runHIGH(criteria)
-        checkLOWHIGH (videodata, videoBitDepth, fullCriteria)
+    videoerrors = pd.DataFrame()
+    checkLuma(videoBitDepth, videodata, videoerrors)
+    checkChromaU(videoBitDepth, videodata, videoerrors)
+    checkChromaV(videoBitDepth, videodata, videoerrors)
+    return videoerrors
 
 
-    def runLOW (criteria):
-        criteria = criteria + "LOW"
-        return criteria
-
-    def runHIGH (criteria):
-        criteria = criteria + "HIGH"
-        return criteria
+def checkLuma(videodata, videoBitDepth, videoerrors):
+    criteria = "Y"
+    check(videodata, videoBitDepth, criteria, videoerrors)
 
 
-    def checkLOWHIGH(videodata, videoBitDepth, fullCriteria):
-        criteriaBRNG = videoBitDepth.get(fullCriteria["BRNG"])
-        criteriaClipping = videoBitDepth.get(fullCriteria["clipping"])
-        selectColumns = "" + fullCriteria + "," + "Frame Time" + ""
-        BRNGErrors = setAndRunBRNG(
-            criteriaBRNG, fullCriteria, selectColumns, videodata
-        )
-        clippingErrors = setAndRunClipping(
-            criteriaClipping, fullCriteria, selectColumns, videodata
-        )
+def checkChromaU(videodata, videoBitDepth, videoerrors):
+    criteria = "U"
+    check(videodata, videoBitDepth, criteria, videoerrors)
 
-        if BRNGErrors.isEmpty and clippingErrors.isEmpty:
-            pass
-        elif BRNGErrors.isEmpty or clippingErrors.isEmpty:
-            if BRNGErrors.isEmpty:
-                videoYUVErrors = clippingErrors
-            else:
-                videoYUVErrors = BRNGErrors
-        else:
-            videoYUVErrors = [clippingErrors, BRNGErrors]
-        return videoYUVErrors
 
-    def setAndRunClipping(criteria, criteriaClipping, selectColumns, videodata):
-        criteriaEquation = "" + criteria + "==" + criteriaClipping + ""
-        clippingErrors = {}
-        subDF = videodata[[selectColumns]]
+def checkChromaV(videodata, videoBitDepth, videoerrors):
+    criteria = "V"
+    check(criteria, videodata, videoBitDepth, videoerrors)
 
-        clippingErrors = subDF.query(criteriaEquation)
-        if subDF.empty:
-            pass
-        else:
-            if criteria.contains ("LOW"):
-                errortype = "Low Clipping"
-            elif criteria.contains ("HIGH"):
-                errortype = "High Clipping"
-            clippingErrors.assign(errortype)
 
-        return clippingErrors
+def check(criteria, videodata, videoBitDepth, videoerrors):
+    fullCriteria = runLOW(criteria)
+    checkLOWHIGH(videodata, videoBitDepth, fullCriteria, videoerrors)
+    fullCriteria = runHIGH(criteria)
+    checkLOWHIGH(videodata, videoBitDepth, fullCriteria, videoerrors)
 
-    def setAndRunBRNG(criteria, criteriaBRNG, selectColumns, videodata):
-        if criteria.contains ("LOW"):
-            firstOp = "=<"
-            clipVal = 0
-        elif criteria.contains ("HIGH"):
-            firstOp = ">="
-            clipVal = 1023
-        criteriaEquation = (
-            "" + criteria + firstOp + criteriaBRNG + "&" + criteria + "!=" + clipVal + ""
-        )
-        BRNGErrors = {}
-        subDF = videodata[[selectColumns]]
 
-        BRNGErrors = subDF.query(criteriaEquation)
+def runLOW(criteria):
+    criteria = criteria + "low"
+    return criteria
+
+
+def runHIGH(criteria):
+    criteria = criteria + "high"
+    return criteria
+
+
+def checkLOWHIGH(videodata, videoBitDepth, fullCriteria, videoerrors):
+    criteriaBRNG = videoBitDepth.get(fullCriteria["BRNG"])
+    criteriaClipping = videoBitDepth.get(fullCriteria["clipping"])
+    selectColumns = "" + fullCriteria + "," + "Frame Time" + ""
+    BRNGErrors = setAndRunBRNG(criteriaBRNG, fullCriteria, selectColumns, videodata)
+    clippingErrors = setAndRunClipping(
+        criteriaClipping, fullCriteria, selectColumns, videodata
+    )
+
+    if BRNGErrors.isEmpty and clippingErrors.isEmpty:
+        pass
+    elif BRNGErrors.isEmpty or clippingErrors.isEmpty:
         if BRNGErrors.isEmpty:
-            pass
+            videoerrors = clippingErrors
         else:
-            if criteria.contains ("LOW"):
-                errortype = "Low BRNG"
-            elif criteria.contains ("HIGH"):
-                errortype = "High BRNG"
-            BRNGErrors.assign(errortype)
-        return BRNGErrors
+            videoerrors = BRNGErrors
+    else:
+        videoerrors = [clippingErrors, BRNGErrors]
+    return videoerrors
 
-    YErrors = checkLuma(videoBitDepth, videodata)
-    UErrors = checkChromaU(videoBitDepth, videodata)
-    VErrors = checkChromaV(videoBitDepth, videodata)
 
-    return YErrors, UErrors, VErrors
+def setAndRunClipping(criteria, criteriaClipping, selectColumns, videodata):
+    criteriaEquation = "" + criteria + "==" + criteriaClipping + ""
+    clippingErrors = {}
+    subDF = videodata[[selectColumns]]
+
+    clippingErrors = subDF.query(criteriaEquation)
+    if subDF.empty:
+        pass
+    else:
+        if criteria.contains("low"):
+            errortype = "Low Clipping"
+        elif criteria.contains("high"):
+            errortype = "High Clipping"
+        clippingErrors.assign(errortype)
+
+    return clippingErrors
+
+
+def setAndRunBRNG(criteria, criteriaBRNG, selectColumns, videodata):
+    if criteria.contains("low"):
+        firstOp = "=<"
+        clipVal = 0
+    elif criteria.contains("high"):
+        firstOp = ">="
+        clipVal = 1023
+    criteriaEquation = (
+        "" + criteria + firstOp + criteriaBRNG + "&" + criteria + "!=" + clipVal + ""
+    )
+    BRNGErrors = {}
+    subDF = videodata[[selectColumns]]
+
+    BRNGErrors = subDF.query(criteriaEquation)
+    if BRNGErrors.isEmpty:
+        pass
+    else:
+        if criteria.contains("low"):
+            errortype = "Low BRNG"
+        elif criteria.contains("high"):
+            errortype = "High BRNG"
+        BRNGErrors.assign(errortype)
+    return BRNGErrors
