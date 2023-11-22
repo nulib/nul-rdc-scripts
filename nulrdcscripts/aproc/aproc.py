@@ -232,12 +232,39 @@ def main():
                 if args.transcode:
                     print("*transcoding access file*")
                     helpers.create_output_folder(ac_folder_abspath)
+                    # use ffmpeg-normalize to get LUFS-I as close to -18 as possible
+                    if args.normalize:
+                        print("*normalizing loudness of access file*")
+                        temp_file_abspath = os.path.join(
+                            ac_folder_abspath, 
+                            base_filename + 
+                            ac_identifier + 
+                            "_temp_" + 
+                            access_extension
+                        )
+                        ffmpeg_normalize_command = [
+                            args.ffmpeg_normalize_path,
+                            pm_file_abspath,
+                            "-o",
+                            temp_file_abspath,
+                            "-t",
+                            "-18",
+                            "--keep-loudness-range-target",
+                            "-tp",
+                            "-1",
+                            "-c:a",
+                            "pcm_s16le",
+                            "-ar",
+                            "44100", 
+                        ]
+                        subprocess.run(ffmpeg_normalize_command)
+                        
                     ffmpeg_command = [
                         args.ffmpeg_path,
                         "-loglevel",
                         "error",
                         "-i",
-                        pm_file_abspath,
+                        temp_file_abspath,
                     ]
                     ffmpeg_command += [
                         "-af",
@@ -252,6 +279,7 @@ def main():
                     ]
                     # sox_command = [args.sox_path, pm_file_abspath, '-b', '16', ac_file_abspath, 'rate', '44100']
                     subprocess.run(ffmpeg_command)
+                    os.remove(temp_file_abspath)
                     # generate md5 for access file
                     print("*creating checksum for access file*")
                     acHash = corefuncs.hashlib_md5(ac_file_abspath)

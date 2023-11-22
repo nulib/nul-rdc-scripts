@@ -3,7 +3,6 @@
   <rule name="General/Producer is Northwestern University" value="Producer" tracktype="General" occurrence="*" operator="=">Northwestern University</rule>
   <rule name="General/Archival_Location is Northwestern University" value="Archival_Location" tracktype="General" occurrence="*" operator="=">Northwestern University</rule>
   <rule name="General/Encoded_Library_Settings is A=ANALOG,M=stereo,T=Yamaha C300; E034942RT; Memorex; Type II / A=PCM,F=96000,W=24,M=stereo,T=Metric Halo LIO8; 44572; A/D / A=PCM,F=96000,W=24,M=stereo,T=Metric Halo LIO8; 44572; DIO / A=PCM,F=96000,W=24,M=stereo,T=BWFMetaEdit 21.07" value="Encoded_Library_Settings" tracktype="General" occurrence="*" operator="exists">A=ANALOG,M=stereo,T=Yamaha C300; E034942RT; Memorex; Type II / A=PCM,F=96000,W=24,M=stereo,T=Metric Halo LIO8; 44572; A/D / A=PCM,F=96000,W=24,M=stereo,T=Metric Halo LIO8; 44572; DIO / A=PCM,F=96000,W=24,M=stereo,T=BWFMetaEdit 21.07</rule>
-  <rule name="General/OriginalSourceForm is cassette" value="OriginalSourceForm" tracktype="General" occurrence="*" operator="exists">cassette</rule>
   <rule name="General/Copyright is For rights and usage information please contact Northwestern University Libraries" value="Copyright" tracktype="General" occurrence="*" operator="=">For rights and usage information please contact Northwestern University Libraries</rule>
   <rule name="Audio/Delay_Source is Container (bext)" value="Delay_Source" tracktype="Audio" occurrence="*" operator="=">Container (bext)</rule>
 </policy>

@@ -338,8 +338,6 @@ def import_inventories(source_inventories, reference_inventory_list, skip_coding
             extra_fieldnames = [
                 i for i in cleaned_fieldnames if not i in reference_inventory_list
             ]
-            print(cleaned_fieldnames)
-            print(reference_inventory_list)
             if missing_fieldnames:
                 print(
                     "WARNING: Your inventory seems to be missing the following columns"

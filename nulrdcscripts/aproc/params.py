@@ -74,6 +74,14 @@ parser.add_argument(
     type=str,
     help="For setting a custom mediaconch path",
 )
+parser.add_argument(
+    "--ffmpeg_normalize",
+    action="store",
+    dest="ffmpeg_normalize_path",
+    default="ffmpeg-normalize",
+    type=str,
+    help="For setting a custom ffmpeg-normalize path",
+)
 # parser.add_argument('--verbose', required=False, action='store_true', help='view ffmpeg output when transcoding')
 parser.add_argument(
     "--transcode",
@@ -140,7 +148,15 @@ parser.add_argument(
     dest="skip_coding_history",
     help="To skip coding history creation",
 )
-
+parser.add_argument(
+    "--normalize",
+    "-n",
+    default=False,
+    required=False,
+    action="store_true",
+    dest="normalize",
+    help="To normalize loudness of access file",
+)
 args = parser.parse_args()
 
 if args.transcode or args.write_bwf_metadata or args.write_json or args.spectrogram:

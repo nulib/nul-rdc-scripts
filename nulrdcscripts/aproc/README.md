@@ -48,6 +48,7 @@ project folder (script input)
 `--write_metadata`, `-m`  write Broadcast WAVE metadata to preservation file   
 `--write_json`, `-j`      write metadata to json file   
 `--spectrogram`, `-s`     generate spectrograms   
+`--normalize`, `-n`     To normalize loudness of access file   
 `--skip_coding`,      to skip coding history creation  
 `--load_inventory INVENTORY_PATH`, `-l INVENTORY_PATH`
                       Use to specify a CSV inventory. If not specified the script will look in the base folder of the input for CSV inventories. If no inventories are found the script will leave some fields blank.   
@@ -59,6 +60,8 @@ project folder (script input)
                       for setting a custom ffprobe path   
 `--mediaconch MEDIACONCH_PATH`
                       for setting a custom mediaconch path   
+`--ffmpeg_normalize FFMPEG_NORMALIZE_PATH`
+                      for setting a custom ffmpeg-normalize path                        
 `--p_policy INPUT_POLICY`
                       mediaconch policy for preservation files   
 `--a_policy OUTPUT_POLICY`
