@@ -1,7 +1,6 @@
 import pandas as pd
 import cleaners
 from bs4 import BeautifulSoup
-from tabulate import tabulate
 
 
 def dataparsingandtabulatingaudio(inputpath):
