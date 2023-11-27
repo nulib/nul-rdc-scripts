@@ -1,5 +1,5 @@
-# aproc
-A script to use when QCing Av that validates checksums and opens media as a playlist.  
+# avqc
+A script to use when QCing AV that validates checksums and opens media as a playlist.  
 By default, only preservation files are opened in the playlist.
 
 ## Prerequisites
