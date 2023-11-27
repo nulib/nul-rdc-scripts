@@ -21,7 +21,7 @@ def outputCheck(outputPath, inputPath):
 def setVideoBitDepth(videobitdepth):
     if videobitdepth == "--8bit" or "-8":
         bitDepth = 8
-        standardsDF = setvideostandardvals.setvideobitdepthstandards(bitDepth)
+        standardsDF = setvideostandardvals.setvideobitdepthstandards(videobitdepth)
     elif videobitdepth == "--10bit" or "-10":
         bitDepth = 10
         standardsDF = setvideostandardvals.setvideobitdepthstandards(bitDepth)

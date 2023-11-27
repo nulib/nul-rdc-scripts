@@ -1,16 +1,13 @@
-import videovalues10Bit
-
 levels = ["ideal", "max"]
 criteria = ["tout", "vrep"]
 level = 0
 item = 0
 
 videodata = "YHighData.csv"
-videoBitDepth = videovalues10Bit
 
 
 def runCriteria(videoBitDepth, videodata):
-    while item <= criteria:
+    while item <= len(criteria):
         criteriaToCheck = criteria[item]
         errors = runLevels(videoBitDepth, videodata, criteriaToCheck)
         item = item + 1
@@ -18,7 +15,7 @@ def runCriteria(videoBitDepth, videodata):
 
 
 def runLevels(videoBitDepth, videodata, criteriaToCheck):
-    while level <= levels:
+    while level <= len(levels):
         levelToCheck = levels[level]
         errors = setUpCheckErrors(
             criteria, levelToCheck, criteriaToCheck, videoBitDepth, videodata

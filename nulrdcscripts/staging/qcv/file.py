@@ -1,4 +1,4 @@
-from parseandclean import dataparsing
+from parseandclean import dataparsing as dataparsing
 from videoanalysis import errortiers, overallstatistics
 import videoanalysis
 

@@ -22,7 +22,7 @@ There are no ranges that are supplied for YAvg in the QCTools documentation. I h
 
 ### _Regarding Summarization Stats from QCTools:_
 
-Due to the nature of the summarization stats from the QCTools worksheet, these have been adapted so that they are less likely to incur skewing due to framecount (this concept has been communicated a developer of QCTools.) That being said, in order to see the documentation about how these numbers came to be see [this](summarizationStats.md) document. If you have any better values for these statistics, please contact me (Sophia) at repository@northwestern.edu
+Due to the nature of the summarization stats from the QCTools worksheet, these have been adapted so that they are less likely to incur skewing due to framecount (this concept has been communicated a developer of QCTools.) That being said, in order to see the documentation about how these numbers came to be see [this](docs/summarizationStats.md) document. If you have any better values for these statistics, please contact me (Sophia) at repository@northwestern.edu
 
 ## Running with Parser (still in development - not functional):
 
