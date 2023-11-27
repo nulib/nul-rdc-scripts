@@ -18,8 +18,8 @@ def outputCheck(outputPath, inputPath):
 
 
 def setVideoBitDepth(videobitdepth):
-    if videobitdepth == "--8bit" or "-8":
+    if videobitdepth == "--8bit" or "-8" or "--8Bit":
         bitDepth = 8
-    elif videobitdepth == "--10bit" or "-10":
+    elif videobitdepth == "--10bit" or "-10" or "--10Bit":
         bitDepth = 10
     return bitDepth
