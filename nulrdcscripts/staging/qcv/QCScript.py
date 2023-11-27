@@ -1,6 +1,5 @@
 import videoanalysis.fbyfYUV as fbyfYUV
-import setupsteps.setup as setup
-import setupsteps.setvidstandard as setvidstandard
+from setupsteps import setup, setvidstandard
 
 videoBitDepth = setup.setVideoBitDepth("--10bit")
 videoBitDepth = setvidstandard.setvideobitdepthstandards(videoBitDepth)

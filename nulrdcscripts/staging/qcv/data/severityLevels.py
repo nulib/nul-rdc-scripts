@@ -1,5 +1,4 @@
-vREP = "CRITICAL"
-tOUT = "CRITICAL"
-BRNGOut = "MODERATE"
-Clipping = "CRITICAL"
-
+vrep = "CRITICAL"
+tout = "CRITICAL"
+brngout = "MODERATE"
+clipping = "CRITICAL"

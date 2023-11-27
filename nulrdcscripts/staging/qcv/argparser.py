@@ -29,7 +29,7 @@ parser.add_argument(
 # This may actually be able to come directly from video
 parser.add_argument(
     "videobitdepth",
-    choices=["-10", "--10bit", "-8, --8bit"],
+    choices=["-10", "--10bit", "--10Bit", "-8, --8bit", "--8Bit"],
     action="store",
     default="--10bit",
     dest="videobitdepth",
