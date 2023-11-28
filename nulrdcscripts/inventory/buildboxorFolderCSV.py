@@ -1,6 +1,9 @@
 def build_boxOrFolder_inventory(
     project_number, project_4letterID, box_number, folder_number, file_number
 ):
+    """
+    This is the more structured version that is used only if you enter 'y' for the box/folder question. Will allow for works that have pages -- this changes where the loop increments at.
+    """
     inventory = [
         {
             "work_accession_number": project_number

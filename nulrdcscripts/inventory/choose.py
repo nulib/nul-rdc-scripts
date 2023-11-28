@@ -5,6 +5,9 @@ import csvinput
 
 
 def chooseYourOwnAdventure(project_number, project_4letterID, csvname):
+    """
+    Lets you have a more flexible filenaming structure. Primarily used for legacy projects. This is an optional path that is only used if you enter 'n' for box/folder question.
+    """
     workinfo = setup.ask_workinfo()
     number_works = setup.ask_numberworks()
     inputvalidation.check_numberworks(number_works)
