@@ -1,4 +1,4 @@
-﻿criteria,BRNGOut,clipping,avglow,avghigh,lowend,highend,ideal,max
+﻿criteria,brngout,clipping,avglow,avghigh,lowend,highend,ideal,max
 ylow,16,0,,,,,,
 yhigh,235,255,,,,,,
 yavg,80,170,,,,,,

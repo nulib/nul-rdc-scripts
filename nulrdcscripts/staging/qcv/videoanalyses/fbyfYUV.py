@@ -36,8 +36,8 @@ def runHIGH(prefix):
 
 def checkLOWHIGH(videodata, videoBitDepth, fullCriteria, videoerrors):
     valuecriteria = str(fullCriteria)
-    criteriaBRNG = videoBitDepth.loc["ylow"]
-    criteriaClipping = videoBitDepth.loc["ylow"]
+    criteriaBRNG = videoBitDepth.loc[fullCriteria, "brngout"]
+    criteriaClipping = videoBitDepth.loc[fullCriteria, "clipping"]
     selectColumns = "" + fullCriteria + "," + "Frame Time" + ""
     BRNGErrors = setAndRunBRNG(criteriaBRNG, fullCriteria, selectColumns, videodata)
     clippingErrors = setAndRunClipping(
