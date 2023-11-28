@@ -609,63 +609,83 @@ def import_csv(csvInventory):
     try:
         with open(csvInventory, encoding="utf-8") as f:
             reader = csv.DictReader(f, delimiter=",")
+            # fieldnames to check for
+            # some items have multiple options
+            # 0 index is our current standard
             video_fieldnames_list = [
-                "filename",
-                "work_accession_number",
-                "box/folder alma number",
-                "barcode",
-                "inventory_title",
-                "record date/time",
-                "housing/container markings",
-                "condition notes",
-                "call number",
-                "format",
-                "capture date",
-                "staff initials",
-                "VTR used",
-                "VTR output used",
-                "tape brand",
-                "tape record mode",
-                "TBC used",
-                "TBC output used",
-                "ADC",
-                "capture card",
-                "sound",
-                "video standard",
-                "capture notes",
+                ["filename"],
+                ["work_accession_number"],
+                ["box/folder alma number", "Box/Folder\nAlma number"],
+                ["barcode"],
+                ["inventory_title"],
+                ["record date/time"],
+                ["housing/container markings"],
+                ["condition notes"],
+                ["call number"],
+                ["format"],
+                ["capture date"],
+                ["staff initials", "Digitizer"],
+                ["VTR used"],
+                ["VTR output used"],
+                ["tape brand"],
+                ["tape record mode"],
+                ["TBC used"],
+                ["TBC output used"],
+                ["ADC"],
+                ["capture card"],
+                ["sound"],
+                ["video standard", "Region"],
+                ["capture notes"],
             ]
-            missing_fieldnames = [
-                i for i in video_fieldnames_list if not i in reader.fieldnames
-            ]
+            fieldnames = {}
+            missing_fieldnames = []
+
+            # loops through each field and checks for each option
+            for field in video_fieldnames_list:
+                for field_option in field:
+                    for reader_field in reader.fieldnames:
+                        if field_option.lower() in reader_field.lower():
+                            # adds the fieldname used in the file
+                            # to a dictionary for us to use
+                            # they key is our current standard
+                            fieldnames.update({field[0]: reader_field})
+                            break
+                # keep track of any missing
+                # uses field[0] so when it tells user which ones are missin
+                # they will use our current standard
+                if not field[0] in fieldnames:
+                    missing_fieldnames.append(field[0])
+
             if not missing_fieldnames:
                 for row in reader:
-                    name = row["filename"]
-                    id1 = row["work_accession_number"]
-                    id2 = row["box/folder alma number"]
-                    id3 = row["barcode"]
-                    title = row["inventory_title"]
-                    record_date = row["record date/time"]
-                    container_markings = row["housing/container markings"]
+                    # index field using dictionary of found fieldnames
+                    name = row[fieldnames["filename"]]
+                    id1 = row[fieldnames["work_accession_number"]]
+                    id2 = row[fieldnames["box/folder alma number"]]
+                    id3 = row[fieldnames["barcode"]]
+                    title = row[fieldnames["inventory_title"]]
+                    record_date = row[fieldnames["record date/time"]]
+                    container_markings = row[fieldnames["housing/container markings"]]
                     container_markings = container_markings.split("\n")
-                    condition_notes = row["condition notes"]
-                    format = row["format"]
-                    captureDate = row["capture date"]
+                    condition_notes = row[fieldnames["condition notes"]]
+                    format = row[fieldnames["format"]]
+                    captureDate = row[fieldnames["capture date"]]
                     # try to format date as yyyy-mm-dd if not formatted correctly
                     if captureDate:
                         captureDate = str(guess_date(captureDate))
-                    staff_initials = row["staff initials"]
-                    vtr = row["VTR used"]
-                    vtrOut = row["VTR output used"]
-                    tapeBrand = row["tape brand"]
-                    recordMode = row["tape record mode"]
-                    tbc = row["TBC used"]
-                    tbcOut = row["TBC output used"]
-                    adc = row["ADC"]
-                    dio = row["capture card"]
-                    sound = row["sound"]
+                    staff_initials = row[fieldnames["staff initials"]]
+                    vtr = row[fieldnames["VTR used"]]
+                    vtrOut = row[fieldnames["VTR output used"]]
+                    tapeBrand = row[fieldnames["tape brand"]]
+                    recordMode = row[fieldnames["tape record mode"]]
+                    tbc = row[fieldnames["TBC used"]]
+                    tbcOut = row[fieldnames["TBC output used"]]
+                    adc = row[fieldnames["ADC"]]
+                    dio = row[fieldnames["capture card"]]
+                    sound = row[fieldnames["sound"]]
                     sound = sound.split("\n")
-                    videoStandard = row["video standard"]
-                    capture_notes = row["capture notes"]
+                    videoStandard = row[fieldnames["video standard"]]
+                    capture_notes = row[fieldnames["capture notes"]]
                     coding_history = []
                     coding_history = generate_coding_history(
                         coding_history,
