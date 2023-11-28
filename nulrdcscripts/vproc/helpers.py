@@ -647,6 +647,13 @@ def import_csv(csvInventory):
                 ["video standard", "Region"],
                 ["capture notes"],
             ]
+            # dictionary of fieldnames found in the inventory file,
+            # keyed by our current standard fieldnames
+            # ex. for up to date inventory
+            # "video standard": "video standard"
+            # ex. if old inventory was used
+            # "video standard": "Region"
+            # this way old inventories work
             fieldnames = {}
             missing_fieldnames = []
 
@@ -657,7 +664,7 @@ def import_csv(csvInventory):
                         if field_option.lower() in reader_field.lower():
                             # adds the fieldname used in the file
                             # to a dictionary for us to use
-                            # they key is our current standard
+                            # the key is our current standard
                             fieldnames.update({field[0]: reader_field})
                             break
                 # keep track of any missing

@@ -7,21 +7,22 @@ In order to use all of the script's functions you will need to have the followin
 ## Usage
 In the terminal, [navigate](#terminal-help) to the `nul-rdc-scripts` folder before running.  
 
-**Note: make sure valid inventory csv is in the input folder**
+**Note: make sure valid inventory csv is in the input folder**  
+**Note: qc_log is always generated (mediaconch policies are always checked)**  
 
-### Basic usage (--all defaults true)
+### Basic usage
 ```
-poetry run aproc -i INPUT_PATH
+poetry run aproc -i INPUT_PATH -a
 ```
 
-### Generate spectrograms only
+### Generate spectrograms
 ```
 poetry run aproc -i INPUT_PATH -s
 ```
 
-### Generate spectrograms and skip coding (for vendors)
+### Only generate qc_log
 ```
-poetry run aproc -i INPUT_PATH -s --skip_coding
+poetry run aproc -i INPUT_PATH
 ```
 
 ### Example File Structure

@@ -345,7 +345,7 @@ def import_inventories(source_inventories, reference_inventory_list, skip_coding
             reader = csv.DictReader(f, delimiter=",")
             # fieldnames to check for
             # some items have multiple options
-            # 0 index is our current standard
+            # leftmost item (0 index) is our current standard
             video_fieldnames_list = [
                 ["work_accession_number"],
                 ["filename"],
@@ -372,6 +372,13 @@ def import_inventories(source_inventories, reference_inventory_list, skip_coding
                 ["digitizer", "staff initials"],
                 ["digitizer notes", "capture notes"],
             ]
+            # dictionary of fieldnames found in the inventory file,
+            # keyed by our current standard fieldnames
+            # ex. for up to date inventory
+            # "digitizer notes": "digitizer notes"
+            # ex. if old inventory was used
+            # "digitizer notes": "capture notes"
+            # this way old inventories work
             fieldnames = {}
             missing_fieldnames = []
 
@@ -382,7 +389,7 @@ def import_inventories(source_inventories, reference_inventory_list, skip_coding
                         if field_option.lower() in reader_field.lower():
                             # adds the fieldname used in the file
                             # to a dictionary for us to use
-                            # they key is our current standard
+                            # the key is our current standard
                             fieldnames.update({field[0]: reader_field})
                             break
                 # keep track of any missing
