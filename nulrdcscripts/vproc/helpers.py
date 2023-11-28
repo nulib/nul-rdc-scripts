@@ -666,7 +666,8 @@ def import_csv(csvInventory):
                     title = row[fieldnames["inventory_title"]]
                     record_date = row[fieldnames["record date/time"]]
                     container_markings = row[fieldnames["housing/container markings"]]
-                    container_markings = container_markings.split("\n")
+                    if container_markings:
+                        container_markings = container_markings.split("\n")
                     condition_notes = row[fieldnames["condition notes"]]
                     format = row[fieldnames["format"]]
                     captureDate = row[fieldnames["capture date"]]
