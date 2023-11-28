@@ -195,18 +195,21 @@ def main():
                     else:
                         # TODO prompt user to enter a sound mode for the file manually?
                         pass
-                    coding_history_update = (
-                        "A=PCM,F="
-                        + input_metadata["file metadata"]["audio sample rate"]
-                        + ",W="
-                        + input_metadata["file metadata"]["audio bitrate"]
-                        + ",M="
-                        + file_sound_mode
-                        + ",T=BWFMetaEdit "
-                        + metaedit_version
-                    )
-                    coding_history = coding_history + "\r\n" + coding_history_update
-                    bwf_dict["CodingHistory"]["write"] = coding_history
+                    # if coding history was created
+                    if coding_history:
+                        coding_history_update = (
+                            "A=PCM,F="
+                            + input_metadata["file metadata"]["audio sample rate"]
+                            + ",W="
+                            + input_metadata["file metadata"]["audio bitrate"]
+                            + ",M="
+                            + file_sound_mode
+                            + ",T=BWFMetaEdit "
+                            + metaedit_version
+                        )
+                        coding_history = coding_history + "\r\n" + coding_history_update
+                        bwf_dict["CodingHistory"]["write"] = coding_history
+
                     bwf_command = [
                         args.metaedit_path,
                         pm_file_abspath,
