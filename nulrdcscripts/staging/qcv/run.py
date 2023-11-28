@@ -1,16 +1,18 @@
-import setupsteps
 import file
 import folder
 from argparser import args
+from setupsteps import setup
 
 inputPath = args.input_path
 outputPath = args.output_path
 videobitdepth = args.videobitdepth
 
-videoBitDepth = setupsteps.setVideoBitDepth(videobitdepth)
+videoBitDepth = setup.setVideoBitDepth(videobitdepth)
+videoBitDepth = setup.setvideobitdepthstandard(videoBitDepth)
+
 
 # filepath = input("Filepath")
-fileType = setupsteps.inputCheck(inputPath)
+fileType = setup.inputCheck(inputPath)
 
 
 def runPathType(fileType, inputPath, videoBitDepth):
@@ -23,4 +25,4 @@ def runPathType(fileType, inputPath, videoBitDepth):
 
 runPathType(fileType, inputPath, videoBitDepth)
 
-savePath = setupsteps.outputCheck(outputPath, inputPath)
+savePath = setup.outputCheck(outputPath, inputPath)

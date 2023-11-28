@@ -1,9 +1,10 @@
 import pandas as pd
-import cleaners
+import parseandclean.cleaners as cleaners
 from bs4 import BeautifulSoup
 
 
 def dataparsingandtabulatingaudio(inputpath):
+    """Cleans and parses the audio data for analysis. Returns dataframe."""
     audiodata = {}
     file = open(inputpath)
     contents = file.read()
@@ -35,6 +36,7 @@ def dataparsingandtabulatingaudio(inputpath):
 
 # filepath = "example.xml"
 def dataparsingandtabulatingvideo(inputpath):
+    """Cleans and parses the video data for analysis. Returns dataframe."""
     videodata = {}
     file = open(inputpath)
     contents = file.read()

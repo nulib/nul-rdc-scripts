@@ -1,6 +1,5 @@
-from parseandclean import dataparsing as dataparsing
-from videoanalysis import errortiers, overallstatistics
-import videoanalysis
+from parseandclean import dataparsing
+from videoanalyses import videoanalysis, errortiers, overallstatistics
 
 
 def runIndividualFile(inputpath, videoBitDepth):
