@@ -328,7 +328,7 @@ def create_coding_history(row, encoding_chain_fields, append_list):
         return None
 
 
-def import_inventories(source_inventories, reference_inventory_list, skip_coding_history):
+def import_inventories(source_inventories, skip_coding_history):
     csvDict = {}
     for i in source_inventories:
         verify_csv_exists(i)
