@@ -9,9 +9,9 @@ In the terminal, [navigate](#terminal-help) to the `nul-rdc-scripts` folder befo
 
 **Note: make sure valid inventory csv is in the input folder**
 
-### Basic usage (--all defaults true)
+### Basic usage
 ```
-poetry run aproc -i INPUT_PATH
+poetry run aproc -i INPUT_PATH -a
 ```
 
 ### Generate spectrograms only
