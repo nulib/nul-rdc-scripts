@@ -608,6 +608,16 @@ def import_csv(csvInventory):
     csvDict = {}
     try:
         with open(csvInventory, encoding="utf-8") as f:
+            # skip through annoying lines at beginning
+            while True:
+                # save spot
+                stream_index = f.tell()
+                # skip advancing line by line
+                line = f.readline()
+                if not ("Name of Person Inventorying" in line or "MEADOW Ingest fields" in line):
+                    # go back one line and break out of loop once fieldnames are found
+                    f.seek(stream_index, os.SEEK_SET)
+                    break
             reader = csv.DictReader(f, delimiter=",")
             # fieldnames to check for
             # some items have multiple options
