@@ -1,4 +1,4 @@
-import videoanalysis.fbyfYUV as fbyfYUV
+import videoanalyses.fbyfYUV as fbyfYUV
 from setupsteps import setup
 
 videoBitDepth = setup.setVideoBitDepth("--10bit")

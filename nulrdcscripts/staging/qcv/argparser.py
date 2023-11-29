@@ -8,7 +8,6 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     "--input",
     "-i",
-    metavar="inputfile",
     action="store",
     dest="input_path",
     required=True,
@@ -20,9 +19,8 @@ parser.add_argument(
     "--output",
     "-o",
     action="store",
-    dest="output_path",
-    type=str,
     required=True,
+    type=str,
     help="Enter the full path to where you want your output files",
 )
 
