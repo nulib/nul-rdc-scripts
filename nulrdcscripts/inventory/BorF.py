@@ -43,7 +43,7 @@ def BorFPath(project_number, project_4letterID, csvname):
                     file_number,
                 )
                 for data in inventory:
-                    csv.writer.writerows(inventory)
+                    writer.writerows(inventory)
                     file_number = int(file_number) + 1
     new_BorF = setup.ask_newBoxFolder()
     if new_BorF == "y":

@@ -1,52 +1,65 @@
 # Project Number Validation
-def project_numbervalidation(project_number):
-    project_number = project_number.lower()
+def project_number_validation(project_number):
+    """
+    Checks that the project number starts with either a p or a j and that it is exactly 5 characters
+    """
     project_number_length = len(project_number)
-    startswithTrue = project_numbervalidation_startswith(project_number)
-    lengthTrue = project_numbervalidation_length(project_number_length)
-    if startswithTrue and lengthTrue:
-        project_number = project_number
+    project_number
+    project_number_first_char = project_number.startswith(("p", "j"))
+
+    check_projectnumber_len(project_number_length)
+    check_projectnumber_firstchar(project_number_first_char)
+
+
+def check_projectnumber_firstchar(project_number_first_char):
+    """
+    Checks the first character of the project number
+    """
+    if project_number_first_char:
+        pass
     else:
-        if startswithTrue:
-            raise ValueError(
-                "Please use a project number with 5 digits [including the p or j]"
-            )
-        elif lengthTrue:
-            raise ValueError("Please start your project number with a p or a j")
-    return project_number
+        raise ValueError("Project number must start with a p or a j")
 
 
-def project_numbervalidation_length(project_number_length):
-    try:
-        project_number_lengthTrue = project_number_length == 5
-    except:
-        raise ValueError(
-            "Please use a project number with 5 digits [including the p or j]"
-        )
-    return project_number_lengthTrue
-
-
-def project_numbervalidation_startswith(project_number):
-    try:
-        project_number_startswithTrue = project_number.startswith(("p", "j"))
-    except:
-        raise ValueError("Please start your project number with a p or a j")
-    return project_number_startswithTrue
+def check_projectnumber_len(project_number_length):
+    """
+    Checks the length of the project number.
+    """
+    if project_number_length == 5:
+        pass
+    else:
+        raise ValueError("Project number must be 5 characters long")
 
 
 # Project Letter Validation
 def project_4letterID_validation(project_4letterID):
-    project_4letterID = project_4letterID.lower()
-    project_4letterID_length = len(project_4letterID)
-    try:
-        project_4letterID.isalpha()
-        try:
-            project_4letterID_length == 4
-        except:
-            raise ValueError("Please use 4 letters for your project ID")
-    except:
-        raise ValueError("Please use a project ID with letters only")
-    return project_4letterID
+    """
+    Checks that the 4 letter ID is only alphabetical and that there are only 4 characters
+    """
+    length_4letterID = len(project_4letterID)
+    alpha_4letterID = project_4letterID.isalpha()
+    check_alpha_4letterID(alpha_4letterID)
+    check_length_4letterID(length_4letterID)
+
+
+def check_length_4letterID(length_4letterID):
+    """
+    Checks the length of the 4 character ID
+    """
+    if length_4letterID == 4:
+        pass
+    else:
+        raise ValueError("4 Letter ID must be only 4 characters")
+
+
+def check_alpha_4letterID(alpha_4letterID):
+    """'
+    Checks that the 4 characters are all alphabetical
+    """
+    if alpha_4letterID:
+        pass
+    else:
+        raise ValueError("4 Letter ID must be all letters")
 
 
 def check_boxnumber(box_number):

@@ -1,9 +1,10 @@
 import setup
 import inputvalidation
 import csv
+import BorF
 
 
-def pageTrue(project_number, project_4letterID, box_number, folder_number):
+def pageTrue(project_number, project_4letterID, box_number, folder_number, csvname):
     """
     If you use this route the loop will increment for pages and lead to a request for additional works at the end.
     """
@@ -74,3 +75,14 @@ def pageTrue(project_number, project_4letterID, box_number, folder_number):
         for data in inventory:
             csv.writer.writerows(inventory)
             page_number = int(page_number) + 1
+    new_work = setup.ask_newwork()
+    if new_work == "y":
+        pageTrue(project_number, project_4letterID, box_number, folder_number, csvname)
+    else:
+        new_BorF = setup.ask_newBoxFolder()
+        if new_BorF == "y":
+            BorF.BorFPath(project_number, project_4letterID, csvname)
+        elif new_BorF == "n":
+            pass
+
+    return inventory
