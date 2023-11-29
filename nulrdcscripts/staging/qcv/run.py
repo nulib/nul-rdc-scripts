@@ -5,10 +5,11 @@ from setupsteps import setup
 
 inputPath = args.input_path
 outputPath = args.output_path
-videobitdepth = args.videobitdepth
 
-videoBitDepth = setup.setVideoBitDepth(videobitdepth)
-videoBitDepth = setup.setvideobitdepthstandard(videoBitDepth)
+if args._10bit:
+    videoBitDepth = 10
+elif args._8bit:
+    videoBitDepth = 8
 
 
 # filepath = input("Filepath")

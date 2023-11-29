@@ -26,26 +26,35 @@ parser.add_argument(
     help="Enter the full path to where you want your output files",
 )
 
-# This may actually be able to come directly from video
-parser.add_argument(
-    "videobitdepth",
-    choices=["-10", "--10bit", "--10Bit", "-8, --8bit", "--8Bit"],
-    action="store",
-    default="--10bit",
-    dest="videobitdepth",
-    required=True,
-    type=str,
-    help="Use to specify what bit depth your video is",
+bitdepth = parser.add_mutually_exclusive_group(required=True)
+bitdepth.add_argument(
+    "--10bit",
+    "-10",
+    action="store_true",
+    dest="_10bit",
+    help="for 10 bit videos",
+)
+bitdepth.add_argument(
+    "--8bit",
+    "-8",
+    action="store_true",
+    dest="_8bit",
+    help="for 8 bit videos",
 )
 
-# Need to add one for B/W or Color video option
-
-parser.add_argument(
-    "videotype",
-    choices=["-bw", "--blackandwhite", "-c", "-color"],
-    action="store",
-    required=True,
-    dest="videotype",
-    help="Tells script what video type to run: black and white or color",
+color = parser.add_mutually_exclusive_group(required=True)
+color.add_argument(
+    "--color",
+    "-c",
+    action="store_true",
+    dest="color",
+    help="for color videos",
+)
+color.add_argument(
+    "--blackandwhite",
+    "-bw",
+    action="store_true",
+    dest="blackandwhite",
+    help="for black and white videos",
 )
 args = parser.parse_args()

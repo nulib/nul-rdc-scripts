@@ -1,6 +1,6 @@
 from pathlib import Path
 from parseandclean import dataparsing
-from videoanalysis import errortiers, fbyfYUV, overallstatistics, videoanalysis
+from videoanalyses import errortiers, fbyfYUV, overallstatistics, videoanalysis
 
 
 def runBulkFolder(inputpath, videoBitDepth):
