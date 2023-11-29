@@ -10,6 +10,10 @@ def runIndividualFile(inputpath, videoBitDepth):
     # Collects the video summary data - outputs CSV and Dictionary
     videostats = overallstatistics.videodatastatistics(videodata)
 
+    print(videostats) 
+    print(videodata)
+
+    """
     videofeedtodict = overallstatistics.videostatstodict(videostats)
     videofeedtocsv = overallstatistics.videostatstocsv(videostats)
 
@@ -24,3 +28,4 @@ def runIndividualFile(inputpath, videoBitDepth):
 
     # Assigns errors to tiers for verbose reporting
     errortiers.errorsvideo(summaryvideoerrors)
+    """
