@@ -8,7 +8,6 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     "--input",
     "-i",
-    metavar="inputfile",
     action="store",
     dest="input_path",
     required=True,
@@ -20,15 +19,15 @@ parser.add_argument(
     "--output",
     "-o",
     action="store",
-    dest="output_path",
-    type=str,
     required=True,
+    type=str,
     help="Enter the full path to where you want your output files",
 )
 
 # This may actually be able to come directly from video
 parser.add_argument(
-    "videobitdepth",
+    "--videobitdepth",
+    "-vbd",
     choices=["-10", "--10bit", "--10Bit", "-8, --8bit", "--8Bit"],
     action="store",
     default="--10bit",
@@ -41,7 +40,8 @@ parser.add_argument(
 # Need to add one for B/W or Color video option
 
 parser.add_argument(
-    "videotype",
+    "--videotype",
+    "--vt",
     choices=["-bw", "--blackandwhite", "-c", "-color"],
     action="store",
     required=True,
