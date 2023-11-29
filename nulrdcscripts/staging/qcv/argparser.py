@@ -41,7 +41,7 @@ parser.add_argument(
 
 parser.add_argument(
     "--videotype",
-    "--vt",
+    "-vt",
     choices=["-bw", "--blackandwhite", "-c", "-color"],
     action="store",
     required=True,
