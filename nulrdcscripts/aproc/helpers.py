@@ -245,11 +245,11 @@ def create_coding_history(row, encoding_chain_fields, append_list):
     coding_history_dict = {}
     coding_history = []
 
-    # when the inventory has columns for encoding chain but nothing is entered
-    # like for vendor projects
-    # this functions throws a bunch of errors
-    # I just wrapped it in a try/except and return None if anything goes wrong
-    # this way it will just give up if it doesn't find the info
+    # returns none if any encoding chain fields are empty
+    for field in encoding_chain_fields:
+        if not row[field]:
+            return None
+
     try:
         for encoding_chain in grouped_field_list:
             coding_history_dict = {
@@ -438,8 +438,6 @@ def import_inventories(source_inventories, skip_coding_history):
                     coding_history = create_coding_history(
                         row, encoding_chain_fields, [tapeBrand, type, speed, nr]
                     )
-                    if not coding_history:
-                        print("WARNING: coding history was unable to be created")
                 else:
                     coding_history = None
                 # TODO make a more generic expandable coding history builder
