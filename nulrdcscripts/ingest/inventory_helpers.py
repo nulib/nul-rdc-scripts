@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 Helper functions related to inventories.
 """
@@ -9,16 +11,16 @@ import nulrdcscripts.ingest.helpers as helpers
 
 def load_inventory(inventory_path: str, desc_arg: list[str]):
     """
-    finds work type to call image_load_inventory() or av_load_inventory()
+    Finds work type to call image_load_inventory() or av_load_inventory().
 
-    Args:
-        inventory_path (str): fullpath to inventory csv
-        desc_arg: (list of str): inventory fields to use for making description
+    .. note:: worktype can be IMAGE, AUDIO, or VIDEO
 
-    Returns:
-        inventory_dictlist (list of dicts of str: str): inventory data
-        work_type (str): IMAGE, AUDIO, or VIDEO
+    :param str inventory_path: fullpath to inventory csv
+    :param list[str] desc_arg: inventory fields to use for making description
+    :returns: inventory data and worktype
+    :rtype: tuple of list[dict] and str
     """
+    inventory_dictlist: list[dict[str, str]]
     work_type = get_work_type(inventory_path)
     if work_type == "IMAGE":
         inventory_dictlist = image_load_inventory(inventory_path)
@@ -28,41 +30,18 @@ def load_inventory(inventory_path: str, desc_arg: list[str]):
 
 def image_load_inventory(inventory_path: str):
     """
-    Loads image inventory
+    Loads image inventory.
 
-    Args:
-        inventory_path (str):  fullpath to inventory csv
-    
-    Returns:
-        inventory_dictlist (list of dicts of str: str)
-
-    Note:
-        Structure of inventory_dictlist is as follows
-
-        image_inventory_dictlist = [
-            {
-                "filename": "filename",
-                "label": "label",
-                "work_accession_number": "work_accession_number",
-                "file_accession_number": "file_accession_number",
-                "role": "role",
-                "description": "description",
-            },
-            {
-                "filename": "filename",
-                "label": "label",
-                "work_accession_number": "work_accession_number",
-                "file_accession_number": "file_accession_number",
-                "role": "role",
-                "description": "description",
-            }
-        ]
+    :param str inventory_path:  fullpath to inventory csv
+    :returns: inventory data for each item including filename, label, work_accession_number, 
+        file_accession_number, role, and description
+    :rtype: list of dicts
     """
-    inventory_dictlist = []
+    inventory_dictlist: list[dict[str, str]] = []
     with open(inventory_path, encoding="utf-8") as f:
         reader = csv.DictReader(f, delimiter=",")
         for row in reader:
-            row_data = {
+            row_data: dict[str, str] = {
                 "filename": row["filename"],
                 "label": row["label"],
                 "work_accession_number": row["work_accession_number"],
@@ -75,38 +54,19 @@ def image_load_inventory(inventory_path: str):
     
 def av_load_inventory(inventory_path: str, desc_arg: list[str]):
     """
-    Loads av inventory
+    Loads av inventory.
 
-    Args:
-        inventory_path (str):  fullpath to inventory csv
-    
-    Returns:
-        inventory_dictlist (list of dicts of str: str)
-
-    Note:
-        Structure of inventory_dictlist is as follows
-        
-        av_inventory_dictlist = [
-            {
-                "filename": "filename",
-                "work_accession_number": "work_accession_number",
-                "description": "description",
-                "label": "label",
-            },
-            {
-                "filename": "filename",
-                "work_accession_number": "work_accession_number",
-                "description": "description",
-                "label": "label",
-            },
-        ]
+    :param str inventory_path:  fullpath to inventory csv
+    :returns: inventory data for each item including filename, work_accession_number, 
+        description, and label 
+    :rtype: list of dicts
     """
-    inventory_dictlist = []
+    inventory_dictlist: list[dict[str, str]] = []
     with open(inventory_path, encoding="utf-8") as f:
         reader = csv.DictReader(f, delimiter=",")
         description_fields = get_description_fields(desc_arg, reader.fieldnames)
         for row in reader:         
-            row_data = {
+            row_data: dict[str, str] = {
                 "filename": row["filename"],
                 "work_accession_number": row["work_accession_number"],
                 "description": get_inventory_description(row, description_fields),
@@ -120,8 +80,7 @@ def check_inventory(inventory_path: str):
     Checks given inventory is a csv and exists. 
     Prints an error and quits if not.
 
-    Args:
-        inventory_path (str):  fullpath to inventory csv
+    :param str inventory_path:  fullpath to inventory csv
     """
     if not inventory_path.endswith(".csv"):
         print("\n--- ERROR: " + inventory_path + " is not a csv file ---\n")
@@ -133,14 +92,13 @@ def check_inventory(inventory_path: str):
 def find_inventory(dir: str):
     """
     Searches for inventory csv in given directory.
-    Quits if no inventory is found.
+    Returns None if no inventory is found.
 
-    Note:
+    .. note::
         Will choose the first valid file it finds.
         Valid file: csv that is not ingest sheet or qc log
 
-    Args:
-        dir (str): fullpath to search directory
+    :param str dir: fullpath to search directory
     """
     csv_files = glob.glob(os.path.join(dir, "*.csv"))
     for f in csv_files:
@@ -151,16 +109,14 @@ def find_inventory(dir: str):
 
 def get_inventory_description(row: dict[str: str], description_fields: list[str]):
     """
-    Generates inventory description based on description fields
+    Generates inventory description based on description fields.
 
-    Args:
-        row (dict of str: str): inventory dict for item
-        description_fields: (list of str): inventory fields to use for making description
-
-    Returns:
-        description (str): inventory description for file
+    :param dict row: inventory dict for item
+    :param list[str] description_fields: inventory fields to use for making description
+    :returns: inventory description for file
+    :rtype: str
     """
-    description_list = []
+    description_list: list[str] = []
     for header in description_fields:
         description_list.append(row[header])
     description = "; ".join(i for i in description_list if i)
@@ -168,13 +124,11 @@ def get_inventory_description(row: dict[str: str], description_fields: list[str]
 
 def get_work_type(inventory_path: str):
     """
-    Determines work type based on inventory fieldnames
+    Determines work type based on inventory fieldnames.
 
-    Args:
-        inventory_path (str): fullpath to inventory csv
-
-    Returns:
-        (str): IMAGE, AUDIO, or VIDEO
+    :param str inventory_path: fullpath to inventory csv
+    :returns: worktype as 'IMAGE', 'AUDIO', or 'VIDEO'
+    :rtype: str
     """
     with open(inventory_path, encoding="utf-8") as f:
         reader = csv.DictReader(f, delimiter=",")
@@ -191,7 +145,7 @@ def get_work_type(inventory_path: str):
         print('IMAGE: "Width (cm.)"')
         print('AUDIO: "Speed IPS"')
         print('VIDEO: "Region" or "Stock"')
-        quit() 
+        quit()
 
 def get_description_fields(desc_arg: list[str], inventory_fields: list[str]):
     """
@@ -199,12 +153,10 @@ def get_description_fields(desc_arg: list[str], inventory_fields: list[str]):
     Prompts user to continue if there are missing fields.
     If the user continues, removes missing fields from description fields
 
-    Args:
-        desc_arg: (list of str): description fields to check
-        inventory_fields (list of str): fields in inventory
-
-    Returns:
-        description_fields (list of str): valid description fields
+    :param list desc_arg: description fields to check
+    :param list inventory_fields: inventory fields(columns)
+    :returns: valid description fields
+    :rtype: list of str
     """
     if not desc_arg:
         return ["inventory_title"]
@@ -219,7 +171,7 @@ def get_description_fields(desc_arg: list[str], inventory_fields: list[str]):
         if not helpers.yn_check("SKIP COLUMNS AND CONTINUE?"):
             quit()
     # remove missing fields
-    description_fields = [
+    description_fields: list[str] = [
         header
         for header in description_fields
         if header not in missing_fields

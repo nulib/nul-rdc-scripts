@@ -13,62 +13,59 @@ class Ingest_Sheet_Maker:
     """
     a class for creating ingest sheet csv files
 
-    Note:
-        Uses args from params.py
-
-    Attributes:
-        indir (str): fullpath to input directory
-        outfile (str): fullpath to output csv file
-        role_dict (list of dict): contains rules for role assignment
-        num_roles (dict of str: int): counter for number of each role
-        inventory_dictlist (list of dict of str: str): contains inventory data
-        ingest_dictlist (list of dict of str: str): contains ingest sheet data
-        work_type (str): type of work ingest sheet is for
-
-    Methods:
-        load_inventory(inventory_path, description_fields): loads inventory data from csv
-        run(skip, prepend): creates ingest csv from files in input directory
+    :var str indir: fullpath to input directory
+    :var str outfile: fullpath to output csv file
+    :var list[dict] role_dict: contains rules for role assignment
+    :var dict[str, int] num_roles: counts number of each role type
+    :var list[dict] inventory_dictlist: contains inventory data
+    :var list[dict] ingest_dictlist: contains ingest sheet data
+    :var str work_type: type of work ingest sheet is for
     """
     def __init__(
             self, 
             indir: str, 
             outfile: str, 
-            x_parse: str,
+            x_parse: str
         ):
         """
         Initializes Ingest_Sheet_Maker input, output, role assignment rules,
         and starts counter for number of roles.
 
-        Args:
-            indir (str): fullpath to input folder
-            outfile (str): fullpath to output csv file
-            x_parse (str): sets how x files are parsed
-                "extension" or "parse"
+        :param str indir: fullpath to input folder
+        :param str outfile: fullpath to output csv file
+        :param str x_parse: sets how x files are parsed
+        .. note: x_parse can be "extension", "parse", or None
         """
+        self.indir: str
+        """fullpath to input directory"""
+        self.outfile: str
+        """fullpath to output csv file"""
         self.indir, self.outfile = helpers.init_io(
             indir,
             outfile
         )
-        self.inventory_dictlist = None
+        self.inventory_dictlist: list[dict[str, str]] = None
+        """contains inventory data"""
+
         self.role_dict = ing_helpers.get_role_dict(x_parse)
-        # track # of each role for file_accession_number creation
+        """contains rules for role assignment"""
+
         self.num_roles = {
             "A": 0,
             "P": 0,
             "S": 0,
             "X": 0,
         }
+        """counts number of each role type"""
 
     def load_inventory(self, inventory_path: str, description_fields: list[str]):
         """
-        Creates inventory_dictlist used to create ingest sheet
+        Loads data from csv to be used during ingest.
 
-        Note:
-            Will search for inventory in indir if none is given
+        .. note: will search for inventory in indir if none is given
 
-        Args:
-            inventory_path (str): fullpath to inventory or None
-            description_fields (list of str): contains inventory fields to use in ingest label
+        :param str inventory_path: fullpath to inventory or None
+        :param list[str] description_fields: contains inventory fields to use in ingest label
         """
         self.inventory_dictlist = []
         if not inventory_path:
@@ -93,14 +90,13 @@ class Ingest_Sheet_Maker:
 
     def run(self, skip: list[str], prepend: str):
         """
-        Walks through input directory and analyzes valid files before creating ingest csv
+        Walks through input directory and analyzes valid files before creating ingest csv.
 
-        Args:
-            skip (list of str): contains file types to skip
-            prepend (str): added to beginning of file_accession_number
+        :param list[str] skip: contains file types to skip
+        :param str prepend: added to beginning of file_accession_number
         """
 
-        self.ingest_dictlist = {}
+        self.ingest_dictlist: list[dict[str, str]] = {}
         for subdir, dirs, files in os.walk(self.indir):
             # files and subdirs are "cleaned" in separate functions before analyzing
             for file in helpers.clean_files(files, skip):
@@ -121,10 +117,9 @@ class Ingest_Sheet_Maker:
         """
         Analyzes file and appends data to ingest sheet dictionary
 
-        Args:
-            file (str): name of file to be analyzed
-            parent_dir (str): fullpath to parent directory of file
-            prepend (str): added to beginning of file_accession_number
+        :param str file name of file to be analyzed
+        :param str parent_dir: fullpath to parent directory of file
+        :param str prepend: added to beginning of file_accession_number
         """
         # TODO add safety check to make sure there aren't multiple matches for a filename in the accession numbers
         # TODO handle cases where there is no inventory
@@ -133,9 +128,9 @@ class Ingest_Sheet_Maker:
                 return
             
             # if corresponding item is found
-            u_file = helpers.get_unix_fullpath(filename, parent_dir)
-            work_accession_number = item["work_accession_number"]
-            description = ing_helpers.get_ingest_description(item, filename)
+            u_file: str = helpers.get_unix_fullpath(filename, parent_dir)
+            work_accession_number: str = item["work_accession_number"]
+            description: str = ing_helpers.get_ingest_description(item, filename)
             
             #options for image or AV
             if self.work_type == "IMAGE":
@@ -151,7 +146,7 @@ class Ingest_Sheet_Maker:
             if prepend:
                 file_accession_number = prepend + file_accession_number
             # create meadow dict for file
-            meadow_file_dict = {
+            meadow_file_dict: dict[str, str]= {
                 "work_type": self.work_type,
                 "work_accession_number": work_accession_number,
                 "file_accession_number": file_accession_number,
@@ -178,16 +173,12 @@ class Ingest_Sheet_Maker:
 
     def get_ingest_LRF(self, filename: str, inventory_label: str):
         """
-        Gets label, role, and file builder for ingest sheet
+        Gets label, role, and file builder for ingest sheet.
 
-        Args:
-            filename (str): name of input file
-            inventory_label (str): label created from inventory
-
-        Returns:
-            label (str): label for ingest sheet
-            role (str): role for ingest sheet
-            file_builder (str): used for file_access_number creation
+        :param str filename: name of input file
+        :param str inventory_label: label created from inventory
+        :returns: label, role, and file_builder for ingest sheet
+        :rtype: tuple of str
         """
         # run through each key in role_dict
         role_index = -1
@@ -195,14 +186,18 @@ class Ingest_Sheet_Maker:
             if any(ext in filename for ext in self.role_dict[i]["identifiers"]):
                 role_index = i
                 break
+
+        role: str
+        label: str
+        file_builder: str
         # base case if role not found
         if role_index == -1:
             label = filename
             role = "S"
             file_builder = "_supplementary_"
         else:
-            role = self.role_dict[role_index]["role"]
-            file_builder = self.role_dict[role_index]["file_builder"]
+            role  = self.role_dict[role_index]["role"]
+            file_builder  = self.role_dict[role_index]["file_builder"]
             label = ing_helpers.ingest_label_creator(filename, inventory_label)
 
             #append label if role has extra info
@@ -211,5 +206,3 @@ class Ingest_Sheet_Maker:
         # track number of files with this role and return
         self.num_roles[role] = self.num_roles[role] + 1
         return label, role, file_builder
-
-# os.walk management

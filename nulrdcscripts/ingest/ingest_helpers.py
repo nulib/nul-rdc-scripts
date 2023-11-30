@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 Helper functions related to ingest sheet fields.
 """
@@ -8,18 +10,13 @@ import nulrdcscripts.ingest.ingest_data as data
 def get_role_dict(aux_parse: str):
     """
     Builds role_dict
+    See ingest_data.py for structure of role_dict.
 
-    Note:
-        See ingest_data.py for structure of role_dict.
-
-    Args:
-        aux_parse (str): sets how x files should be parsed
-            "extension", "parse", or None
-
-    Returns:
-        role_dict (list of dict): represents rules for role assignment
+    :param str aux_parse: sets how x files should be parsed, "extension", "parse", or None
+    :returns: list of dicts containing rules for role assignment
+    :rtype: list of dicts
     """
-    role_dict = data.role_dict
+    role_dict: list[dict[str, str]] = data.role_dict
 
     # add aux dict to the beginning of the role_dict
     # this will catch X files that also have a/p identifiers in the filename
@@ -35,14 +32,12 @@ def get_role_dict(aux_parse: str):
 
 def ingest_label_creator(filename: str, inventory_label: str):
     """
-    Creates ingest label based on information in filename
+    Creates ingest label based on information in filename.
 
-    Args:
-        filename (str): name of file to create label for
-        inventory_label (str): item label from inventory
-    
-    Returns:
-        label (str): label for file in ingest sheet
+    :param str filename: name of file to create label for
+    :param str inventory_label: item label from inventory
+    :returns: label for file in ingest sheet
+    :rtype: str
     """
     label_list = [inventory_label]
     # print(pattern_dict['Side']['abbreviation'])
@@ -72,10 +67,11 @@ def parse_filename_regex(filename_regex: list[str]):
     """
     Parses regex info from filename to get label info
 
-    Args:
-        filename_regex (str): 
+    :param str filename_regex:
+    :returns: filename labels
+    :rtype: list of str 
     """
-    filename_labels = []
+    filename_labels: list[str] = []
     for key in data.pattern_dict.keys():
         component_number_full = re.search(data.pattern_dict[key], filename_regex)
         # strip leading zero from the (\d{2}) of the matched pattern
@@ -88,28 +84,28 @@ def parse_filename_regex(filename_regex: list[str]):
         filename_labels.append(component_string)
     return filename_labels
 
-def get_ingest_description(item, filename: str):
+def get_ingest_description(item: dict[str, str], filename: str):
     """
     Get file description for ingest sheet
 
-    Args:
-        item (dict of str: str): inventory row for file
-        filename (str): input filename
-
-    Returns:
-        (str): label for ingest sheet
+    :param dict item: inventory row for file
+    :param str filename: input filename
+    :returns: item description for ingest sheet
+    :rtype: str
     """
+    description
     if not item["description"]:
-        return filename
+        description = filename
     else:
-        return item["description"]
+        description = item["description"]
+    return description
 
 def get_fields():
     """
-    Gets column names for ingest sheet
+    Gets column names for ingest csv.
 
-    Returns:
-        (list of str): fieldnames for ingest sheet
+    :returns: fieldnames for ingest sheet csv
+    :rtype: list of str
     """
     return data.header_names
 

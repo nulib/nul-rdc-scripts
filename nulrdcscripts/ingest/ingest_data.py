@@ -3,14 +3,11 @@
 """
 Contains lists and dictionaries used in Ingest_Sheet_Maker class
 
-Default rules for assigning roles.
-
-Attributes:
-    role_dict (list of dict): default rules for assigning roles to files
-    x_extension_dict (list of dict): rules for identifying x by file extension
-    x_parse_dict (list of dict): rules for identifying x by filename patterns
-    header_names (list of str): header names used in ingest csv file
-    pattern_dict (dict of str: str): patterns used to identify sides, regions, etc.
+:role_dict: default rules for assigning roles to files
+:x_extension_dict: rules for identifying x by file extension
+:x_parse_dict: rules for identifying x by filename patterns
+:header_names: header names used in ingest csv file
+:pattern_dict: patterns used to identify sides, regions, etc.
 """
 
 # Contains default rules for assigning roles to files.

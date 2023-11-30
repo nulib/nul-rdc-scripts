@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
 """
-Runner file for Ingest_Sheet_Maker class
+Runner file for Ingest_Sheet_Maker class.
+
+.. note::
+    Uses command line arguments from params.py
 """
 
 import sys
@@ -12,6 +15,9 @@ if sys.version_info[0] < 3:
     raise Exception("Python 3 or a more recent version is required.")
 
 def main():
+    """
+    Creates an Ingest_Sheet_Maker, loads an inventory, and creates the ingest sheet.
+    """
     ingester = Ingest_Sheet_Maker(
         args.input_path,
         args.output_path,
