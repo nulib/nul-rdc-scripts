@@ -689,8 +689,10 @@ def import_csv(csvInventory):
                     format = row[fieldnames["format"]]
                     captureDate = row[fieldnames["capture date"]]
                     # try to format date as yyyy-mm-dd if not formatted correctly
-                    if captureDate:
+                    try:
                         captureDate = str(guess_date(captureDate))
+                    except:
+                        captureDate = None
                     staff_initials = row[fieldnames["staff initials"]]
                     vtr = row[fieldnames["VTR used"]]
                     vtrOut = row[fieldnames["VTR output used"]]

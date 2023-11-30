@@ -427,8 +427,10 @@ def import_inventories(source_inventories, skip_coding_history):
                 format = row[fieldnames["format"]].lower()
                 captureDate = row[fieldnames["capture date"]]
                 # try to format date as yyyy-mm-dd if not formatted correctly
-                if captureDate:
+                try:
                     captureDate = str(guess_date(captureDate))
+                except:
+                    captureDate = None
                 tapeBrand = row[fieldnames["tape brand"]]
                 sound = row[fieldnames["sound"]]
                 type = row[fieldnames["tape type (cassette)"]]
