@@ -245,111 +245,166 @@ def create_coding_history(row, encoding_chain_fields, append_list):
     coding_history_dict = {}
     coding_history = []
 
-    for encoding_chain in grouped_field_list:
-        coding_history_dict = {
-            "primary fields": {
-                "coding algorithm": None,
-                "sample rate": None,
-                "word length": None,
-                "sound mode": None,
-            },
-            "freetext": {
-                "device": None,
-                "id": None,
-                "append fields": None,
-                "ad type": None,
-            },
-        }
-        for i in encoding_chain:
-            if i.lower().endswith("hardware"):
-                hardware_parser = row[i].split(";")
-                hardware_parser = [i.lstrip() for i in hardware_parser]
-                if len(hardware_parser) != 3:
-                    print(
-                        "ERROR: Encoding chain hardware does not follow expected formatting"
+    # returns none if any encoding chain fields are empty
+    for field in encoding_chain_fields:
+        if not row[field]:
+            return None
+
+    try:
+        for encoding_chain in grouped_field_list:
+            coding_history_dict = {
+                "primary fields": {
+                    "coding algorithm": None,
+                    "sample rate": None,
+                    "word length": None,
+                    "sound mode": None,
+                },
+                "freetext": {
+                    "device": None,
+                    "id": None,
+                    "append fields": None,
+                    "ad type": None,
+                },
+            }
+            for i in encoding_chain:
+                if i.lower().endswith("hardware"):
+                    hardware_parser = row[i].split(";")
+                    hardware_parser = [i.lstrip() for i in hardware_parser]
+                    if len(hardware_parser) != 3:
+                        print(
+                            "ERROR: Encoding chain hardware does not follow expected formatting"
+                        )
+                    coding_history_dict["primary fields"]["coding algorithm"] = (
+                        "A=" + hardware_parser[0]
                     )
-                coding_history_dict["primary fields"]["coding algorithm"] = (
-                    "A=" + hardware_parser[0]
-                )
-                # TODO change how T= is added so it is instead just placed before the first entry of the freetext section
-                coding_history_dict["freetext"]["device"] = "T=" + hardware_parser[1]
-                coding_history_dict["freetext"]["id"] = hardware_parser[2]
-            if i.lower().endswith("mode"):
-                coding_history_dict["primary fields"]["sound mode"] = "M=" + row[i]
-            if i.lower().endswith("digital characteristics"):
-                hardware_parser = row[i].split(";")
-                hardware_parser = [i.lstrip() for i in hardware_parser]
-                if len(hardware_parser) != 2:
-                    print(
-                        "ERROR: Encoding chain digital characteristics does not follow expected formatting"
+                    # TODO change how T= is added so it is instead just placed before the first entry of the freetext section
+                    coding_history_dict["freetext"]["device"] = "T=" + hardware_parser[1]
+                    coding_history_dict["freetext"]["id"] = hardware_parser[2]
+                if i.lower().endswith("mode"):
+                    coding_history_dict["primary fields"]["sound mode"] = "M=" + row[i]
+                if i.lower().endswith("digital characteristics"):
+                    hardware_parser = row[i].split(";")
+                    hardware_parser = [i.lstrip() for i in hardware_parser]
+                    if len(hardware_parser) != 2:
+                        print(
+                            "ERROR: Encoding chain digital characteristics does not follow expected formatting"
+                        )
+                    coding_history_dict["primary fields"]["sample rate"] = (
+                        "F=" + hardware_parser[0]
                     )
-                coding_history_dict["primary fields"]["sample rate"] = (
-                    "F=" + hardware_parser[0]
-                )
-                coding_history_dict["primary fields"]["word length"] = (
-                    "W=" + hardware_parser[1]
-                )
-            if (
-                i.lower().endswith("hardware type")
-                and row[i].lower() == "playback deck"
-            ):
-                clean_list = []
-                for field in append_list:
-                    if field:
-                        clean_list.append(field)
-                if clean_list:
-                    append_fields = "; ".join(clean_list)
-                # convert append list to string
-                coding_history_dict["freetext"]["append fields"] = append_fields
-            elif i.lower().endswith("hardware type"):
-                coding_history_dict["freetext"]["ad type"] = row[i]
-        primary_fields = []
-        freetext = []
-        for key in coding_history_dict["primary fields"]:
-            if coding_history_dict["primary fields"][key]:
-                primary_fields.append(coding_history_dict["primary fields"][key])
-        for key in coding_history_dict["freetext"]:
-            if coding_history_dict["freetext"][key]:
-                freetext.append(coding_history_dict["freetext"][key])
-        if primary_fields and freetext:
-            coding_history_p = ",".join(primary_fields)
-            coding_history_t = "; ".join(freetext)
-            coding_history_component = coding_history_p + "," + coding_history_t
-            coding_history.append(coding_history_component)
-    coding_history = "\r\n".join(coding_history)
-    return coding_history
+                    coding_history_dict["primary fields"]["word length"] = (
+                        "W=" + hardware_parser[1]
+                    )
+                if (
+                    i.lower().endswith("hardware type")
+                    and row[i].lower() == "playback deck"
+                ):
+                    clean_list = []
+                    for field in append_list:
+                        if field:
+                            clean_list.append(field)
+                    if clean_list:
+                        append_fields = "; ".join(clean_list)
+                    # convert append list to string
+                    coding_history_dict["freetext"]["append fields"] = append_fields
+                elif i.lower().endswith("hardware type"):
+                    coding_history_dict["freetext"]["ad type"] = row[i]
+            primary_fields = []
+            freetext = []
+            for key in coding_history_dict["primary fields"]:
+                if coding_history_dict["primary fields"][key]:
+                    primary_fields.append(coding_history_dict["primary fields"][key])
+            for key in coding_history_dict["freetext"]:
+                if coding_history_dict["freetext"][key]:
+                    freetext.append(coding_history_dict["freetext"][key])
+            if primary_fields and freetext:
+                coding_history_p = ",".join(primary_fields)
+                coding_history_t = "; ".join(freetext)
+                coding_history_component = coding_history_p + "," + coding_history_t
+                coding_history.append(coding_history_component)
+        coding_history = "\r\n".join(coding_history)
+        return coding_history
+    except:
+        return None
 
 
-def import_inventories(source_inventories, reference_inventory_list, skip_coding_history):
+def import_inventories(source_inventories, skip_coding_history):
     csvDict = {}
     for i in source_inventories:
         verify_csv_exists(i)
         with open(i, encoding="utf-8") as f:
+            while True:
+                # save spot
+                stream_index = f.tell()
+                # skip advancing line by line
+                line = f.readline()
+                if not ("Name of Person Inventorying" in line or "MEADOW Ingest fields" in line):
+                    # go back one line and break out of loop once fieldnames are found
+                    f.seek(stream_index, os.SEEK_SET)
+                    break
             reader = csv.DictReader(f, delimiter=",")
-            cleaned_fieldnames = [
-                a for a in reader.fieldnames if not "encoding chain" in a.lower()
+            # fieldnames to check for
+            # some items have multiple options
+            # leftmost item (0 index) is our current standard
+            video_fieldnames_list = [
+                ["work_accession_number"],
+                ["filename"],
+                ["label"],
+                ["inventory_title"],
+                ["record date/time"],
+                ["housing/container markings"],
+                ["condition notes"],
+                ["barcode"],
+                ["call number"],
+                ["box/folder alma number", "Box/Folder\nAlma number"],
+                ["format"],
+                ["running time (mins)"],
+                ["tape brand"],
+                ["speed IPS"],
+                ["tape thickness"],
+                ["base (acetate/polyester)"],
+                ["track configuration"],
+                ["length/reel size"],
+                ["sound"],
+                ["tape type (cassette)"],
+                ["noise reduction"],
+                ["capture date"],
+                ["digitizer", "staff initials"],
+                ["digitizer notes", "capture notes"],
             ]
+            # dictionary of fieldnames found in the inventory file,
+            # keyed by our current standard fieldnames
+            # ex. for up to date inventory
+            # "digitizer notes": "digitizer notes"
+            # ex. if old inventory was used
+            # "digitizer notes": "capture notes"
+            # this way old inventories work
+            fieldnames = {}
+            missing_fieldnames = []
+
+            # loops through each field and checks for each option
+            for field in video_fieldnames_list:
+                for field_option in field:
+                    for reader_field in reader.fieldnames:
+                        if field_option.lower() in reader_field.lower():
+                            # adds the fieldname used in the file
+                            # to a dictionary for us to use
+                            # the key is our current standard
+                            fieldnames.update({field[0]: reader_field})
+                            break
+                # keep track of any missing
+                # uses field[0] so when it tells user which ones are missin
+                # they will use our current standard
+                if not field[0] in fieldnames:
+                    missing_fieldnames.append(field[0])
+            if missing_fieldnames:
+                print("ERROR: inventory  missing the following columns")
+                print(missing_fieldnames)
+                quit()
+
             encoding_chain_fields = sorted(
                 [a for a in reader.fieldnames if "encoding chain" in a.lower()]
             )
-            missing_fieldnames = [
-                i for i in reference_inventory_list if not i in cleaned_fieldnames
-            ]
-            extra_fieldnames = [
-                i for i in cleaned_fieldnames if not i in reference_inventory_list
-            ]
-            print(cleaned_fieldnames)
-            print(reference_inventory_list)
-            if missing_fieldnames:
-                print(
-                    "WARNING: Your inventory seems to be missing the following columns"
-                )
-                print(missing_fieldnames)
-                quit()
-            if extra_fieldnames:
-                print("WARNING: Your inventory contains the following extra columns")
-                print(extra_fieldnames)
-                quit()
             if not encoding_chain_fields:
                 print("WARNING: Unable to find encoding chain fields in inventory")
                 print("Continue without building Coding History? (y/n)")
@@ -364,20 +419,23 @@ def import_inventories(source_inventories, reference_inventory_list, skip_coding
                     sys.stdout.write("Please respond with 'yes' or 'no'")
                     quit()
             for row in reader:
-                name = row["filename"]
-                record_date = row["record date/time"]
-                container_markings = row["housing/container markings"]
+                # index row based on fieldnames found in file
+                name = row[fieldnames["filename"]]
+                record_date = row[fieldnames["record date/time"]]
+                container_markings = row[fieldnames["housing/container markings"]]
                 container_markings = container_markings.split("\n")
-                format = row["format"].lower()
-                captureDate = row["capture date"]
+                format = row[fieldnames["format"]].lower()
+                captureDate = row[fieldnames["capture date"]]
                 # try to format date as yyyy-mm-dd if not formatted correctly
-                if captureDate:
+                try:
                     captureDate = str(guess_date(captureDate))
-                tapeBrand = row["tape brand"]
-                sound = row["sound"]
-                type = row["tape type (cassette)"]
-                nr = row["noise reduction"]
-                speed = row["speed IPS"]
+                except:
+                    captureDate = None
+                tapeBrand = row[fieldnames["tape brand"]]
+                sound = row[fieldnames["sound"]]
+                type = row[fieldnames["tape type (cassette)"]]
+                nr = row[fieldnames["noise reduction"]]
+                speed = row[fieldnames["speed IPS"]]
                 if not skip_coding_history:
                     coding_history = create_coding_history(
                         row, encoding_chain_fields, [tapeBrand, type, speed, nr]
@@ -388,21 +446,17 @@ def import_inventories(source_inventories, reference_inventory_list, skip_coding
                 # TODO separate out metadata that is specifically needed for embedding vs json file metadata
                 csvData = {
                     "Inventory Metadata": {
-                        "work_accession_number": row["work_accession_number"],
-                        "box/folder alma number": row["box/folder alma number"],
-                        "barcode": row["barcode"],
-                        "checked in? (yes/no)": row["checked in? (yes/no)"],
-                        "packing & shipping check in? (yes/no)": row[
-                            "packing & shipping check in? (yes/no)"
-                        ],
-                        "inventory title": row["inventory_title"],
+                        "work_accession_number": row[fieldnames["work_accession_number"]],
+                        "box/folder alma number": row[fieldnames["box/folder alma number"]],
+                        "barcode": row[fieldnames["barcode"]],
+                        "inventory title": row[fieldnames["inventory_title"]],
                         "record date": record_date,
                         "container markings": container_markings,
-                        "condition notes": row["condition notes"],
-                        "digitization operator": row["digitizer"],
+                        "condition notes": row[fieldnames["condition notes"]],
+                        "digitization operator": row[fieldnames["digitizer"]],
                         "capture date": captureDate,
                         "sound note": sound,
-                        "capture notes": row["digitizer notes"],
+                        "capture notes": row[fieldnames["digitizer notes"]],
                     },
                     "BWF Metadata": {
                         "format": format,

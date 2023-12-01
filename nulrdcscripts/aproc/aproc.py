@@ -58,13 +58,6 @@ def main():
         metaedit_version = corefuncs.get_bwf_metaedit_version()
     sox_version = corefuncs.get_sox_version()
 
-    reference_inventory_file = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), 
-        "data/inventory_reference.csv"
-    )
-    reference_inventory_list = helpers.load_reference_inventory(
-        reference_inventory_file
-    )
     # verify that mediaconch policies are present
     corefuncs.mediaconch_policy_exists(p_wav_policy)
     corefuncs.mediaconch_policy_exists(a_wav_policy)
@@ -78,7 +71,7 @@ def main():
     if args.source_inventory:
         source_inventories = args.source_inventory
         source_inventory_dict = helpers.import_inventories(
-            source_inventories, reference_inventory_list, args.skip_coding_history
+            source_inventories, args.skip_coding_history
         )
     else:
         print("\n*** Checking input directory for CSV files ***")
@@ -101,7 +94,7 @@ def main():
         else:
             print("Inventories found\n")
             source_inventory_dict = helpers.import_inventories(
-                source_inventories, reference_inventory_list, args.skip_coding_history
+                source_inventories, args.skip_coding_history
             )
 
     csvHeaderList = [
@@ -195,18 +188,21 @@ def main():
                     else:
                         # TODO prompt user to enter a sound mode for the file manually?
                         pass
-                    coding_history_update = (
-                        "A=PCM,F="
-                        + input_metadata["file metadata"]["audio sample rate"]
-                        + ",W="
-                        + input_metadata["file metadata"]["audio bitrate"]
-                        + ",M="
-                        + file_sound_mode
-                        + ",T=BWFMetaEdit "
-                        + metaedit_version
-                    )
-                    coding_history = coding_history + "\r\n" + coding_history_update
-                    bwf_dict["CodingHistory"]["write"] = coding_history
+                    # if coding history was created
+                    if coding_history:
+                        coding_history_update = (
+                            "A=PCM,F="
+                            + input_metadata["file metadata"]["audio sample rate"]
+                            + ",W="
+                            + input_metadata["file metadata"]["audio bitrate"]
+                            + ",M="
+                            + file_sound_mode
+                            + ",T=BWFMetaEdit "
+                            + metaedit_version
+                        )
+                        coding_history = coding_history + "\r\n" + coding_history_update
+                        bwf_dict["CodingHistory"]["write"] = coding_history
+
                     bwf_command = [
                         args.metaedit_path,
                         pm_file_abspath,
