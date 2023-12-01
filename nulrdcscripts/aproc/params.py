@@ -126,7 +126,7 @@ parser.add_argument(
 parser.add_argument(
     "--all",
     "-a",
-    default=True,
+    default=False,
     required=False,
     action="store_true",
     dest="all",
@@ -142,11 +142,3 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
-
-if args.transcode or args.write_bwf_metadata or args.write_json or args.spectrogram:
-    args.all = False
-if args.all:
-    args.transcode = True
-    args.write_bwf_metadata = True
-    args.write_json = True
-    args.spectrogram = True

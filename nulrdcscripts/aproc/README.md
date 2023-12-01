@@ -44,7 +44,7 @@ project folder (script input)
                       full path to input folder   
 `--output OUTPUT_PATH`, `-o OUTPUT_PATH`
                       full path to output csv file for QC results. If not specified this will default to creating a file in the input directory   
-`--all`, `-a`         This is equivalent to using `-t -m -j -s`. Defaults to true.  
+`--all`, `-a`         This is equivalent to using `-t -m -j -s`.  
 `--transcode`, `-t`       transcode access files   
 `--write_metadata`, `-m`  write Broadcast WAVE metadata to preservation file   
 `--write_json`, `-j`      write metadata to json file   
