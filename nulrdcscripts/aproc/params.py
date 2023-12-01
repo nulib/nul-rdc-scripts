@@ -142,3 +142,8 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
+if args.all:
+    args.transcode = True
+    args.write_bwf_metadata = True
+    args.write_json = True
+    args.spectrogram = True
