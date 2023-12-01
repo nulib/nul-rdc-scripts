@@ -55,12 +55,12 @@ parser.add_argument(
     "--auxiliary",
     "-x",
     required = False,
-    default = "extension",
+    default = "parse",
     type = str,
     action = "store",
     dest = "x_parse",
     choices = ["extension","parse", None],
-    help = "Sets how to parse auxiliary files. Default is extension.",
+    help = "Sets how to parse auxiliary files. Default is parse.",
 )
 parser.add_argument(
     "--prepend_accession",

@@ -39,6 +39,16 @@ def image_load_inventory(inventory_path: str):
     """
     inventory_dictlist: list[dict[str, str]] = []
     with open(inventory_path, encoding="utf-8") as f:
+        # skip non fieldname lines
+        while True:
+                # save spot
+                stream_index = f.tell()
+                # skip advancing line by line
+                line = f.readline()
+                if not ("Name of Person Inventorying" in line or "MEADOW Ingest fields" in line):
+                    # go back one line and break out of loop once fieldnames are found
+                    f.seek(stream_index, os.SEEK_SET)
+                    break
         reader = csv.DictReader(f, delimiter=",")
         for row in reader:
             row_data: dict[str, str] = {
@@ -63,6 +73,16 @@ def av_load_inventory(inventory_path: str, desc_arg: list[str]):
     """
     inventory_dictlist: list[dict[str, str]] = []
     with open(inventory_path, encoding="utf-8") as f:
+        # skip non fieldname lines
+        while True:
+                # save spot
+                stream_index = f.tell()
+                # skip advancing line by line
+                line = f.readline()
+                if not ("Name of Person Inventorying" in line or "MEADOW Ingest fields" in line):
+                    # go back one line and break out of loop once fieldnames are found
+                    f.seek(stream_index, os.SEEK_SET)
+                    break
         reader = csv.DictReader(f, delimiter=",")
         description_fields = get_description_fields(desc_arg, reader.fieldnames)
         for row in reader:         
@@ -135,16 +155,16 @@ def get_work_type(inventory_path: str):
         inventory_fields = reader.fieldnames
     if "Width (cm.)" in inventory_fields:
         return "IMAGE"
-    elif "speed IPS" in inventory_fields:
+    elif "speed IPS" or "Speed IPS" in reader.fieldnames:
         return "AUDIO"
-    elif "region" or "stock" in inventory_fields:
+    elif "video standard" or "Region" or "stock" or "Stock" in reader.fieldnames:
         return "VIDEO"
     else:
         print("\n---ERROR: Unable to determine work_type. ---\n")
         print("make sure that your inventory has the necessary format-specific columns")
         print('IMAGE: "Width (cm.)"')
-        print('AUDIO: "Speed IPS"')
-        print('VIDEO: "Region" or "Stock"')
+        print('AUDIO: "speed IPS"')
+        print('VIDEO: "video standard", "Region" or "Stock"')
         quit()
 
 def get_description_fields(desc_arg: list[str], inventory_fields: list[str]):

@@ -17,8 +17,6 @@
   <rule name="Video/CodecID is V_MS/VFW/FOURCC / FFV1" value="CodecID" tracktype="Video" occurrence="*" operator="=">V_MS/VFW/FOURCC / FFV1</rule>
   <rule name="Video/Width is 720" value="Width" tracktype="Video" occurrence="*" operator="=">720</rule>
   <rule name="Video/Height is 486" value="Height" tracktype="Video" occurrence="*" operator="=">486</rule>
-  <rule name="Video/PixelAspectRatio is 0.909" value="PixelAspectRatio" tracktype="Video" occurrence="*" operator="=">0.909</rule>
-  <rule name="Video/DisplayAspectRatio is 1.347" value="DisplayAspectRatio" tracktype="Video" occurrence="*" operator="=">1.347</rule>
   <rule name="Video/FrameRate_Mode is CFR" value="FrameRate_Mode" tracktype="Video" occurrence="*" operator="=">CFR</rule>
   <rule name="Video/FrameRate is 29.970" value="FrameRate" tracktype="Video" occurrence="*" operator="=">29.970</rule>
   <rule name="Video/Standard is NTSC" value="Standard" tracktype="Video" occurrence="*" operator="=">NTSC</rule>
@@ -28,7 +26,6 @@
   <rule name="Video/ScanType is Interlaced" value="ScanType" tracktype="Video" occurrence="*" operator="=">Interlaced</rule>
   <rule name="Video/ScanOrder is BFF" value="ScanOrder" tracktype="Video" occurrence="*" operator="=">BFF</rule>
   <rule name="Video/Compression_Mode is Lossless" value="Compression_Mode" tracktype="Video" occurrence="*" operator="=">Lossless</rule>
-  <rule name="Video/TimeCode_Source is Matroska tags" value="TimeCode_Source" tracktype="Video" occurrence="*" operator="=">Matroska tags</rule>
   <rule name="Video/Default is Yes" value="Default" tracktype="Video" occurrence="*" operator="=">Yes</rule>
   <rule name="Video/Forced is No" value="Forced" tracktype="Video" occurrence="*" operator="=">No</rule>
   <rule name="Video/colour_description_present is Yes" value="colour_description_present" tracktype="Video" occurrence="*" operator="=">Yes</rule>

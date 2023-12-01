@@ -93,7 +93,6 @@ def get_ingest_description(item: dict[str, str], filename: str):
     :returns: item description for ingest sheet
     :rtype: str
     """
-    description
     if not item["description"]:
         description = filename
     else:

@@ -15,15 +15,25 @@ Scripts used by the RDC Digitization Team.
 [Audio Processor - aproc](/nulrdcscripts/aproc)   
 
 ### Meadow
-[Meadow Ingest Sheet Generator - ingest](/nulrdcscripts/ingest/)   
+[MigAV - Meadow Ingest Sheet Generator - ingest](/nulrdcscripts/ingest/)   
 
 ### Inventorying:
 [Inventory Creator for Image and Text Works - inventory](/nulrdcscripts/inventory/)   
+
+### Text Workflow:
+[PackagingScript](/nulrdcscripts/text) - Text Packaging Script
+
 
 ### Deprecated
 
 [dpx2ffv1 Film Transcoder - fproc](/nulrdcscripts/fproc/)   
 [Meadow Image CSV Converter - text](/nulrdcscripts/text/)   
+
+
+### Current Staging Branches:  
+
+[VideoQCScript](https://github.com/nulib/nul-rdc-scripts/tree/QCScript)  
+[InventoryUpdatedWork_Restructure](https://github.com/nulib/nul-rdc-scripts/tree/InventoryUpdateWork_Restructure)  
 
 ## Poetry Setup
 

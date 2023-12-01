@@ -99,40 +99,47 @@ x_extension_dict = {
 # Contains rules for assigning x files based on filename patterns.
 x_parse_dict = {
     "front": {
-        "identifiers": ["Front."],
+        "identifiers": ["front", "Front"],
         "type": "pattern",
         "role": "X",
         "label": "asset front",
         "file_builder": "_auxiliary_",
     },
     "back": {
-        "identifiers": ["Back."],
+        "identifiers": ["back", "Back"],
         "type": "pattern",
         "role": "X",
         "label": "asset back",
         "file_builder": "_auxiliary_",
     },
     "asset": {
-        "identifiers": ["_Asset", "-Asset"],
+        "identifiers": ["_asset", "-asset", "_Asset", "-Asset"],
         "type": "pattern",
         "role": "X",
         "label": "asset",
         "file_builder": "_auxiliary_",
     },
     "can": {
-        "identifiers": ["_Can", "-Can"],
+        "identifiers": ["_can", "-can", "_Can", "-Can"],
         "type": "pattern",
         "role": "X",
         "label": "can",
         "file_builder": "_auxiliary_",
     },
     "ephemera": {
-        "identifiers": ["_Ephemera", "-Ephemera"],
+        "identifiers": ["_ephemera", "-ephemera", "_Ephemera", "-Ephemera"],
         "type": "pattern",
         "role": "X",
         "label": "ephemera",
         "file_builder": "_auxiliary_",
     },
+    "auxiliary": {
+        "identifiers": ["_x", "-x"],
+        "type": "pattern",
+        "role": "X",
+        "label": "image",
+        "file_builder": "_auxiliary_",
+    }
 }
 
 # Contains header names used in the ingest sheet csv file.
