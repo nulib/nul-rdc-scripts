@@ -107,6 +107,8 @@ Ben Turkus
 
 Dave Rice
 
+Karen Miller
+
 
 
 ## Some of the reference material utilized:
@@ -115,3 +117,4 @@ _Python for Data Analytics - Wes McKinney_ <br>
 _Python Data Analytics: With Pandas, NumPy, and Matplotlib_ - Fabio Nelli <br>
 _Practical Python Data Wrangling and Data Quality_ - Susan E. McGregor <br>
 _Data Wrangling with Python_ - Jacqueline Kazil, Katharine Jarmul <br>
+_How to convert an XML file to python pandas dataframe - reading xml with python_ - Paris Nakita Kejser - https://www.youtube.com/watch?v=WWgiRkvl1Ws&ab_channel=ParisNakitaKejser
