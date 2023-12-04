@@ -125,8 +125,8 @@ class Ingest_Sheet_Maker:
         # TODO handle cases where there is no inventory
         for item in self.inventory_dictlist:
             if not item["filename"] in filename:
-                return
-            
+                continue
+
             # if corresponding item is found
             u_file: str = helpers.get_unix_fullpath(filename, parent_dir)
             work_accession_number: str = item["work_accession_number"]
@@ -163,13 +163,14 @@ class Ingest_Sheet_Maker:
                 self.ingest_dictlist[item["filename"]] = [meadow_file_dict]
             else:
                 self.ingest_dictlist[item["filename"]].append(meadow_file_dict)
+            return
         # TODO build out how to handle cases where a file is not found in the inventory
         # allow user to add the file anyway
-        if not any(item["filename"] in filename for item in self.inventory_dictlist):
-            print(
-                "+++ WARNING: No entry matching " + filename + 
-                " was found in your inventory +++"
-            )
+        # only gets here if file isnt found
+        print(
+            "+++ WARNING: No entry matching " + filename + 
+            " was found in your inventory +++"
+        )
 
     def get_ingest_LRF(self, filename: str, inventory_label: str):
         """

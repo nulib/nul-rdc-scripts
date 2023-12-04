@@ -103,7 +103,7 @@ def clean_dirs(dirs: list[str]):
 def clean_files(files: list[str], skip: list[str]):
     """
     Removes files to be ignored when making ingest sheet.
-    By default skips ".", "Thumbs.db", ".md5", ".csv"
+    By default skips ".", "Thumbs.db", ".md5", ".csv", ".py"
     
     :param list files: list of files in a directory
     :param list skip: list of files to skip in addition defaults
@@ -114,6 +114,7 @@ def clean_files(files: list[str], skip: list[str]):
     files = [f for f in files if not f == "Thumbs.db"]
     files = [f for f in files if not f.endswith(".md5")]
     files = [f for f in files if not f.endswith(".csv")]
+    files = [f for f in files if not f.endswith(".py")]
 
     if skip:
         skip_list = skip
