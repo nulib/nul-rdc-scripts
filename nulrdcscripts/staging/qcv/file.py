@@ -1,8 +1,10 @@
 from parseandclean import dataparsing
-from videoanalyses import videoanalysis, errortiers, overallstatistics
+from videoanalyses import overallstatistics
+
+inputpath = "parseandclean\example.xml"
 
 
-def runIndividualFile(inputpath, videoBitDepth):
+def runIndividualFile(inputpath):
     # Parses the raw XML into individual readings by frame (determined by frametime)
     videodata = dataparsing.dataparsingandtabulatingvideo(inputpath)
     audiodata = dataparsing.dataparsingandtabulatingaudio(inputpath)
@@ -12,7 +14,13 @@ def runIndividualFile(inputpath, videoBitDepth):
 
     videofeedtodict = overallstatistics.videostatstodict(videostats)
     videofeedtocsv = overallstatistics.videostatstocsv(videostats)
+    videostats = videostats.to_csv(sep=",", header=True)
+    videodata = videodata.to_csv("videodata.csv", sep=",", header=True)
+    print(videodata)
 
+
+runIndividualFile(inputpath)
+"""
     # Collects the audio summary data - outputs CSV and Dictionary
     audiostats = overallstatistics.audiodatastatistics(audiodata)
 
@@ -24,3 +32,4 @@ def runIndividualFile(inputpath, videoBitDepth):
 
     # Assigns errors to tiers for verbose reporting
     errortiers.errorsvideo(summaryvideoerrors)
+"""
