@@ -242,8 +242,6 @@ def main():
                         "44100",
                         "-c:a",
                         "pcm_s16le",
-                        "-write_bext",
-                        "1",
                         ac_file_abspath,
                     ]
                     # sox_command = [args.sox_path, pm_file_abspath, '-b', '16', ac_file_abspath, 'rate', '44100']
@@ -257,6 +255,53 @@ def main():
                             "*" + base_filename + ac_identifier + access_extension,
                             file=f,
                         )
+                # embed BWF metadata for a file
+                if args.write_bwf_metadata:
+                    print("*embedding BWF metadata*")
+                    inventory_bwf_metadata = loaded_metadata[inventory_filename][
+                        "BWF Metadata"
+                    ]
+                    source_format = inventory_bwf_metadata["format"].lower()
+                    bwf_dict["ISRF"]["write"] = source_format
+                    # TODO coding history needs to be updated accordingly
+                    coding_history = inventory_bwf_metadata["coding history"]
+                    if input_metadata["file metadata"]["channels"] == 1:
+                        file_sound_mode = "mono"
+                    elif input_metadata["file metadata"]["channels"] == 2:
+                        file_sound_mode = "stereo"
+                    else:
+                        # TODO prompt user to enter a sound mode for the file manually?
+                        pass
+                    # if coding history was created
+                    if coding_history:
+                        coding_history_update = (
+                            "A=PCM,F="
+                            + input_metadata["file metadata"]["audio sample rate"]
+                            + ",W="
+                            + input_metadata["file metadata"]["audio bitrate"]
+                            + ",M="
+                            + file_sound_mode
+                            + ",T=BWFMetaEdit "
+                            + metaedit_version
+                        )
+                        coding_history = coding_history + "\r\n" + coding_history_update
+                        bwf_dict["CodingHistory"]["write"] = coding_history
+
+                    bwf_command = [
+                        args.metaedit_path,
+                        ac_file_abspath,
+                        "--MD5-Embed",
+                        "--BextVersion=1",
+                    ]
+                    for key in bwf_dict:
+                        if bwf_dict[key]["write"]:
+                            bwf_command += [
+                                bwf_dict[key]["command"] + bwf_dict[key]["write"]
+                            ]
+                    # if args.reset_timereference:
+                    #    bwf_command += ['--Timereference=' + '0']
+                    subprocess.run(bwf_command)
+                    # print(bwf_command)
 
                 # create folder for metadata if needed
                 if args.spectrogram or args.write_json:
@@ -301,7 +346,7 @@ def main():
                         ac_file_abspath, a_wav_policy
                     ),
                     "Access BWF Policy": helpers.mediaconch_policy_check(
-                        pm_file_abspath, bwf_policy
+                        ac_file_abspath, bwf_policy
                     ),
                 }
                 # PASS/FAIL - check if any mediaconch results failed and append failed policies to results
