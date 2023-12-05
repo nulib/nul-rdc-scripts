@@ -80,7 +80,7 @@ def main():
         "shot sheet check",
         "date",
         "PM lossless transcoding",
-        "Date",
+        "date",
         "file format & metadata verification",
         "date",
         "file inspection",
