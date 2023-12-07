@@ -1,5 +1,6 @@
 import os
 import subprocess
+from colorama import Fore, Back, Style
 import nulrdcscripts.tests.aproc_test as aproc_test
 import nulrdcscripts.tests.vproc_test as vproc_test
 import nulrdcscripts.tests.ingest_test as ingest_test
@@ -13,23 +14,29 @@ def main():
     if args.ingest:
         input_path = os.path.join(tests_path, "ingest_test")
         ingest_command = ["poetry", "run", "ingest", "-i", input_path]
-        print("*running ingest on ingest_tests*\n")
+        print("*running ingest on ingest_tests*")
+        print(Fore.CYAN)
         subprocess.run(ingest_command)
-        print("\n*testing ingest output*")
+        print(Style.RESET_ALL)
+        print("*testing ingest output*")
         ingest_test.main(tests_path)
     elif args.vproc:
         input_path = os.path.join(tests_path, "vproc_test")
         vproc_command = ["poetry", "run", "vproc", "-b", "-i", input_path]
-        print("*running vproc on vproc_tests*\n")
+        print("*running vproc on vproc_tests*")
+        print(Fore.CYAN)
         subprocess.run(vproc_command)
-        print("\n*testing vproc output*")
+        print(Style.RESET_ALL)
+        print("*testing vproc output*")
         vproc_test.main(tests_path)
     elif args.aproc:
         input_path = os.path.join(tests_path, "aproc_test")
-        aproc_command = ["poetry", "run", "aproc", "-a", "-i", input_path]
-        print("*running aproc on aproc_tests*\n")
+        aproc_command = ["poetry", "run", "aproc", "-i", input_path]
+        print("*running aproc on aproc_tests*")
+        print(Fore.CYAN)
         subprocess.run(aproc_command)
-        print("\n*testing aproc output*")
+        print(Style.RESET_ALL)
+        print("*testing aproc output*")
         aproc_test.main(tests_path)
 
 def get_tests_path():

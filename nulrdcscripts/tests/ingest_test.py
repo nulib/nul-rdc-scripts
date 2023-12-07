@@ -31,7 +31,7 @@ def main(current_dir):
     subprocess.run(compare_command)
 
     # prompt user to reset
-    print("Reset? (y/n)")
+    print("Reset? (y/n): ", end="")
     answer = input()
     if answer.lower() == "y":
         os.remove(ingest_path)

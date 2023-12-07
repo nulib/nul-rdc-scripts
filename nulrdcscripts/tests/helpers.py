@@ -43,7 +43,7 @@ def json_test(json_data, correct_json_data, key=""):
         # use the key param to print message
         # this is why key has to be passed when running json_data on a dict
         if not result:
-            print("fail! " + key)
+            print("fail! " + key, end="")
     return result
 
 def qc_log_test(filepath):

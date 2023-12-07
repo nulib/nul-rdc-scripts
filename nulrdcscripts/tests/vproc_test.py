@@ -101,7 +101,7 @@ def main(current_dir):
                 print("pass! " + filepath)
 
     # prompt user to reset
-    print("Reset? (y/n)")
+    print("Reset? (y/n): ", end="")
     answer = input()
     if answer.lower() == "y":
         reset(current_dir)
