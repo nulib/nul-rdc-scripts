@@ -150,3 +150,6 @@ Image/Inventory/ExtraNonsenseToKeepForNow/inventory.csv
 
 # visual studio workspace file
 *.code-workspace
+
+# tests path txt file
+nulrdcscripts/tests/tests_path.txt
