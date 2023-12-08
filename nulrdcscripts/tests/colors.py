@@ -1,0 +1,7 @@
+from colorama import Fore, Back, Style
+
+PASS = Fore.LIGHTGREEN_EX
+FAIL = Fore.LIGHTRED_EX
+CONSOLE = Fore.LIGHTYELLOW_EX
+DELETE = Fore.LIGHTRED_EX
+DEFAULT = Style.RESET_ALL

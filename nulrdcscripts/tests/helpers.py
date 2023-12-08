@@ -2,7 +2,25 @@
 Contains helpers for the test scripts.
 """
 
+import os
 import csv
+import json
+import nulrdcscripts.tests.colors as colors
+
+def check_json(filepath, correct_results_dir):
+    file = os.path.basename(filepath)
+    correct_json_path = os.path.join(correct_results_dir, file)
+    result = True
+    with open(filepath) as json_file, open(correct_json_path) as correct_json_file:
+        json_data = json.load(json_file)
+        correct_json_data = json.load(correct_json_file)
+        if not json_test(json_data, correct_json_data):
+            print(colors.DEFAULT)
+            result = False
+        else:
+            print(colors.DEFAULT + "\r" + file + "...", end="")
+            print(colors.PASS + "pass!" + colors.DEFAULT)
+    return result
 
 def json_test(json_data, correct_json_data, key=""):
     """
@@ -46,7 +64,7 @@ def json_test(json_data, correct_json_data, key=""):
             print("fail! " + key, end="")
     return result
 
-def qc_log_test(filepath):
+def check_qc_log(filepath):
     """
     Checks results in qc_log to make sure everything passed.
 
@@ -77,9 +95,33 @@ def qc_log_test(filepath):
                 if not row["PM lossless transcoding"] == "PASS":
                     result = False
                     print("fail! " + filename + " " + "PM lossless transcoding")
+    if not result:
+        print(colors.FAIL + "     in " + os.path.basename(filepath))
+    else:
+        print(colors.PASS + "pass!" + colors.DEFAULT)
     return result
 
-def brute_force_file_compare(filepath1, filepath2):
+def check_checksum(filepath, correct_results_dir):
+    """
+    _summary_
+
+    :param filepath: _description_
+    :type filepath: _type_
+    :param correct_results_dir: _description_
+    :type correct_results_dir: _type_
+    :return: _description_
+    :rtype: bool
+    """
+    file = os.path.basename(filepath)
+    md5_path = os.path.splitext(filepath)[0] + ".md5"
+    # skip checking md5 if it doesn't exist
+    if not os.path.isfile(md5_path):
+        print(colors.FAIL + "fail! no md5 file not found for " + file + colors.DEFAULT)
+        return False
+    # read in the test md5 and the correct md5
+    return check_file(md5_path, correct_results_dir)
+
+def check_file(filepath, correct_results_dir):
     """
     Directly compares binary data in 2 files.
 
@@ -88,7 +130,15 @@ def brute_force_file_compare(filepath1, filepath2):
     :return: whether the 2 files match
     :rtype: bool
     """
-    with open(filepath1, 'rb') as f1, open(filepath2, 'rb') as f2:
-        contents1 = f1.read()
-        contents2 = f2.read()
-        return contents1 == contents2
+    correct_png_path = os.path.join(correct_results_dir, os.path.basename(filepath))
+    with open(filepath, 'rb') as f1, open(correct_png_path, 'rb') as f2:
+        contents = f1.read()
+        correct_contents = f2.read()
+        result = contents == correct_contents
+    
+    if result:
+        print(colors.PASS + "pass!" + colors.DEFAULT)
+        return True
+    else:
+        print(colors.FAIL + "fail! " + colors.DEFAULT)
+        return False

@@ -5,6 +5,8 @@ Checks the result of ingest_test.
 import os
 import platform
 import subprocess
+import difflib
+import nulrdcscripts.tests.colors as colors
 
 def main(current_dir):
     # setup directories
@@ -18,23 +20,40 @@ def main(current_dir):
         quit()
     correct_ingest_path = os.path.join(correct_results_dir, "ingest_test_ingest.csv")
 
-    # print error and quit if not windows
-    if not platform.system() == "Windows":
-        print("ERROR: this script must be run on Windows.")
-        print("\nOtherwise, compare the following files manually:")
-        print("Test results: " + ingest_path)
-        print("Correct results: " + correct_ingest_path)
-        quit()
+    with open(ingest_path) as f:
+        ingest = f.read().splitlines()
+    with open(correct_ingest_path) as f:
+        correct_ingest = f.read().splitlines()
+    
+    # dif = difflib.Differ()  
+    dif = list(difflib.unified_diff(correct_ingest, ingest, "", "", "", "", 0))
 
-    #run windows compare command
-    compare_command = ["fc", ingest_path, correct_ingest_path]
-    subprocess.run(compare_command)
+    print("ingest_test_ingest.csv...", end="")
+
+    if len(dif) == 0:
+        print(colors.PASS + "pass!" + colors.DEFAULT)
+    else:
+        print(colors.FAIL + "fail!")
+        print(colors.DEFAULT)
+        print("Comparing " + colors.PASS + correct_ingest_path + 
+            colors.DEFAULT + " to " + colors.FAIL + ingest_path)
+        print(colors.DEFAULT)
+        for line in dif:
+            if line[0] == "-":
+                print(colors.PASS + line + colors.DEFAULT)
+            elif line[0] == "+":
+                print(colors.FAIL + line + colors.DEFAULT)
+            else:
+                print(line)
 
     # prompt user to reset
-    print("Reset? (y/n): ", end="")
+    print("\nreset? (y/n): ", end="")
     answer = input()
     if answer.lower() == "y":
+        print(colors.DELETE)
+        print("deleting " + ingest_path)
         os.remove(ingest_path)
+        print(colors.DEFAULT, end="")
 
 if __name__ == "__main__":
 	main()

@@ -1,6 +1,6 @@
 import os
 import subprocess
-from colorama import Fore, Back, Style
+import nulrdcscripts.tests.colors as colors
 import nulrdcscripts.tests.aproc_test as aproc_test
 import nulrdcscripts.tests.vproc_test as vproc_test
 import nulrdcscripts.tests.ingest_test as ingest_test
@@ -15,27 +15,27 @@ def main():
         input_path = os.path.join(tests_path, "ingest_test")
         ingest_command = ["poetry", "run", "ingest", "-i", input_path]
         print("*running ingest on ingest_tests*")
-        print(Fore.CYAN)
+        print(colors.CONSOLE)
         subprocess.run(ingest_command)
-        print(Style.RESET_ALL)
+        print(colors.DEFAULT)
         print("*testing ingest output*")
         ingest_test.main(tests_path)
     elif args.vproc:
         input_path = os.path.join(tests_path, "vproc_test")
         vproc_command = ["poetry", "run", "vproc", "-b", "-i", input_path]
         print("*running vproc on vproc_tests*")
-        print(Fore.CYAN)
+        print(colors.CONSOLE)
         subprocess.run(vproc_command)
-        print(Style.RESET_ALL)
+        print(colors.DEFAULT)
         print("*testing vproc output*")
         vproc_test.main(tests_path)
     elif args.aproc:
         input_path = os.path.join(tests_path, "aproc_test")
-        aproc_command = ["poetry", "run", "aproc", "-i", input_path]
+        aproc_command = ["poetry", "run", "aproc", "-a", "-i", input_path]
         print("*running aproc on aproc_tests*")
-        print(Fore.CYAN)
+        print(colors.CONSOLE)
         subprocess.run(aproc_command)
-        print(Style.RESET_ALL)
+        print(colors.DEFAULT)
         print("*testing aproc output*")
         aproc_test.main(tests_path)
 
