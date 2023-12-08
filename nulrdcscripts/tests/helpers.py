@@ -5,12 +5,21 @@ Contains helpers for the test scripts.
 import os
 import csv
 import json
+import subprocess
 import nulrdcscripts.tests.colors as colors
 
-def check_json(filepath, correct_results_dir):
-    file = os.path.basename(filepath)
-    correct_json_path = os.path.join(correct_results_dir, file)
-    result = True
+def check_json(filepath: str, correct_results_dir: str):
+    """
+    Performs check on json file.
+
+    :param str filepath: path to test file
+    :param str correct_results_dir: path to 'CORRECT' directory
+    :return: result of check
+    :rtype: bool
+    """
+    file: str = os.path.basename(filepath)
+    correct_json_path: str = os.path.join(correct_results_dir, file)
+    result: bool = True
     with open(filepath) as json_file, open(correct_json_path) as correct_json_file:
         json_data = json.load(json_file)
         correct_json_data = json.load(correct_json_file)
@@ -34,7 +43,7 @@ def json_test(json_data, correct_json_data, key=""):
     :returns: if the json files match
     :rtype: bool
     """
-    result = True
+    result: bool = True
     # get json_data type
     data_type = type(json_data)
     # if its a list, go through each item
@@ -64,7 +73,7 @@ def json_test(json_data, correct_json_data, key=""):
             print("fail! " + key, end="")
     return result
 
-def check_qc_log(filepath):
+def check_qc_log(filepath: str):
     """
     Checks results in qc_log to make sure everything passed.
 
@@ -74,7 +83,7 @@ def check_qc_log(filepath):
     """
     result = True
     with open(filepath, encoding="utf-8") as f:
-        reader = csv.DictReader(f, delimiter=",")
+        reader: dict[str, str] = csv.DictReader(f, delimiter=",")
         for row in reader:
             # filename is only a key for audio qc_logs
             if "filename" in row:
@@ -101,27 +110,31 @@ def check_qc_log(filepath):
         print(colors.PASS + "pass!" + colors.DEFAULT)
     return result
 
-def check_checksum(filepath, correct_results_dir):
+def policy_check(filepath: str, policy_path: str):
     """
-    _summary_
+    Checks file against mediaconch policy.
 
-    :param filepath: _description_
-    :type filepath: _type_
-    :param correct_results_dir: _description_
-    :type correct_results_dir: _type_
-    :return: _description_
+    :param str filepath: path to test file
+    :param str policy_path: path to mediaconch policy
+    :return: result of policy check
     :rtype: bool
     """
-    file = os.path.basename(filepath)
-    md5_path = os.path.splitext(filepath)[0] + ".md5"
-    # skip checking md5 if it doesn't exist
-    if not os.path.isfile(md5_path):
-        print(colors.FAIL + "fail! no md5 file not found for " + file + colors.DEFAULT)
-        return False
-    # read in the test md5 and the correct md5
-    return check_file(md5_path, correct_results_dir)
 
-def check_file(filepath, correct_results_dir):
+    # grabs first word in mediaconch output
+    mediaconch_command: list[str] = ["mediaconch", filepath, "--policy="+policy_path]
+    output = subprocess.check_output(mediaconch_command)
+    parsed_output = output.decode("ascii").rstrip().split()[0]
+    # prints fails on one line 
+    if not parsed_output == "pass!":
+        print(colors.FAIL + "fail! ", end="")
+        print(*output, sep=", ")
+        print(colors.DEFAULT, end="")
+        return False
+    else:
+        print(colors.PASS + "pass!" + colors.DEFAULT)
+        return True
+
+def check_file(filepath: str, correct_results_dir: str):
     """
     Directly compares binary data in 2 files.
 

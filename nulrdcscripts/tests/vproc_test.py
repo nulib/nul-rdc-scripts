@@ -6,63 +6,51 @@ Run after running vproc on vproc_test.
 
 import os
 import shutil
-import subprocess
 import nulrdcscripts.tests.colors as colors
 import nulrdcscripts.tests.helpers as helpers
 
-def main(current_dir):
+def main(current_dir: str):
 	
     # setup directories
-    correct_results_dir = os.path.join(current_dir, "CORRECT")
-    aproc_test_dir = os.path.join(current_dir, "vproc_test")
+    vproc_test_dir: str = os.path.join(current_dir, "vproc_test")
 
-    result = True
-
-    not_skip = (
-        "p.mkv", 
-        "a.mp4", 
-        ".json", 
-        ".framemd5", 
-        "qc_log.csv", 
-        "p.mkv.qctools.mkv", 
-        "spectrogram_00.png", 
-        "spectrogram_01.png"
-    )
-
-    vproc_dir = os.path.join(current_dir, "vproc_test")
     filepath_list = [
-        os.path.join(vproc_dir, "bars1min", "bars1min", "a", "bars1min_a.md5"),
-        os.path.join(vproc_dir, "bars1min", "bars1min", "a", "bars1min_a.mp4"),
-        os.path.join(vproc_dir, "bars1min", "bars1min", "meta", "bars1min_s.json"),
-        os.path.join(vproc_dir, "bars1min", "bars1min", "meta", "bars1min_spectrogram00_s.png"),
-        os.path.join(vproc_dir, "bars1min", "bars1min", "meta", "bars1min_spectrogram01_s.png"),
-        os.path.join(vproc_dir, "bars1min", "bars1min", "p", "bars1min_p.framemd5"),
-        os.path.join(vproc_dir, "bars1min", "bars1min", "p", "bars1min_p.md5"),
-        os.path.join(vproc_dir, "bars1min", "bars1min", "p", "bars1min_p.mkv"),
-        os.path.join(vproc_dir, "bars1min", "bars1min", "p", "bars1min_p.mkv.qctools.mkv"),
-        os.path.join(vproc_dir, "bars1min", "qc_log.csv"),
-        os.path.join(vproc_dir, "bars5min", "bars5min", "a", "bars5min_a.md5"),
-        os.path.join(vproc_dir, "bars5min", "bars5min", "a", "bars5min_a.mp4"),
-        os.path.join(vproc_dir, "bars5min", "bars5min", "meta", "bars5min_s.json"),
-        os.path.join(vproc_dir, "bars5min", "bars5min", "meta", "bars5min_spectrogram00_s.png"),
-        os.path.join(vproc_dir, "bars5min", "bars5min", "meta", "bars5min_spectrogram01_s.png"),
-        os.path.join(vproc_dir, "bars5min", "bars5min", "p", "bars5min_p.framemd5"),
-        os.path.join(vproc_dir, "bars5min", "bars5min", "p", "bars5min_p.md5"),
-        os.path.join(vproc_dir, "bars5min", "bars5min", "p", "bars5min_p.mkv"),
-        os.path.join(vproc_dir, "bars5min", "bars5min", "p", "bars5min_p.mkv.qctools.mkv"),
-        os.path.join(vproc_dir, "bars5min", "qc_log.csv"),
+        os.path.join(vproc_test_dir, "bars1min", "bars1min", "a", "bars1min_a.md5"),
+        os.path.join(vproc_test_dir, "bars1min", "bars1min", "a", "bars1min_a.mp4"),
+        os.path.join(vproc_test_dir, "bars1min", "bars1min", "meta", "bars1min_s.json"),
+        os.path.join(vproc_test_dir, "bars1min", "bars1min", "meta", "bars1min_spectrogram00_s.png"),
+        os.path.join(vproc_test_dir, "bars1min", "bars1min", "meta", "bars1min_spectrogram01_s.png"),
+        os.path.join(vproc_test_dir, "bars1min", "bars1min", "p", "bars1min_p.framemd5"),
+        os.path.join(vproc_test_dir, "bars1min", "bars1min", "p", "bars1min_p.md5"),
+        os.path.join(vproc_test_dir, "bars1min", "bars1min", "p", "bars1min_p.mkv"),
+        os.path.join(vproc_test_dir, "bars1min", "bars1min", "p", "bars1min_p.mkv.qctools.mkv"),
+        os.path.join(vproc_test_dir, "bars1min", "qc_log.csv"),
+        os.path.join(vproc_test_dir, "bars5min", "bars5min", "a", "bars5min_a.md5"),
+        os.path.join(vproc_test_dir, "bars5min", "bars5min", "a", "bars5min_a.mp4"),
+        os.path.join(vproc_test_dir, "bars5min", "bars5min", "meta", "bars5min_s.json"),
+        os.path.join(vproc_test_dir, "bars5min", "bars5min", "meta", "bars5min_spectrogram00_s.png"),
+        os.path.join(vproc_test_dir, "bars5min", "bars5min", "meta", "bars5min_spectrogram01_s.png"),
+        os.path.join(vproc_test_dir, "bars5min", "bars5min", "p", "bars5min_p.framemd5"),
+        os.path.join(vproc_test_dir, "bars5min", "bars5min", "p", "bars5min_p.md5"),
+        os.path.join(vproc_test_dir, "bars5min", "bars5min", "p", "bars5min_p.mkv"),
+        os.path.join(vproc_test_dir, "bars5min", "bars5min", "p", "bars5min_p.mkv.qctools.mkv"),
+        os.path.join(vproc_test_dir, "bars5min", "qc_log.csv"),
     ]
 
-    # look through every file in vproc_test
+    total_result: bool = True
+    # look through every file
     for filepath in filepath_list:
         print(os.path.basename(filepath) + "...", end = "")
+        # check it exists
+        # if it does, check the file
         if os.path.isfile(filepath):
-            result = check(filepath, current_dir, correct_results_dir) * result
+            # this multiplication will make total_result false if any files fail
+            total_result = check(filepath, current_dir) * total_result
         else:
-            result = False
+            total_result = False
             print(colors.FAIL + "fail! file not found" + colors.DEFAULT)
 
-    if result:
+    if total_result:
         print(colors.PASS + "\nALL PASS!" + colors.DEFAULT)
 
     # prompt user to reset
@@ -71,11 +59,16 @@ def main(current_dir):
     if answer.lower() == "y":
         reset(current_dir)
 
-def check(filepath, current_dir, correct_results_dir):
-    # for p files, check policy
-    # don't check md5s as it ends up being different
-    # since they will have different metadata
-    # this is only the case for video p files
+def check(filepath: str, current_dir: str):
+    """
+    Performs a check on a file based on its type.
+
+    :param str filepath: path to test file
+    :param str current_dir: path to 'tests' directory
+    :return: result of the file check
+    :rtype: bool
+    """
+    correct_results_dir: str = os.path.join(current_dir, "CORRECT")
     if filepath.endswith("p.mkv"):
         return check_mkv(filepath, current_dir)
 
@@ -90,69 +83,62 @@ def check(filepath, current_dir, correct_results_dir):
         print(colors.PASS + "pass!" + colors.DEFAULT)
         return True
 
-    # compare contents of .framemd5 for p file
-    # this md5 checksum is not different since it is
-    # independant of encoding date metadata
     elif filepath.endswith(".framemd5"):
         return helpers.check_file(filepath, correct_results_dir)
 
-    # read in json data and check for equality
-    # not including system info, encoding date, and md5
-    # NOTE: stream md5s are still checked
     elif filepath.endswith(".json"):
         return helpers.check_json(filepath, correct_results_dir)
-    
-    # checks qc_log csv
+
     elif filepath.endswith("qc_log.csv"):
         return helpers.check_qc_log(filepath)
-
-    # directly compare the spectrogram images
+    
     elif filepath.endswith("spectrogram00_s.png") or filepath.endswith("spectrogram01_s.png"):
         return helpers.check_file(filepath, correct_results_dir)
 
-    # just check if qc tools file exists, too much to check for exact match
     elif filepath.endswith("p.mkv.qctools.mkv"):
         print(colors.PASS + "pass!" + colors.DEFAULT)
         return True
 
+    # should not get here, just need a base case
+    print(colors.FAIL + "fail! what is this file?" + colors.DEFAULT)
     return False
 
-def check_mkv(filepath, current_dir):
-    policy_path = os.path.join(current_dir, "policies", "AJA_NTSC_VHS-2SAS-MKV.xml")
-    mediaconch_command = ["mediaconch", filepath, "--policy=" + policy_path]
-    output = subprocess.check_output(mediaconch_command)
-    parsed_output = output.decode("ascii").rstrip().split()[0]
-    if not parsed_output == "pass!":
-        print(colors.FAIL + "fail! ", end="")
-        print(*output, sep=", ")
-        print(colors.DEFAULT, end="")
-        return False
-    else:
-        print(colors.PASS + "pass!" + colors.DEFAULT)
-        return True
+def check_mkv(filepath: str, current_dir: str):
+    """
+    Performs check on mkv file.
 
-def reset(current_dir):
+    :param str filepath: path to test file
+    :param str current_dir: path to 'tests' directory
+    :return: result of test
+    :rtype: bool
     """
-    Deletes files created by aproc and strips p files of metadata
+    # runs mediaconch policy check and grabs 1st word of its output
+    policy_path: str = os.path.join(current_dir, "policies", "AJA_NTSC_VHS-2SAS-MKV.xml")
+    return helpers.policy_check(filepath, policy_path)
+
+def reset(current_dir: str):
     """
-    
+    Deletes files created by aproc and strips p files of metadata.
+
+    :param str current_dir: path to 'tests' directory
+    """
     # list of projects in vproc
-    projects = ["bars1min", "bars5min"]
+    projects: list[str] = ["bars1min", "bars5min"]
     
     print(colors.DELETE)
 
     # get directory of vproc_test
-    vproc_test_dir = os.path.join(current_dir, "vproc_test")
+    vproc_test_dir: str = os.path.join(current_dir, "vproc_test")
     # removes ingest if present because why not
-    ingest_path = os.path.join(vproc_test_dir, "vproc_test_ingest.csv")
+    ingest_path: str = os.path.join(vproc_test_dir, "vproc_test_ingest.csv")
     if os.path.isfile(ingest_path):
         print("deleting " + ingest_path)
         os.remove(ingest_path)
 
     # for each project
     for project in projects:
-        item_path = os.path.join(vproc_test_dir, project)
-        project_path = os.path.join(item_path, project)
+        item_path: str = os.path.join(vproc_test_dir, project)
+        project_path: str = os.path.join(item_path, project)
         # deletes the entire containing folder for the project
         if os.path.isdir(project_path):
             print("deleting " + project_path)

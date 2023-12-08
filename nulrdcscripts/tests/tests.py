@@ -40,6 +40,16 @@ def main():
         aproc_test.main(tests_path)
 
 def get_tests_path():
+    """
+    Reads in path to 'tests' folder from tests_path.txt.
+    If the file doesn't exist, creates it.
+    If no path is found, or path doesn't exist, prompts
+    user for path.
+
+    :return: path to 'tests' folder
+    :rtype: str
+    """
+
     current_dir = os.path.dirname(os.path.abspath(__file__))
     path_txt = os.path.join(current_dir, "tests_path.txt")
 

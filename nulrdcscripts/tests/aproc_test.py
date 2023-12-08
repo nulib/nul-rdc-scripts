@@ -7,53 +7,54 @@ Run after running aproc on aproc_test.
 import subprocess
 import os
 import shutil
-import json
 import nulrdcscripts.tests.colors as colors
 import nulrdcscripts.tests.helpers as helpers
 
-def main(current_dir):
+def main(current_dir: str):
 
     # setup directory paths
-    correct_results_dir = os.path.join(current_dir, "CORRECT")
     aproc_test_dir = os.path.join(current_dir, "aproc_test")
 
-    result = True
-
-    aproc_dir = os.path.join(current_dir, "aproc_test")
     filepath_list = [
-        os.path.join(aproc_dir, "100Hz", "p", "100Hz_s01_p.wav"),
-        os.path.join(aproc_dir, "100Hz", "p", "100Hz_s01_p.md5"),
-        os.path.join(aproc_dir, "100Hz", "p", "100Hz_s02_p.wav"),
-        os.path.join(aproc_dir, "100Hz", "p", "100Hz_s02_p.md5"),
-        os.path.join(aproc_dir, "100Hz", "a", "100Hz_s01_a.wav"),
-        os.path.join(aproc_dir, "100Hz", "a", "100Hz_s01_a.md5"),
-        os.path.join(aproc_dir, "100Hz", "a", "100Hz_s02_a.wav"),
-        os.path.join(aproc_dir, "100Hz", "a", "100Hz_s02_a.md5"),
-        os.path.join(aproc_dir, "100Hz", "meta", "100Hz_s.json"),
-        os.path.join(aproc_dir, "100Hz", "meta", "100Hz_s01_spectrogram_s.png"),
-        os.path.join(aproc_dir, "100Hz", "meta", "100Hz_s02_spectrogram_s.png"),
-        os.path.join(aproc_dir, "500Hz", "p", "500Hz_s01_p.wav"),
-        os.path.join(aproc_dir, "500Hz", "p", "500Hz_s01_p.md5"),
-        os.path.join(aproc_dir, "500Hz", "p", "500Hz_s02_p.wav"),
-        os.path.join(aproc_dir, "500Hz", "p", "500Hz_s02_p.md5"),
-        os.path.join(aproc_dir, "500Hz", "a", "500Hz_s01_a.wav"),
-        os.path.join(aproc_dir, "500Hz", "a", "500Hz_s01_a.md5"),
-        os.path.join(aproc_dir, "500Hz", "a", "500Hz_s02_a.wav"),
-        os.path.join(aproc_dir, "500Hz", "a", "500Hz_s02_a.md5"),
-        os.path.join(aproc_dir, "500Hz", "meta", "500Hz_s.json"),
-        os.path.join(aproc_dir, "500Hz", "meta", "500Hz_s01_spectrogram_s.png"),
-        os.path.join(aproc_dir, "500Hz", "meta", "500Hz_s02_spectrogram_s.png"),
-        os.path.join(aproc_dir, "aproc_test-qc_log.csv"),
+        os.path.join(aproc_test_dir, "100Hz", "p", "100Hz_s01_p.wav"),
+        os.path.join(aproc_test_dir, "100Hz", "p", "100Hz_s01_p.md5"),
+        os.path.join(aproc_test_dir, "100Hz", "p", "100Hz_s02_p.wav"),
+        os.path.join(aproc_test_dir, "100Hz", "p", "100Hz_s02_p.md5"),
+        os.path.join(aproc_test_dir, "100Hz", "a", "100Hz_s01_a.wav"),
+        os.path.join(aproc_test_dir, "100Hz", "a", "100Hz_s01_a.md5"),
+        os.path.join(aproc_test_dir, "100Hz", "a", "100Hz_s02_a.wav"),
+        os.path.join(aproc_test_dir, "100Hz", "a", "100Hz_s02_a.md5"),
+        os.path.join(aproc_test_dir, "100Hz", "meta", "100Hz_s.json"),
+        os.path.join(aproc_test_dir, "100Hz", "meta", "100Hz_s01_spectrogram_s.png"),
+        os.path.join(aproc_test_dir, "100Hz", "meta", "100Hz_s02_spectrogram_s.png"),
+        os.path.join(aproc_test_dir, "500Hz", "p", "500Hz_s01_p.wav"),
+        os.path.join(aproc_test_dir, "500Hz", "p", "500Hz_s01_p.md5"),
+        os.path.join(aproc_test_dir, "500Hz", "p", "500Hz_s02_p.wav"),
+        os.path.join(aproc_test_dir, "500Hz", "p", "500Hz_s02_p.md5"),
+        os.path.join(aproc_test_dir, "500Hz", "a", "500Hz_s01_a.wav"),
+        os.path.join(aproc_test_dir, "500Hz", "a", "500Hz_s01_a.md5"),
+        os.path.join(aproc_test_dir, "500Hz", "a", "500Hz_s02_a.wav"),
+        os.path.join(aproc_test_dir, "500Hz", "a", "500Hz_s02_a.md5"),
+        os.path.join(aproc_test_dir, "500Hz", "meta", "500Hz_s.json"),
+        os.path.join(aproc_test_dir, "500Hz", "meta", "500Hz_s01_spectrogram_s.png"),
+        os.path.join(aproc_test_dir, "500Hz", "meta", "500Hz_s02_spectrogram_s.png"),
+        os.path.join(aproc_test_dir, "aproc_test-qc_log.csv"),
     ]
+
+    total_result: bool = True
+    # look through every file
     for filepath in filepath_list:
         print(os.path.basename(filepath) + "...", end = "")
+        # check it exists
+        # if it does, check the file
         if os.path.isfile(filepath):
-            result = check(filepath, current_dir, correct_results_dir) * result
+            # this multiplication will make total_result false if any files fail
+            total_result = check(filepath, current_dir) * total_result
         else:
-            result = False
+            total_result = False
             print(colors.FAIL + "fail! file not found" + colors.DEFAULT)
 
-    if result:
+    if total_result:
         print(colors.PASS + "\nALL PASS!" + colors.DEFAULT)
 
     # prompt user to reset
@@ -62,46 +63,52 @@ def main(current_dir):
     if answer.lower() == "y":
         reset(current_dir)
 
-def check(filepath, current_dir, correct_results_dir):
+def check(filepath: str, current_dir: str):
+    """
+    Performs a check on a file based on its type.
+
+    :param str filepath: path to test file
+    :param str current_dir: path to 'tests' directory
+    :return: result of the file check
+    :rtype: bool
+    """
+    correct_results_dir = os.path.join(current_dir, "CORRECT")
     if filepath.endswith(".wav"):
-        return check_wav(filepath, current_dir, correct_results_dir)
+        return check_wav(filepath, current_dir)
     if filepath.endswith(".md5"):
         return helpers.check_file(filepath, correct_results_dir)
-    # open both json files and check if data matches
     elif filepath.endswith(".json"):
         return helpers.check_json(filepath, correct_results_dir)
-    # check qc_log for PASS or FAIL results
     elif filepath.endswith("qc_log.csv"): 
         return helpers.check_qc_log(filepath)
-    # check spectrograms
     elif filepath.endswith("spectrogram_s.png"):
         return helpers.check_file(filepath, correct_results_dir)
     return False
 
-def check_wav(filepath, current_dir, correct_results_dir):
-    file = os.path.basename(filepath)
-    
+def check_wav(filepath: str, current_dir: str):
+    """
+    Runs mediaconch policy on wav file based on a or p.
+    md5 check will find errors in actual file contents.
+
+    :param str filepath: path to test wav file
+    :param str current_dir: path to 'tests' directory
+    :return: result of policy check
+    :rtype: bool
+    """
+
     # set the policy path based on p or a
-    if file.endswith("p.wav"):
+    if filepath.endswith("p.wav"):
         policy_path = os.path.join(current_dir, "policies", "preservation_wav-96k24-tech.xml")
-    elif file.endswith("a.wav"):
+    elif filepath.endswith("a.wav"):
         policy_path = os.path.join(current_dir, "policies", "access_wav-44k16-tech.xml")
     # mediaconch policy check
-    mediaconch_command = ["mediaconch", filepath, "--policy="+policy_path]
-    output = subprocess.check_output(mediaconch_command)
-    parsed_output = output.decode("ascii").rstrip().split()[0]
-    if not parsed_output == "pass!":
-        print(colors.FAIL + "fail! ", end="")
-        print(*output, sep=", ")
-        print(colors.DEFAULT, end="")
-        return False
-    else:
-        print(colors.PASS + "pass!" + colors.DEFAULT)
-        return True
+    return helpers.policy_check(filepath, policy_path)
 
-def reset(current_dir):
+def reset(current_dir: str):
     """
-    Deletes files created by aproc and strips p files of metadata
+    Deletes files created by aproc and strips p files of metadata.
+
+    :param str current_dir: path to 'tests' directory
     """
 
     #list of projects in aproc_test
@@ -152,9 +159,8 @@ def reset(current_dir):
                     metaeditcommand = ["bwfmetaedit", "--in-core-remove", filepath]
                     print("stripping metadata from " + filepath)
                     subprocess.run(metaeditcommand)
-    print(colors.DEFAULT, end="")
 
-            
+    print(colors.DEFAULT, end="")
 
 if __name__ == "__main__":
 	main()
