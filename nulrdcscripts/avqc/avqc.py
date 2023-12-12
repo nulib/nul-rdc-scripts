@@ -42,8 +42,8 @@ def main():
         # get p folder
         p_dir = os.path.join(dir, "p")
         if not os.path.isdir(p_dir):
-            return
-        
+            continue
+
         # get a folder
         a_dir = os.path.join(dir, "a")
         if not os.path.isdir(a_dir):
