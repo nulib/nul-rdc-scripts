@@ -14,6 +14,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+ffmpeg-normalize = "^1.27.7"
 
 [tool.poetry.dev-dependencies]
 
