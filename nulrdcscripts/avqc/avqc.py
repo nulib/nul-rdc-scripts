@@ -6,6 +6,7 @@ import sys
 import os
 import hashlib
 import subprocess
+from colorama import Fore, Style
 from nulrdcscripts.avqc.params import args
 
 if sys.version_info[0] < 3:
@@ -26,24 +27,24 @@ def main():
         p_ext = ".mkv"
         a_ext = ".mov"
 
+    total = get_total(indir, dirs, p_ext, a_ext)
+
     if not args.skip_checksums:
         print("*** Validating Checksums ***")
-    # to be populated with any checksum errors
-    checksum_faildict = {}
 
     # list of files to play with mpv
     playlist = []
     playlist_file = os.path.join(indir, "playlist.txt")
 
     # run through each folder in input directory
+    count=0
+    total_result = True
     for dirname in dirs:
         dir = os.path.join(indir, dirname)
-
         # get p folder
         p_dir = os.path.join(dir, "p")
         if not os.path.isdir(p_dir):
             continue
-
         # get a folder
         a_dir = os.path.join(dir, "a")
         if not os.path.isdir(a_dir):
@@ -60,57 +61,35 @@ def main():
                 continue
             if not args.skip_checksums:
                 # write to dict based on result of check
-                checksum_result = verify_checksums(filename, p_dir)
-                if checksum_result == -1:
-                    checksum_faildict.update(
-                        {
-                            filename: ".md5 not found!" 
-                        }
-                    )  
-                elif checksum_result == 0:
-                    checksum_faildict.update(
-                        {
-                            filename: "md5 checksums don't match!"
-                        }
-                    )  
+                count += 1
+                total_result = verify_checksums(filename, p_dir, count, total) and total_result
             playlist.append(os.path.join(p_dir, filename))
         
-        # run through each file in \p folder
+        # run through each file in \a folder
         if a_dir:
             for filename in os.listdir(a_dir):
-                # skip files w/o p extension
+                # skip files w/o a extension
                 if not filename.endswith(a_ext):
                     continue
                 if not args.skip_checksums:
                     # write to dict based on result of check
-                    checksum_result = verify_checksums(filename, a_dir)
-                    if checksum_result == -1:
-                        checksum_faildict.update(
-                            {
-                                filename: ".md5 not found" 
-                            }
-                        )  
-                    elif checksum_result == 0:
-                        checksum_faildict.update(
-                            {
-                                filename: "checksums don't match" 
-                            }
-                        )  
+                    count += 1
+                    total_result = verify_checksums(filename, a_dir, count, total) and total_result
+
                 if args.play_access:
                     playlist.append(os.path.join(a_dir, filename))
 
     # print results of checksum validation
     if not args.skip_checksums:
         # print all errors if and quit
-        if checksum_faildict:
-            print("FAIL!")
-            for key, value in checksum_faildict.items():
-                print(key + ":", value + "---")
+        if not total_result:
             quit()
         # wait for user input to continue in case they left it running
         # while checksums were validated
-        print("Success!")
-        input("\nPress enter to continue to file inspection...")
+        print(Fore.LIGHTGREEN_EX + "ALL PASS!" + Style.RESET_ALL)
+        if input("\nPress enter to continue to file inspection or q to quit...").lower() == "q":
+            quit()
+        
 
     # write files to playlist file
     try:
@@ -131,6 +110,44 @@ def main():
     subprocess.run(mpv_command)
     os.remove(playlist_file)
         
+def get_total(indir, dirs, p_ext, a_ext):
+
+    total = 0
+
+    # run through each folder in input directory
+    for dirname in dirs:
+        dir = os.path.join(indir, dirname)
+
+        # get p folder
+        p_dir = os.path.join(dir, "p")
+        if not os.path.isdir(p_dir):
+            continue
+
+        # get a folder
+        a_dir = os.path.join(dir, "a")
+        if not os.path.isdir(a_dir):
+            a_dir = None
+
+        # run through each file in \p folder
+        for filename in os.listdir(p_dir):
+            # skip files w/o p extension
+            if not filename.endswith(p_ext):
+                continue
+            # extra check for these cause it'll think they are p files
+            if filename.endswith(".qctools.mkv"):
+                continue
+            total += 1
+            
+        # run through each file in \a folder
+        if a_dir:
+            for filename in os.listdir(a_dir):
+                # skip files w/o a extension
+                if not filename.endswith(a_ext):
+                    continue
+                total += 1
+
+    return total
+                
 
 def get_input():
     """
@@ -162,7 +179,7 @@ def get_immediate_subdirectories(folder: str):
         name for name in os.listdir(folder) if os.path.isdir(os.path.join(folder, name))
     ]
 
-def verify_checksums(filename: str, dir: str):
+def verify_checksums(filename: str, dir: str, count: int, total: int):
     """
     Validates checksum of given file.
 
@@ -179,12 +196,20 @@ def verify_checksums(filename: str, dir: str):
     md5_file = find_md5(file)
     # returns -1 if file not found
     if not md5_file:
-        return -1
+        print(" - " + Fore.LIGHTRED_EX + "fail! .md5 not found" + Style.RESET_ALL)
+        return False
 
     # otherwise returns if they match
-    return compare_checksums(file, md5_file)
+    result = compare_checksums(file, md5_file, count, total)
 
-def compare_checksums(file: str, md5_file: str):
+    if result:
+        print(" - " + Fore.LIGHTGREEN_EX + "pass!" + Style.RESET_ALL)
+    else:
+        print(" - " + Fore.LIGHTRED_EX + "fail! checksums don't match" + Style.RESET_ALL)
+    return result
+
+
+def compare_checksums(file: str, md5_file: str, count: int, total: int):
     """
     Compares md5 from file with md5 generated in python.
 
@@ -196,7 +221,7 @@ def compare_checksums(file: str, md5_file: str):
         True: checksums match
         False: checksums don't match
     """
-    computed_md5 = hashlib_md5(file)
+    computed_md5 = hashlib_md5(file, count, total)
     with open(md5_file, "r") as f:
         for line in f:
             words = line.split()
@@ -232,7 +257,7 @@ def find_md5(file: str):
     # if file not found
     return None
 
-def hashlib_md5(file):
+def hashlib_md5(file: str, count: int, total: int):
     """
     Uses hashlib to return an MD5 checksum of an input filename
     Credit: IFI scripts
@@ -252,15 +277,11 @@ def hashlib_md5(file):
             chksm.update(buf)
             percent_done = 100 * read_size / total_size
             if percent_done > last_percent_done:
-                sys.stdout.write(filename + " [%d%%]\r" % percent_done)
+                print("\r[" + str(count) + "/" + str(total) + "] ", end="")
+                sys.stdout.write(filename + " [%d%%]" % percent_done)
                 sys.stdout.flush()
                 last_percent_done = percent_done
     
-    sys.stdout.write("\r")
-    blank = " " * (len(filename) + 7)
-    sys.stdout.write(blank + "\r")
-    
-    # print("")
     md5_output = chksm.hexdigest()
     return md5_output
 
