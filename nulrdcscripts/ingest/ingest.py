@@ -197,6 +197,23 @@ def main():
                     "role": "X",
                     "label": "image",
                     "file_builder": "_auxiliary_",
+                },
+                {
+                "auxiliary": {
+                    "identifiers":["_enclosure_01", "-enclosure_01"],
+                    "type":"pattern",
+                    "role":"X",
+                    "label": "enclosure front"
+                    "file_builder": "_auxillary_",
+                },
+                }
+                {"auxiliary":{
+                    "identifiers": ["_enclosure_02", "-enclosure_02"],
+                    "type":"pattern",
+                    "role":"X",
+                    "label":"enclosure back"
+                    "file_builder": "_auxillary_"
+                }
                 }
             }
         # add the aux_dict to the beginning of the role_dict
