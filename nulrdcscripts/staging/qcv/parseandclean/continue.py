@@ -2,42 +2,61 @@ import pandas as pd
 import xml.etree.ElementTree as etree
 import json
 
-videodata = {}
 audiodata = {}
+videodata = {}
+framenumberA = 0
+framenumberV = 0
 
 
-file = "example.xml"
+file = input("file to run")
 data = "data.json"
-for event, elem in etree.iterparse(file, events=("start",)):
-    if elem.tag == "frame":
-        frame = 1
-        mediatype = elem.attrib["media_type"]
-        if mediatype == "audio":
-            for child in elem:
-                criteria = child.attrib["key"]
-                value = child.attrib["value"]
-                frametime = elem.attrib["pkt_pts_time"]
-            audiodata[frametime] = {}
-            audiodata[frametime][criteria] = value
-            elem.clear()
-            dfAudio = pd.DataFrame.from_dict(audiodata)
-            dfAudio = dfAudio.transpose()
-            audiodata.clear()
-        elif mediatype == "video":
-            for child in elem:
-                criteria = child.attrib["key"]
-                value = child.attrib["value"]
-                frametime = elem.attrib["pkt_pts_time"]
-            videodata[frame] = {}
-            videodata[frame]["Frame Time"] = float(frametime)
-            videodata[frame][criteria] = float(value)
-            elem.clear()
-            frame = frame + 1
+tree = etree.parse(file)
+root = tree.getroot()
 
-        dfVideo = pd.DataFrame.from_dict(videodata)
-        dfVideo = dfVideo.transpose()
-        videodata.clear()
+for event, elem in etree.iterparse(file, events=["start", "end"]):
+    if event == "start":
+        if elem.tag == "frame":
+            if elem.get("media_type") == "audio":
+                framenumberA = framenumberA + 1
+                frametime = elem.get("pkt_pts_time")
+                audiodata[framenumberA] = {}
+                for tag in elem.iter("tag"):
+                    criteria = tag.attrib["key"]
+                    value = tag.attrib["value"]
+                    audiodata[framenumberA]["Frame Time"] = float(frametime)
+                    audiodata[framenumberA][criteria] = value
+            else:
+                pass
+        else:
+            pass
+    elif event == "end":
+        elem.clear()
 
 
-df = dfAudio.to_csv("audiodata.csv", sep=",", header=True)
-df = dfVideo.to_csv("video.csv", sep=",", header=True)
+for event, elem in etree.iterparse(file, events=["start", "end"]):
+    if event == "start":
+        if elem.tag == "frame":
+            if elem.get("media_type") == "video":
+                framenumberV = framenumberV + 1
+                frametime = elem.get("pkt_pts_time")
+                videodata[framenumberV] = {}
+                for tag in elem.iter("tag"):
+                    criteria = tag.attrib["key"]
+                    value = tag.attrib["value"]
+                    videodata[framenumberV]["Frame Time"] = float(frametime)
+                    videodata[framenumberV][criteria] = float(value)
+            else:
+                pass
+        else:
+            pass
+    elif event == "end":
+        elem.clear()
+
+
+dfAudio = pd.DataFrame.from_dict(audiodata)
+dfAudio = dfAudio.transpose()
+dfAudio.to_csv("audiodata.csv", sep=",")
+
+dfVideo = pd.DataFrame.from_dict(videodata)
+dfVideo = dfVideo.transpose()
+dfVideo.to_csv("videodata.csv", sep=",")
