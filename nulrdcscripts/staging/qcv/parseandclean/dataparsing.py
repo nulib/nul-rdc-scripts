@@ -4,7 +4,7 @@ import xml.etree.ElementTree as etree
 
 
 def dataparsingandtabulatingaudio(inputpath):
-    """Cleans and parses the audio data for analysis. Returns dataframe and generates csv."""
+    """Cleans and parses the audio data for analysis. Returns dataframe."""
     audiodata = {}
     framenumberA = 0
     for event, elem in etree.iterparse(inputpath, events=["end"]):
@@ -23,7 +23,6 @@ def dataparsingandtabulatingaudio(inputpath):
                 elem.clear()
     dfAudio = pd.DataFrame.from_dict(audiodata)
     dfAudio = dfAudio.transpose()
-    dfAudio.to_csv("audiodata.csv", sep=",")
     return dfAudio
 
 
@@ -49,5 +48,4 @@ def dataparsingandtabulatingvideo(inputpath):
                 elem.clear()
     dfVideo = pd.DataFrame.from_dict(videodata)
     dfVideo = dfVideo.transpose()
-    dfVideo.to_csv("videodatashort.csv", sep=",")
     return dfVideo
