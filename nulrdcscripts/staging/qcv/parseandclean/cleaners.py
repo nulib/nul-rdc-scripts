@@ -1,11 +1,11 @@
-def tagkeycleaning(tagkey):
-    tagkeyclean1 = tagkey.replace("lavfi.astats", "")
-    tagkeyclean2 = tagkeyclean1.replace("lavfi.", "")
-    tagkeyclean3 = tagkeyclean2.replace("signalstats.", "")
-    tagkeyclean4 = tagkeyclean3.replace(".", " ")
-    cleanedtagkey = tagkeyclean4.replace("_", " ")
-    cleanedtagkey = cleanedtagkey.lower()
-    return cleanedtagkey
+def criteriacleaner(criteria):
+    criteriaclean1 = criteria.replace("lavfi.astats", "")
+    criteriaclean2 = criteriaclean1.replace("lavfi.", "")
+    criteriaclean3 = criteriaclean2.replace("signalstats.", "")
+    criteriaclean4 = criteriaclean3.replace(".", " ")
+    cleanedcriteria = criteriaclean4.replace("_", " ")
+    cleanCriteria = cleanedcriteria.lower()
+    return cleanCriteria
 
 
 # Makes the criteria more legible so that it can be strung together later for a easy interpretation without relying on acronyms
