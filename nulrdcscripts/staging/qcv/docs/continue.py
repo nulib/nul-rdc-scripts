@@ -12,7 +12,8 @@ file = input("file")
 data = "data.json"
 tree = etree.parse(file)
 root = tree.getroot()
-"""
+
+
 for event, elem in etree.iterparse(file, events=["start", "end"]):
     if event == "start":
         if elem.tag == "frame":
@@ -32,7 +33,7 @@ for event, elem in etree.iterparse(file, events=["start", "end"]):
             pass
     elif event == "end":
         elem.clear()
-"""
+
 
 for event, elem in etree.iterparse(file, events=["end"]):
     if event == "end":
@@ -48,11 +49,10 @@ for event, elem in etree.iterparse(file, events=["end"]):
                     videodata[framenumberV]["Frame Time"] = float(frametime)
                     videodata[framenumberV][criteria] = float(value)
             elem.clear()
-"""'
+
 dfAudio = pd.DataFrame.from_dict(audiodata)
 dfAudio = dfAudio.transpose()
 dfAudio.to_csv("audiodata.csv", sep=",")
-"""
 
 dfVideo = pd.DataFrame.from_dict(videodata)
 dfVideo = dfVideo.transpose()
