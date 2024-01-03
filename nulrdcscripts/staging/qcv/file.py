@@ -14,13 +14,13 @@ def runIndividualFile(inputpath, videoBitDepth):
     videofeedtocsv = overallstatistics.videostatstocsv(videostats)
 
     # Collects the audio summary data - outputs CSV and Dictionary
-    audiostats = overallstatistics.audiodatastatistics(audiodata)
+    # audiostats = overallstatistics.audiodatastatistics(audiodata)
 
-    audiofeedtodict = overallstatistics.audiostatstodict(audiostats)
-    audiofeedtocsv = overallstatistics.audiostatstocsv(audiostats)
+    # audiofeedtodict = overallstatistics.audiostatstodict(audiostats)
+    # audiofeedtocsv = overallstatistics.audiostatstocsv(audiostats)
 
     # Video analysis for summary report
-    summaryvideoerrors = videoanalysis.checkAllVideo(videostats, videoBitDepth)
+    # summaryvideoerrors = videoanalysis.checkAllVideo(videostats, videoBitDepth)
 
     # Assigns errors to tiers for verbose reporting
-    errortiers.errorsvideo(summaryvideoerrors)
+    # errortiers.errorsvideo(summaryvideoerrors)

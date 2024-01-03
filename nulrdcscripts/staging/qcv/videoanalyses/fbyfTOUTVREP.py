@@ -1,3 +1,5 @@
+import pandas as pd
+
 levels = ["ideal", "max"]
 criteria = ["tout", "vrep"]
 level = 0
@@ -18,17 +20,18 @@ def runLevels(videoBitDepth, videodata, criteriaToCheck):
     while level <= len(levels):
         levelToCheck = levels[level]
         errors = setUpCheckErrors(
-            criteria, levelToCheck, criteriaToCheck, videoBitDepth, videodata
+            levelToCheck, criteriaToCheck, videoBitDepth, videodata
         )
         level = level + 1
         return errors
 
 
-def setUpCheckErrors(criteria, levelToCheck, criteriaToCheck, videoBitDepth, videodata):
-    criteriaValue = videoBitDepth.get(criteria[levelToCheck])
+def setUpCheckErrors(levelToCheck, criteriaToCheck, videoBitDepth, videodata):
+    criteriaValue = videoBitDepth.at[criteriaToCheck, levelToCheck]
+    criteria = criteriaToCheck + levelToCheck
     data = setColumn(videodata, criteriaToCheck)
     equationSign = setEquationSign(criteriaValue)
-    equation = setEquation(equationSign, criteria, criteriaValue)
+    equation = setEquation(equationSign, criteriaToCheck, criteriaValue)
     errorType = setErrorType(criteriaToCheck)
     errors = checkErrors(equation, data, errorType)
     return errors
