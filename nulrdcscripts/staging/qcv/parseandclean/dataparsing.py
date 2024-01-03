@@ -1,6 +1,8 @@
 import pandas as pd
-import parseandclean.cleaners as cleaners
+from parseandclean import cleaners as cleaners
 import xml.etree.ElementTree as etree
+
+inputpath = "example.xml"
 
 
 def dataparsingandtabulatingaudio(inputpath):
@@ -49,3 +51,26 @@ def dataparsingandtabulatingvideo(inputpath):
     dfVideo = pd.DataFrame.from_dict(videodata)
     dfVideo = dfVideo.transpose()
     return dfVideo
+
+
+# Gathers general video data for summary report
+def videodatastatistics(videodata):
+    videostats = videodata.describe()
+    return videostats
+
+
+# Outputs summary video stats as a dictionary - which will be used for comparison analysis
+def videostatstodict(videostats):
+    summarydatavideodict = videostats.to_dict()
+    return summarydatavideodict
+
+
+# Outputs summary video stats as a csv
+def videostatstocsv(videostats):
+    summarydatavideocsv = videostats.to_csv("videosummarystats.csv", index=True)
+    return summarydatavideocsv
+
+
+videodata = dataparsingandtabulatingvideo(inputpath)
+videodata = videodatastatistics(videodata)
+videostatstocsv = videostatstocsv(videodata)
