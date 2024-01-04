@@ -141,7 +141,7 @@ class Ingest_Sheet_Maker:
                 label, role, file_builder = self.get_ingest_LRF(
                     filename, item["label"]
                 )
-                file_accession_number = u_file + file_builder + f'{self.num_roles[role]:03d}'
+                file_accession_number = work_accession_number + file_builder + f'{self.num_roles[role]:03d}'
             # prepend to file_accession_number
             if prepend:
                 file_accession_number = prepend + file_accession_number
