@@ -16,7 +16,6 @@ class Ingest_Sheet_Maker:
     :var str indir: fullpath to input directory
     :var str outfile: fullpath to output csv file
     :var list[dict] role_dict: contains rules for role assignment
-    :var dict[str, int] num_roles: counts number of each role type
     :var list[dict] inventory_dictlist: contains inventory data
     :var list[dict] ingest_dictlist: contains ingest sheet data
     :var str work_type: type of work ingest sheet is for
@@ -28,8 +27,7 @@ class Ingest_Sheet_Maker:
             x_parse: str
         ):
         """
-        Initializes Ingest_Sheet_Maker input, output, role assignment rules,
-        and starts counter for number of roles.
+        Initializes Ingest_Sheet_Maker input, output, and role assignment rules.
 
         :param str indir: fullpath to input folder
         :param str outfile: fullpath to output csv file
@@ -49,14 +47,6 @@ class Ingest_Sheet_Maker:
 
         self.role_dict = ing_helpers.get_role_dict(x_parse)
         """contains rules for role assignment"""
-
-        self.num_roles = {
-            "A": 0,
-            "P": 0,
-            "S": 0,
-            "X": 0,
-        }
-        """counts number of each role type"""
 
     def load_inventory(self, inventory_path: str, description_fields: list[str]):
         """
@@ -210,6 +200,4 @@ class Ingest_Sheet_Maker:
             #append label if role has extra info
             if self.role_dict[role_index]["label"]:
                 label += " " + self.role_dict[role_index]["label"]
-        # track number of files with this role and return
-        self.num_roles[role] = self.num_roles[role] + 1
         return label, role, file_builder
