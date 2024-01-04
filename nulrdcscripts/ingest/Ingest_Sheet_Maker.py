@@ -141,7 +141,13 @@ class Ingest_Sheet_Maker:
                 label, role, file_builder = self.get_ingest_LRF(
                     filename, item["label"]
                 )
-                file_accession_number = work_accession_number + file_builder + f'{self.num_roles[role]:03d}'
+                if item["filename"] in self.ingest_dictlist:
+                    role_count = 1 + sum(
+                        x.get("role") == role for x in self.ingest_dictlist[item["filename"]]
+                    )
+                else:
+                    role_count = 1
+                file_accession_number = item["filename"] + file_builder + f"{role_count:03d}"
             # prepend to file_accession_number
             if prepend:
                 file_accession_number = prepend + file_accession_number
