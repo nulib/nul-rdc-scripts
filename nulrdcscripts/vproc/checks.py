@@ -2,6 +2,7 @@
 
 
 def inventory_check(item_csvDict):
+    """Checks if item is in the inventory csv provided"""
     if item_csvDict is None:
         print("unable to locate file in csv data!")
         inventoryCheck = "FAIL"
@@ -35,6 +36,7 @@ def stream_md5_status(input_streammd5, output_streammd5):
 
 
 def lossless_check(input_metadata, output_metadata, streamMD5status):
+    """Tests the files created for lossless-ness"""
     if output_metadata.get("output_techMetaA") == input_metadata.get(
         "input_techMetaA"
     ) and output_metadata.get("output_techMetaV") == output_metadata.get(

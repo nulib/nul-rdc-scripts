@@ -5,11 +5,21 @@ def equipment_dict():
     """
     VTRs
     """
-    panasonic_ag1980 = {
+    panasonic_ag1980R1 = {
         "Coding Algorithm": "A=ANALOG",
         "Output is one of": ["Composite", "S-Video"],
+        "Additional Information": "T= Serial Number: JSTC00083 ; NUTag: 10518",
     }
-
+    panasonic_ag1980R2 = {
+        "Coding Algorithm": "A=ANALOG",
+        "Output is one of": ["Composite", "S-Video"],
+        "Additional Information": "T= Serial Number:  ; NUTag: ",
+    }
+    sony_svo5800R2 = {
+        "Coding Algorithm": "A=ANALOG",
+        "Output is one of": ["Composite", "S-Video"],
+        "Additional Information": "T= Serial Number: 13570 or E0707415 ; NUTag: 95094",
+    }
     """
     TBCs
     """
@@ -17,30 +27,54 @@ def equipment_dict():
         "Coding Algorithm": "A=ANALOG",
         "Hardware Type": "TBC",
         "Output is one of": ["Composite", "S-Video", "Component"],
+        "Additional Information": "T= Serial Number: 9211295054 ; NUTag: 10517",
     }
 
-    fa_510 = {
+    dps_575 = {
         "Coding Algorithm": "A=ANALOG",
         "Hardware Type": "TBC",
         "Output is one of": ["Composite", "S-Video", "Component"],
+        "Additional Information": "T= Serial Number: LHTI0192186004 ; NUTag: 10697",
     }
 
     """
     ADCs
     """
-    hd10ava = {"Coding Algorithm": "A=SDI", "Hardware Type": "A/D"}
+    hd10avaR1 = {
+        "Coding Algorithm": "A=SDI",
+        "Hardware Type": "A/D",
+        "Additional Information": "T= Serial Number: K0190697 ; NUTag: 10519",
+    }
+    hd10avaR2 = {
+        "Coding Algorithm": "A=SDI",
+        "Hardware Type": "A/D",
+        "Additional Information": "T= Serial Number:  ; NUTag: ",
+    }
 
     """
     Capture Cards
     """
-    kona1 = {"Coding Algorithm": "A=v210", "Hardware Type": "DIO"}
+    DecklinkStudio4KR1 = {
+        "Coding Algorithm": "A=v210",
+        "Hardware Type": "DIO",
+        "Additional Information": "T= Serial Number:  ; NUTag: 11270",
+    }
+    DecklinkStudio4KR2 = {
+        "Coding Algorithm": "A=v210",
+        "Hardware Type": "DIO",
+        "Additional Information": "T= Serial Number:  ; NUTag: 11269",
+    }
 
     equipment_dict = {
-        "Panasonic AG-1980P": panasonic_ag1980,
+        "Sony SVO 5800 Rack2": sony_svo5800R2,
+        "Panasonic AG-1980P Rack1": panasonic_ag1980R1,
+        "Panasonic AG-1980P Rack2": panasonic_ag1980R2,
         "DPS-295": dps_295,
-        "FA-510": fa_510,
-        "HD10AVA": hd10ava,
-        "Kona-1-T-R0": kona1,
+        "DPS-575": dps_575,
+        "HD10AVA Rack1": hd10avaR1,
+        "HD10AVA Rack2": hd10avaR2,
+        "Decklink Studio 4K Rack1": DecklinkStudio4KR1,
+        "Decklink Studio 4K Rack2": DecklinkStudio4KR2,
     }
 
     return equipment_dict
