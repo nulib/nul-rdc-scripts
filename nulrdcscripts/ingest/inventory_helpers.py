@@ -151,13 +151,23 @@ def get_work_type(inventory_path: str):
     :rtype: str
     """
     with open(inventory_path, encoding="utf-8") as f:
+        # skip non fieldname lines
+        while True:
+            # save spot
+            stream_index = f.tell()
+            # skip advancing line by line
+            line = f.readline()
+            if not ("Name of Person Inventorying" in line or "MEADOW Ingest fields" in line):
+                # go back one line and break out of loop once fieldnames are found
+                f.seek(stream_index, os.SEEK_SET)
+                break
         reader = csv.DictReader(f, delimiter=",")
         inventory_fields = reader.fieldnames
     if "Width (cm.)" in inventory_fields:
         return "IMAGE"
-    elif "speed IPS" or "Speed IPS" in reader.fieldnames:
+    elif any(x in ["speed IPS", "Speed IPS"] for x in inventory_fields):
         return "AUDIO"
-    elif "video standard" or "Region" or "stock" or "Stock" in reader.fieldnames:
+    elif any(x in ["video standard", "Region", "stock", "Stock"] for x in inventory_fields):
         return "VIDEO"
     else:
         print("\n---ERROR: Unable to determine work_type. ---\n")
