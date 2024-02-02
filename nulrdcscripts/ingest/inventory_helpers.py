@@ -73,16 +73,7 @@ def av_load_inventory(inventory_path: str, desc_arg: list[str]):
     """
     inventory_dictlist: list[dict[str, str]] = []
     with open(inventory_path, encoding="utf-8") as f:
-        # skip non fieldname lines
-        while True:
-                # save spot
-                stream_index = f.tell()
-                # skip advancing line by line
-                line = f.readline()
-                if not ("Name of Person Inventorying" in line or "MEADOW Ingest fields" in line):
-                    # go back one line and break out of loop once fieldnames are found
-                    f.seek(stream_index, os.SEEK_SET)
-                    break
+        f = skip_non_fieldnames(f)
         reader = csv.DictReader(f, delimiter=",")
         description_fields = get_description_fields(desc_arg, reader.fieldnames)
         for row in reader:         
@@ -151,16 +142,7 @@ def get_work_type(inventory_path: str):
     :rtype: str
     """
     with open(inventory_path, encoding="utf-8") as f:
-        # skip non fieldname lines
-        while True:
-            # save spot
-            stream_index = f.tell()
-            # skip advancing line by line
-            line = f.readline()
-            if not ("Name of Person Inventorying" in line or "MEADOW Ingest fields" in line):
-                # go back one line and break out of loop once fieldnames are found
-                f.seek(stream_index, os.SEEK_SET)
-                break
+        f = skip_non_fieldnames(f)
         reader = csv.DictReader(f, delimiter=",")
         inventory_fields = reader.fieldnames
     if "Width (cm.)" in inventory_fields:
@@ -207,3 +189,24 @@ def get_description_fields(desc_arg: list[str], inventory_fields: list[str]):
         if header not in missing_fields
     ]
     return description_fields
+
+def skip_non_fieldnames(f):
+    """
+    Takes in TextIOWrapper result from open() and returns new TextIOWrapper indexed after 
+    non-fieldname lines in inventory.
+
+    :param f: inventory file
+    :type f: TextIOWrapper
+    :return: new file TextIOWrapper indexed after extraneous lines
+    :rtype: TextIOWrapper
+    """
+    while True:
+        # save spot
+        stream_index = f.tell()
+        # skip advancing line by line
+        line = f.readline()
+        if not ("Name of Person Inventorying" in line or "MEADOW Ingest fields" in line):
+            # go back one line and break out of loop once fieldnames are found
+            f.seek(stream_index, os.SEEK_SET)
+            break
+    return f
