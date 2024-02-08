@@ -1,10 +1,5 @@
 import pandas as pd
 
-yuv = ["y", "u", "v"]
-yuvposition = 0
-yuvlevel = ["min", "max"]
-yuvlevelposition = 0
-
 
 def buildDF10Bit(csv10Bit):
     """Takes video values from 10bit csv and returns dataframe"""
@@ -18,29 +13,80 @@ def buildvideodata(videodata):
     return videodata
 
 
-def setFullCriteria(yuv, yuvlevel):
+def setFullCriteria(criteria, level):
     """Combines the yuv and yuv level to give the full criteria that gets compared to standards."""
-    criteriaFull = yuv + yuvlevel
+    criteriaFull = criteria + level
     return criteriaFull
 
 
-def setOperator(yuvlevel):
-    """Sets the operator to use in the equation"""
-    if yuvlevel == "min":
-        operator = "<="
-    elif yuvlevel == "max":
-        operator = ">="
-    return operator
+def setOperatorIR(level):
+    """Sets the operator to assess if video value is in range"""
+    if level == "low":
+        operatorIR = ">"
+    elif level == "high":
+        operatorIR = "<"
+    return operatorIR
 
 
-def runyuvcheck(yuv, yuvlevel, yuvposition, yuvlevelposition, videodata, standardsDF):
+def setOperatorCL(level):
+    """Sets operator to use to assess clipping"""
+    if level == "low":
+        operatorCL = "<="
+    elif level == "high":
+        operatorCL = ">="
+    return operatorCL
+
+
+def runyuvanalysis(level, videodata, standardsDF, criteriaFull):
+    extractSumData = videodata.at(
+        criteriaFull, level
+    )  # grabs data from dataframe at this matrix intersection # NEED TO FIX
+    extractStandDataBRNG = standardsDF.at(criteriaFull, "brngout")
+    extractStandDataClipping = standardsDF.at(criteriaFull, "clipping")
+    operatorIR = setOperatorIR(level)
+    equationIR = extractSumData + operatorIR + extractStandDataBRNG
+    tfIR = eval(equationIR)
+    if tfIR:
+        pass
+    else:
+        operatorCL = setOperatorCL(level)
+        equationCL = extractSumData + operatorCL + extractStandDataClipping
+        tfCL = eval(equationCL)
+        if tfCL:
+            error = {""}
+
+
+def runsatanalysis(level, videodata, standardsDF, criteria):
+    extractSumData = videodata.at()  # ADD
+    extractStandDataBRNG = standardsDF.at(criteria, "brnglimit")
+    extractStandDataClipping = standardsDF.at(criteria, "clippinglimit")
+    extractStandDataIllegal = standardsDF.at(criteria, "illegal")
+    if extractSumData <= extractStandDataBRNG:
+        pass  # this would be a fine value
+    else:
+        if extractSumData >= extractStandDataIllegal:
+            pass  # this would be an illegal value
+        else:
+            pass  # this would be a BRNGOut value
+
+
+def runcheck(criteria, level, position, levelposition, videodata, standardsDF):
     """Runs the yuvchecks by looping through each yuv value and then the level that is being checked. Returns errors."""
-    while yuvposition <= len(yuv):
-        yuv = yuv[yuvposition]
-        while yuvlevelposition <= len(yuvlevel):
-            yuvlevel = yuvlevel[yuvlevelposition]
-            criteriaFull = setFullCriteria(yuv, yuvlevel)
-            operator = setOperator(yuvlevel)
+    criteria = ["y", "u", "v", "sat"]
+    criteriaposition = 0
+    level = ["low", "high"]
+    levelposition = 0
 
-            yuvlevelposition += 1
-        yuvposition += 1
+    while position <= len(criteria):
+        criteria = criteria[position]
+        while levelposition <= len(level):
+            level = level[levelposition]
+            criteriaFull = setFullCriteria(criteria, level)
+            if criteria == "sat":
+                errors = runsatanalysis(
+                    level, videodata, standardsDF, criteriaFull, criteria
+                )
+            else:
+                errors = runyuvanalysis(level, videodata, standardsDF, criteriaFull)
+            levelposition += 1
+        criteriaposition += 1
