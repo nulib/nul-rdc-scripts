@@ -20,6 +20,9 @@ Scripts used by the RDC Digitization Team.
 ### Inventorying:
 [Inventory Creator for Image and Text Works - inventory](/nulrdcscripts/inventory/)   
 
+### Tools:
+[Oyez MediaInfo Batch Generation](/nulrdcscripts/tools/oyez/)
+
 ### Text Workflow:
 [PackagingScript](/nulrdcscripts/text) - Text Packaging Script
 
