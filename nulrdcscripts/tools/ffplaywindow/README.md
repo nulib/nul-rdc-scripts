@@ -1,11 +1,13 @@
 # General Information
 
 Version Date: 2/13/2024
+
 Document Owner: Sophia Francis
+
 Software Used: ffplay
 
 # Description
-    This is a script that allows for the playback of video files with vectorscope, waveform monitor, BRNGout detector. The command that is used is originally from VRecord and this script just serves as a method of utilizing it without VRecord and from the command line.
+This is a script that allows for the playback of video files with vectorscope, waveform monitor, BRNGout detector. The command that is used is originally from VRecord and this script just serves as a method of utilizing it without VRecord and from the command line.
 
 
 # Installation Instructions
@@ -16,13 +18,15 @@ To run the script. From nul-rdc-scripts
 ```
 poetry run ffplaywindow -i \path\to\input
 ```
-To change the highlight color for the BRNG filter. 
+To change the highlight color for the BRNG filter. Use -hi or --highlight followed by color name or hexcode.
 ```
-poetry run ffplaywindow -i \path\to\input --color 'color name or hexcode'
+poetry run ffplaywindow -i \path\to\input -hi 'color name or hexcode'
 ```
 
-To exit playback window, use the esc key
-To fast-forward or rewind use the arrow keys.
+- To exit playback window, use the esc key
+- To fast-forward or rewind use the arrow keys.
+- To pause or unpause press the space bar
+
 
 ### Supported Highlight Colors
 You can use any hexcode (with alpha addition -- or just tack on '0x' before the hexcode) you wish for changing the color of the highlight. 
