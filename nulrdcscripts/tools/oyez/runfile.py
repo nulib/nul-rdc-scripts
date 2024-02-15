@@ -1,6 +1,6 @@
 import os
 import subprocess
-from setupparser import args
+from nulrdcscripts.tools.oyez.setupparser import args
 
 
 def main():
@@ -9,22 +9,22 @@ def main():
     isDIRTF = os.path.isdir(args.input_path)
 
     if isDIRTF:
-        for files in input_path:
-            filename, file_ext = os.path.splitext(files)
-            if file_ext in ext:
-                command = (
-                    args.mediainfo_path,
-                    " -i ",
-                    input_path,
-                    " --LogFile=",
-                    filename,
-                    ".json",
-                )
-                fullfilename = filename + ".json"
-                with open(fullfilename, "w") as f:
-                    subprocess.run(command, stdout=f)
-            else:
-                pass
+        for files in os.walk(input_path):
+            for file in files:
+                if file.endswith(".wav") or file.endswith(".mp3"):
+                    command = (
+                        args.mediainfo_path,
+                        " -i ",
+                        file,
+                        " --LogFile=",
+                        file,
+                        ".json",
+                    )
+                    fullfilename = filename + ".json"
+                    with open(fullfilename, "w") as f:
+                        subprocess.run(command, stdout=f)
+                else:
+                    pass
     else:
         filename, file_ext = os.path.splitext(input_path)
         if file_ext == ".wav" or file_ext == ".mp3":
@@ -44,7 +44,7 @@ def main():
             raise ValueError("This file is not a .wav or .mp3 file.")
 
     filecheck = filename + ".json"
-    with open(filecheck, "r") as file:
+    with open(fullfilename, "r") as file:
         file.read()
 
 
