@@ -22,6 +22,7 @@ Scripts used by the RDC Digitization Team.
 
 ### Tools:
 [Oyez MediaInfo Batch Generation](/nulrdcscripts/tools/oyez/)
+[FFPlay Playback Window with Analysis Tools](/nulrdcscripts/tools/ffplaywindow/)
 
 ### Text Workflow:
 [PackagingScript](/nulrdcscripts/text) - Text Packaging Script
