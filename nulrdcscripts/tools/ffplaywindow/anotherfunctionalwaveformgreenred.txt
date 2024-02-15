@@ -1,0 +1,1 @@
+ffplay -i "C:\Users\nfo6331\OneDrive - Northwestern University\Desktop\p0479_gree_99-2020423420-2441_v01_a.mp4" -vf "split[a][b];[a]format=gray,waveform,split[c][d];[b]pad=iw:ih+256[padded];[c]geq=g=1:b=1[red];[d]geq=r=1:b=1,crop=in_w:220:0:16[mid];[red][mid]overlay=0:16[wave];[padded][wave]overlay=0:H-h"
