@@ -1,6 +1,6 @@
 import os
 import subprocess
-from setupparser import args
+from nulrdcscripts.tools.oyez.setupparser import args
 
 
 def main():
