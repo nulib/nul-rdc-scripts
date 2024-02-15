@@ -1,6 +1,6 @@
 import os
 import subprocess
-from scriptparser import args
+from nulrdcscripts.tools.ffplaywindow.scriptparser import args
 
 
 def main():
