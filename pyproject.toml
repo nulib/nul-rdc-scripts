@@ -14,6 +14,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+pandas = "^2.2.0"
 
 [tool.poetry.dev-dependencies]
 
@@ -21,6 +22,7 @@ python = "^3.10"
 aproc = 'nulrdcscripts.aproc.aproc:main'
 vproc = 'nulrdcscripts.vproc.vproc:main'
 ingest = 'nulrdcscripts.ingest.ingest:main'
+aqc = 'nulrdcscripts.aqc.aqc:main'
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
