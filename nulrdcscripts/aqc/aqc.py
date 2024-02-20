@@ -87,13 +87,13 @@ def load_txt(file):
             if line.startswith("frame"):
                 # each frame line has 3 numbers: frame, pts, and pts_time
                 nums = re.findall(r'-?\d+\.?\d*', line)
-                frame = int(nums[0])
+                frame_num = int(nums[0])
                 pts = int(nums[1])
                 pts_time = float(nums[2])
-                frames = {}
-                frames.update({"pts": pts})
-                frames.update({"pts_time": pts_time})
-                frames.update({frame: frames})
+                frame = {}
+                frame.update({"pts": pts})
+                frame.update({"pts_time": pts_time})
+                frames.update({frame_num: frame})
             # add data to existing frame
             else:
                 # fine value after equals sign
