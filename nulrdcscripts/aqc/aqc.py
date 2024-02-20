@@ -4,6 +4,7 @@ import sys
 import os
 import subprocess
 from datetime import timedelta
+import matplotlib.pyplot as plt
 import pandas as pd
 import re
 from operator import itemgetter
@@ -14,7 +15,7 @@ if sys.version_info[0] < 3:
     raise Exception("Python 3 or a more recent version is required.")
 
 ASETNSAMPLES = 1024
-FLAT_FACTOR_THRESH = 10
+FLAT_FACTOR_THRESH = 25
 COOLDOWN = .02
 
 def main():
@@ -51,11 +52,22 @@ def main():
 
         # for short durations, treat the clipping as a single event
         if end_sec - start_sec < COOLDOWN:
-            print("Clipping at " + str(start_time))
+            print("Potential clipping at " + str(start_time))
         else:
-            print("Clipping from " + str(start_time) + " to " + str(end_time))
+            print("Potential clipping from " + str(start_time) + " to " + str(end_time))
 
-
+    ycolumns=["Overall.Flat_factor", "Overall.Peak_level"]
+    adf.plot(
+        x="pts_time", 
+        xlabel="time (s)",
+        subplots=True,
+        y=ycolumns, )
+    # adf["1.Flat_factor"].plot()
+    # adf["Overall.Peak_level"].plot()
+    # plt.legend(["flat factor ch1", "flat factor ch2", "overall peak level"])
+    plt.title("Flat Factor")
+    # plt.legend(["Flat Factor", "Peak Level"])
+    plt.show()
         # print(flats)
 
 def create_txt(infile, outfile):
