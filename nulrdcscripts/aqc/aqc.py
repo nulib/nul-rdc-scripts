@@ -14,7 +14,7 @@ from nulrdcscripts.aqc.parser import args
 if sys.version_info[0] < 3:
     raise Exception("Python 3 or a more recent version is required.")
 
-ASETNSAMPLES = 1024
+ASETNSAMPLES = 24000
 FLAT_FACTOR_THRESH = 25
 COOLDOWN = .02
 
@@ -56,16 +56,12 @@ def main():
         else:
             print("Potential clipping from " + str(start_time) + " to " + str(end_time))
 
-    ycolumns=["Overall.Flat_factor", "Overall.Peak_level"]
-    adf.plot(
-        x="pts_time", 
-        xlabel="time (s)",
-        subplots=True,
-        y=ycolumns, )
+    fig, axes = plt.subplots(nrows=1, ncols=2)
+    adf["Overall.Flat_factor"].plot(ax=axes[0])
+    adf["Overall.Peak_level"].plot(ax=axes[1])
     # adf["1.Flat_factor"].plot()
     # adf["Overall.Peak_level"].plot()
     # plt.legend(["flat factor ch1", "flat factor ch2", "overall peak level"])
-    plt.title("Flat Factor")
     # plt.legend(["Flat Factor", "Peak Level"])
     plt.show()
         # print(flats)
