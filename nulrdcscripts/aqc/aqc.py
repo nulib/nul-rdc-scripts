@@ -39,7 +39,7 @@ def main():
     print_lstats(lstats)
     find_clipping(adf)
 
-    # graph_astats(adf)
+    graph_astats(adf)
 
 def get_astats(infile, outfile):
     
@@ -142,7 +142,7 @@ def find_clipping(adf):
             source_clips.append(flat)
 
     print_warnings(digi_clips, "Potential digital clipping", adf)
-    print_warnings(source_clips, "Potential analog clipping", adf)
+    print_warnings(source_clips, "Potential source clipping", adf)
     # print("WARNING: potential clipping")
     # print("---------------------------")
     
