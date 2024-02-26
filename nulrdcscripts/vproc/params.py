@@ -88,7 +88,7 @@ parser.add_argument(
     help="skip access copy transcoding",
 )
 parser.add_argument(
-    "--skipqcli",
+    "--runqcli",
     required=False,
     action="store_true",
     dest="skip_qcli",
@@ -135,7 +135,7 @@ parser.add_argument(
     required=False,
     action="store_true",
     dest="batch",
-    help="For batches of video files"
+    help="For batches of video files",
 )
 
 args = parser.parse_args()
