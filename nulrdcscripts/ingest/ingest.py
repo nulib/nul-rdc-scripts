@@ -11,19 +11,17 @@ from nulrdcscripts.ingest.params import args
 if sys.version_info[0] < 3:
     raise Exception("Python 3 or a more recent version is required.")
 
+
 def main():
     # sorted[]
     """setting up inputs and outputs"""
-    
+
     indir = input_check(args.input_path)
     if args.output_path:
         meadow_csv_file = args.output_path
     else:
         base_folder_name = os.path.basename(indir)
-        meadow_csv_file = os.path.join(
-            indir, 
-            base_folder_name + '_ingest.csv'
-        )
+        meadow_csv_file = os.path.join(indir, base_folder_name + "_ingest.csv")
     output_check(meadow_csv_file)
 
     if args.aux_parse:
@@ -38,7 +36,9 @@ def main():
         source_inventories = glob.glob(os.path.join(indir, "*.csv"))
         # skip auto-generated meadow ingest csv if it already exists
         source_inventories = [
-            i for i in source_inventories if not ("_ingest.csv" in i or "qc_log.csv" in i)
+            i
+            for i in source_inventories
+            if not ("_ingest.csv" in i or "qc_log.csv" in i)
         ]
         if not source_inventories:
             print("\n+++ WARNING: Unable to find CSV inventory file +++")
@@ -197,22 +197,22 @@ def main():
                     "role": "X",
                     "label": "image",
                     "file_builder": "_auxiliary_",
-                }
+                },
             }
         # add the aux_dict to the beginning of the role_dict
         # this will catch X files that also have a/p identifiers in the filename
         role_dict = {**aux_dict, **role_dict}
 
     header_names = [
+        "work_image",
+        "structure",
+        "role",
         "work_type",
         "work_accession_number",
         "file_accession_number",
         "filename",
-        "description",
         "label",
-        "role",
-        "work_image",
-        "structure",
+        "description",
     ]
     """
     extract the filenames from the inventories as a list
@@ -306,9 +306,8 @@ def main():
                     inventory_label = source_inventory_dict[item]["label"]
                     if work_type == "VIDEO" or work_type == "AUDIO":
                         label, role, file_builder = helpers.get_label(
-                            role_dict, 
-                            file, 
-                            inventory_label)
+                            role_dict, file, inventory_label
+                        )
                         meadow_file_dict.update({"role": role})
                         role_count = sum(
                             x.get("role") == role for x in meadow_full_dict.get(item)
@@ -357,8 +356,9 @@ def main():
             # allow user to add the file anyway
             if not any(item in file for item in filename_list):
                 print(
-                    "+++ WARNING: No entry matching " + file + 
-                    " was found in your inventory +++"
+                    "+++ WARNING: No entry matching "
+                    + file
+                    + " was found in your inventory +++"
                 )
 
     # TODO final check that all ihidden files and folderstems from filename list are accounted for in the final inventory
@@ -448,7 +448,12 @@ def import_inventories(source_inventories):
                             work_type = "IMAGE"
                         elif "speed IPS" or "Speed IPS" in reader.fieldnames:
                             work_type = "AUDIO"
-                        elif "region" or "Region" or "stock" or "Stock" in reader.fieldnames:
+                        elif (
+                            "region"
+                            or "Region"
+                            or "stock"
+                            or "Stock" in reader.fieldnames
+                        ):
                             work_type = "VIDEO"
                         else:
                             print(
@@ -529,6 +534,7 @@ def import_inventories(source_inventories):
     # print(source_inventory_dictlist)
     # quit()
     return source_inventory_dictlist
+
 
 if __name__ == "__main__":
     main()
