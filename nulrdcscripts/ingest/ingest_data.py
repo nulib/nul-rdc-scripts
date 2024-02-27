@@ -139,20 +139,20 @@ x_parse_dict = {
         "role": "X",
         "label": "image",
         "file_builder": "_auxiliary_",
-    }
+    },
 }
 
 # Contains header names used in the ingest sheet csv file.
 header_names = [
+    "work_image",
+    "structure",
+    "role",
     "work_type",
     "work_accession_number",
     "file_accession_number",
     "filename",
-    "description",
     "label",
-    "role",
-    "work_image",
-    "structure",
+    "description",
 ]
 
 # Contains patterns to be identified in filenames and their corresponding meaning
