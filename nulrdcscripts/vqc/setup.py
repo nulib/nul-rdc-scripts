@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import pathlib
 
 path8Bit = "nulrdcscripts\staging\qcv\data\Video8BitValues.csv"
 path10Bit = "nulrdcscripts\staging\qcv\data\Video10BitValues.csv"
@@ -55,3 +56,13 @@ def setvideobitdepthstandard(bitDepth):
 # standardsDF = buildDF8Bit(csv8Bit)
 # standardsDF = standardsDF.loc[loccriteria, value]
 # print(standardsDF)
+
+def setInputFileType(inputPath):
+    fileExt = pathlib.Path(inputPath).suffix
+    if fileExt == ".json":
+        fileType = "JSON"
+    elif fileExt == ".xml":
+        fileType = "XML"
+    else:
+        raise ValueError("This filetype is not currently supported.")
+    return (fileType)
