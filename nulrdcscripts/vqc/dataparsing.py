@@ -1,15 +1,12 @@
 import pandas as pd
-from parseandclean import cleaners as cleaners
+from nulrdcscripts.vqc import cleaners
 import xml.etree.ElementTree as etree
 
-inputpath = "example.xml"
-
-
-def dataparsingandtabulatingaudio(inputpath):
-    """Cleans and parses the audio data for analysis. Returns dataframe."""
+def dataparsingandtabulatingaudioXML(inputPath):
+    """Cleans and parses the audio data from XML for analysis. Returns dataframe."""
     audiodata = {}
     framenumberA = 0
-    for event, elem in etree.iterparse(inputpath, events=["end"]):
+    for event, elem in etree.iterparse(inputPath, events=["end"]):
         if event == "end":
             if elem.tag == "frame":
                 if elem.get("media_type") == "audio":
@@ -29,12 +26,12 @@ def dataparsingandtabulatingaudio(inputpath):
 
 
 # filepath = "example.xml"
-def dataparsingandtabulatingvideo(inputpath):
-    """Cleans and parses the video data for analysis. Returns dataframe and generates csv."""
+def dataparsingandtabulatingvideoXML(inputPath):
+    """Cleans and parses the video data from XML for analysis. Returns dataframe and generates csv."""
     videodata = {}
     framenumberV = 0
 
-    for event, elem in etree.iterparse(inputpath, events=["end"]):
+    for event, elem in etree.iterparse(inputPath, events=["end"]):
         if event == "end":
             if elem.tag == "frame":
                 if elem.get("media_type") == "video":
@@ -55,8 +52,13 @@ def dataparsingandtabulatingvideo(inputpath):
 
 # Gathers general video data for summary report
 def videodatastatistics(videodata):
-    videostats = videodata.describe()
-    return videostats
+    videostatsDSDF = videodata.describe()
+    return videostatsDSDF
+
+# Gathers general video data for summary report
+def audiodatastatistics(audiodata):
+    audiodataDSDF = audiodata.describe()
+    return audiodataDSDF
 
 
 # Outputs summary video stats as a dictionary - which will be used for comparison analysis
@@ -71,6 +73,3 @@ def videostatstocsv(videostats):
     return summarydatavideocsv
 
 
-videodata = dataparsingandtabulatingvideo(inputpath)
-videodata = videodatastatistics(videodata)
-videostatstocsv = videostatstocsv(videodata)
