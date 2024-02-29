@@ -2,6 +2,7 @@ import pandas as pd
 from nulrdcscripts.vqc import cleaners
 import xml.etree.ElementTree as etree
 
+
 def dataparsingandtabulatingaudioXML(inputPath):
     """Cleans and parses the audio data from XML for analysis. Returns dataframe."""
     audiodata = {}
@@ -25,7 +26,6 @@ def dataparsingandtabulatingaudioXML(inputPath):
     return dfAudio
 
 
-# filepath = "example.xml"
 def dataparsingandtabulatingvideoXML(inputPath):
     """Cleans and parses the video data from XML for analysis. Returns dataframe and generates csv."""
     videodata = {}
@@ -50,26 +50,25 @@ def dataparsingandtabulatingvideoXML(inputPath):
     return dfVideo
 
 
-# Gathers general video data for summary report
 def videodatastatistics(videodata):
+    """Generates descriptive video statistics for the entire video in a dataframe"""
     videostatsDSDF = videodata.describe()
     return videostatsDSDF
 
-# Gathers general video data for summary report
+
 def audiodatastatistics(audiodata):
+    """Generates descriptive audio statistics for the entire video in a dataframe"""
     audiodataDSDF = audiodata.describe()
     return audiodataDSDF
 
 
-# Outputs summary video stats as a dictionary - which will be used for comparison analysis
-def videostatstodict(videostats):
-    summarydatavideodict = videostats.to_dict()
-    return summarydatavideodict
-
-
-# Outputs summary video stats as a csv
-def videostatstocsv(videostats):
-    summarydatavideocsv = videostats.to_csv("videosummarystats.csv", index=True)
+def videostatstocsv(videoDSDF):
+    """Takes video descriptive statistics and puts them into a csv file"""
+    summarydatavideocsv = videoDSDF.to_csv("videosummarystats.csv", index=True)
     return summarydatavideocsv
 
 
+def audiostatstocsv(audioDSDF):
+    """Takes audio descriptive statistics and puts them into a csv file."""
+    summarydataaudiocsv = audioDSDF.to_csv("audiosummarystats.csv", index=True)
+    return summarydataaudiocsv

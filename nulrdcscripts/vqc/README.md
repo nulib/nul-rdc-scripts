@@ -107,8 +107,6 @@ Ben Turkus
 
 Dave Rice
 
-Karen Miller
-
 
 
 ## Some of the reference material utilized:

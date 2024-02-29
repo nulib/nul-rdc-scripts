@@ -10,54 +10,37 @@ csv10Bit = os.path.join(os.path.dirname(os.path.abspath(__file__)), path10Bit)
 
 
 def inputCheck(inputPath):
-    if not os.path.isdir(inputPath):
-        inputType = "File"
+    """Checks that the input path is a file and not a folder which is currently not supported"""
+    if os.path.isdir(inputPath):
+        raise ValueError("Folders are currently not supported by this script")
     else:
-        inputType = "Folder"
-    return inputType
+        pass
 
 
 def outputCheck(outputPath, inputPath):
-    if outputPath:
-        outputPath = outputPath
+    """Checks if there is an output path. If there isn't, the file goes to the directory of the input file. Otherwise, checks if the output path is a folder"""
+    if outputPath == "None":
+        outputPath = os.path.dirname(inputPath)
     else:
-        outputPath = os.path.basename(inputPath)
+        outputPathTF = os.path.isdir(outputPath)
+        if outputPathTF:
+            outputPath = outputPath
+        else:
+            raise ValueError("The output path must be a folder")
     return outputPath
 
 
 def setVideoBitDepth(videobitdepth):
+    """Sets and assigns the values for bit depth for data comparison"""
     if videobitdepth == "--8bit" or "-8" or "--8Bit":
-        bitDepth = 8
+        standardsDF = pd.read_csv(csv8Bit, sep=",", index_col="criteria")
     elif videobitdepth == "--10bit" or "-10" or "--10Bit":
-        bitDepth = 10
-    return bitDepth
-
-
-def buildDF8Bit(csv8Bit):
-    standardsDF = pd.read_csv(csv8Bit, sep=",", index_col="criteria")
+        standardsDF = pd.read_csv(csv10Bit, sep=",", index_col="criteria")
     return standardsDF
 
-
-def buildDF10Bit(csv10Bit):
-    standardsDF = pd.read_csv(csv10Bit, sep=",", index_col="criteria")
-    return standardsDF
-
-
-def setvideobitdepthstandard(bitDepth):
-    if bitDepth == 8:
-        standardsDF = buildDF8Bit(csv8Bit)
-    elif bitDepth == 10:
-        standardsDF = buildDF10Bit(csv10Bit)
-    return standardsDF
-
-
-# loccriteria = "ylow"
-# value = "BRNGOut"
-# standardsDF = buildDF8Bit(csv8Bit)
-# standardsDF = standardsDF.loc[loccriteria, value]
-# print(standardsDF)
 
 def setInputFileType(inputPath):
+    """Sets the file type of the input file"""
     fileExt = pathlib.Path(inputPath).suffix
     if fileExt == ".json":
         fileType = "JSON"
@@ -65,4 +48,4 @@ def setInputFileType(inputPath):
         fileType = "XML"
     else:
         raise ValueError("This filetype is not currently supported.")
-    return (fileType)
+    return fileType

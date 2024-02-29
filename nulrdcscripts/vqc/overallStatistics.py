@@ -1,19 +1,6 @@
-import pandas as pd
 from collections import namedtuple
 
 error = namedtuple("Error", ["criteria", "video value", "standard value"])
-
-
-def buildDF10Bit(csv10Bit):
-    """Takes video values from 10bit csv and returns dataframe"""
-    standardsDF = pd.read_csv(csv10Bit, sep=",", index_col="criteria")
-    return standardsDF
-
-
-def buildvideodata(videodata):
-    """Takes the video data and reads the csv. Returns dataframe"""
-    videodata = pd.read_csv(videodata, sep=",")
-    return videodata
 
 
 def setOperatorIR(fullCriteria):
