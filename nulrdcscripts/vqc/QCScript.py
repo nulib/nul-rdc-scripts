@@ -11,23 +11,23 @@ bitDepth = args.videobitdepth
 
 
 print("*****Starting Setup*****")
-setupBar = ChargingBar('Setting Up', max=20)
+setupBar = ChargingBar("Setting Up", max=20)
 for i in range(20):
     standardDF = setup.setVideoBitDepth(bitDepth)
     setupBar.next()
-    inputType = setup.inputCheck(inputPath)
+    setup.inputCheck(inputPath)
     setupBar.next()
-    outputType = setup.outputCheck(inputPath, outputPath)
+    outputLocation = setup.outputCheck(inputPath, outputPath)
     setupBar.next()
     inputFileType = setup.setInputFileType(inputPath)
     setupBar.finish()
 print("*****Setup Complete*****")
 
 print("*****Parsing File Video*****")
-parsingBar = ChargingBar('Parsing file', max=20)
+parsingBar = ChargingBar("Parsing file", max=20)
 
 if inputFileType == "JSON":
-    for i in range (20):
+    for i in range(20):
         audiodata = dataparsing.dataparsingandtabulatingaudioJSON(inputPath)
         parsingBar.next()
         videodata = dataparsing.dataparsingandtabulatingvideoJSON(inputPath)
@@ -38,8 +38,13 @@ else:
         parsingBar.next()
         videodata = dataparsing.dataparsingandtabulatingvideoXML(inputPath)
         parsingBar.finish()
-print('*****Parsing complete*****')
+print("*****Parsing complete*****")
 
-print ("*****Generating Descriptive Statistics*****")
+print("*****Generating Full Video Descriptive Statistics*****")
 videoDSDF = dataparsing.videodatastatistics(videodata)
 audioDSDF = dataparsing.audiodatastatistics(audiodata)
+sumVideoStatsCSV = dataparsing.videostatstocsv(videoDSDF)
+sumAudioStatsCSV = dataparsing.audiostatstocsv(audioDSDF)
+print("*****Generated Full Video Descriptive Statistics*****")
+
+print("*****Analysing Full Video Descriptive Statistics*****")
