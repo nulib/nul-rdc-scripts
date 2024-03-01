@@ -1,43 +1,40 @@
 import os
 import setup
 from argparser import args
-from nulrdcscripts.vqc import overallStatistics
 from nulrdcscripts.vqc import dataparsing
-from progress.bar import ChargingBar
+import progressbar
 
 inputPath = os.path.normpath(args.input_path)
-outputPath = os.path.normpath(args.output_path)
 bitDepth = args.videobitdepth
-
+outputPath = args.output_path
 
 print("*****Starting Setup*****")
-setupBar = ChargingBar("Setting Up", max=20)
-for i in range(20):
-    standardDF = setup.setVideoBitDepth(bitDepth)
-    setupBar.next()
-    setup.inputCheck(inputPath)
-    setupBar.next()
-    outputLocation = setup.outputCheck(inputPath, outputPath)
-    setupBar.next()
-    inputFileType = setup.setInputFileType(inputPath)
-    setupBar.finish()
+with progressbar.ProgressBar(max_value=100) as setupBar:
+    for i in range(20):
+        standardDF = setup.setVideoBitDepth(bitDepth)
+        setupBar.update(i)
+        setup.inputCheck(inputPath)
+        setupBar.update(i)
+        outputLocation = setup.outputCheck(inputPath, outputPath)
+        setupBar.update(i)
+        inputFileType = setup.setInputFileType(inputPath)
 print("*****Setup Complete*****")
 
 print("*****Parsing File Video*****")
-parsingBar = ChargingBar("Parsing file", max=20)
+parsingBar = progressbar.ProgressBar(max_value=progressbar.UnknownLength)
 
 if inputFileType == "JSON":
-    for i in range(20):
-        audiodata = dataparsing.dataparsingandtabulatingaudioJSON(inputPath)
-        parsingBar.next()
-        videodata = dataparsing.dataparsingandtabulatingvideoJSON(inputPath)
-        parsingBar.finish()
+    with progressbar.ProgressBar(max_value=100) as parsingBar:
+        for i in range(100):
+            audiodata = dataparsing.dataparsingandtabulatingaudioJSON(inputPath)
+            parsingBar.update(i)
+            videodata = dataparsing.dataparsingandtabulatingvideoJSON(inputPath)
 else:
-    for i in range(20):
-        audiodata = dataparsing.dataparsingandtabulatingaudioXML(inputPath)
-        parsingBar.next()
-        videodata = dataparsing.dataparsingandtabulatingvideoXML(inputPath)
-        parsingBar.finish()
+    with progressbar.ProgressBar(max_value=100) as parsingBar:
+        for i in range(100):
+            audiodata = dataparsing.dataparsingandtabulatingaudioXML(inputPath)
+            parsingBar.update(i)
+            videodata = dataparsing.dataparsingandtabulatingvideoXML(inputPath)
 print("*****Parsing complete*****")
 
 print("*****Generating Full Video Descriptive Statistics*****")
@@ -47,4 +44,4 @@ sumVideoStatsCSV = dataparsing.videostatstocsv(videoDSDF)
 sumAudioStatsCSV = dataparsing.audiostatstocsv(audioDSDF)
 print("*****Generated Full Video Descriptive Statistics*****")
 
-print("*****Analysing Full Video Descriptive Statistics*****")
+# print("*****Analysing Full Video Descriptive Statistics*****")
