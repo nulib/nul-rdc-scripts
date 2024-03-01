@@ -10,7 +10,7 @@ outputPath = args.output_path
 
 print("*****Starting Setup*****")
 with progressbar.ProgressBar(max_value=100) as setupBar:
-    for i in range(20):
+    for i in range(100):
         standardDF = setup.setVideoBitDepth(bitDepth)
         setupBar.update(i)
         setup.inputCheck(inputPath)
@@ -21,7 +21,6 @@ with progressbar.ProgressBar(max_value=100) as setupBar:
 print("*****Setup Complete*****")
 
 print("*****Parsing File Video*****")
-parsingBar = progressbar.ProgressBar(max_value=progressbar.UnknownLength)
 
 if inputFileType == "JSON":
     with progressbar.ProgressBar(max_value=100) as parsingBar:

@@ -2,8 +2,8 @@ import os
 import pandas as pd
 import pathlib
 
-path8Bit = "nulrdcscripts\staging\qcv\data\Video8BitValues.csv"
-path10Bit = "nulrdcscripts\staging\qcv\data\Video10BitValues.csv"
+path8Bit = "Video8BitValues.csv"
+path10Bit = "Video10BitValues.csv"
 
 csv8Bit = os.path.join(os.path.dirname(os.path.abspath(__file__)), path8Bit)
 csv10Bit = os.path.join(os.path.dirname(os.path.abspath(__file__)), path10Bit)
@@ -19,12 +19,12 @@ def inputCheck(inputPath):
 
 def outputCheck(outputPath, inputPath):
     """Checks if there is an output path. If there isn't, the file goes to the directory of the input file. Otherwise, checks if the output path is a folder"""
-    if outputPath == "None":
+    if outputPath == "input":
         outputPath = os.path.dirname(inputPath)
     else:
         outputPathTF = os.path.isdir(outputPath)
         if outputPathTF:
-            outputPath = outputPath
+            outputPath = os.path.normpath(outputPath)
         else:
             raise ValueError("The output path must be a folder")
     return outputPath
@@ -32,9 +32,9 @@ def outputCheck(outputPath, inputPath):
 
 def setVideoBitDepth(videobitdepth):
     """Sets and assigns the values for bit depth for data comparison"""
-    if videobitdepth == "--8bit" or "-8" or "--8Bit":
+    if videobitdepth == "8bit" or "8" or "8Bit":
         standardsDF = pd.read_csv(csv8Bit, sep=",", index_col="criteria")
-    elif videobitdepth == "--10bit" or "-10" or "--10Bit":
+    elif videobitdepth == "10bit" or "10" or "10Bit":
         standardsDF = pd.read_csv(csv10Bit, sep=",", index_col="criteria")
     return standardsDF
 
