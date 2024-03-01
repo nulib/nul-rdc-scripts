@@ -1,14 +1,12 @@
 import os
 import setup
 from argparser import args
-from nulrdcscripts.vqc import overallStatistics
 from nulrdcscripts.vqc import dataparsing
 from progress.bar import ChargingBar
 
 inputPath = os.path.normpath(args.input_path)
-outputPath = os.path.normpath(args.output_path)
 bitDepth = args.videobitdepth
-
+outputPath = args.output_path
 
 print("*****Starting Setup*****")
 setupBar = ChargingBar("Setting Up", max=20)
@@ -47,4 +45,4 @@ sumVideoStatsCSV = dataparsing.videostatstocsv(videoDSDF)
 sumAudioStatsCSV = dataparsing.audiostatstocsv(audioDSDF)
 print("*****Generated Full Video Descriptive Statistics*****")
 
-print("*****Analysing Full Video Descriptive Statistics*****")
+# print("*****Analysing Full Video Descriptive Statistics*****")
