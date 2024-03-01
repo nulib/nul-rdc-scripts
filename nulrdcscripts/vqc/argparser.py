@@ -19,7 +19,8 @@ parser.add_argument(
     "--output",
     "-o",
     action="store",
-    default="None",
+    dest="output_path",
+    default="input",
     type=str,
     help="Enter the full path to where you want your output files",
 )
@@ -28,9 +29,9 @@ parser.add_argument(
 parser.add_argument(
     "--videobitdepth",
     "-vbd",
-    choices=["-10", "--10bit", "--10Bit", "-8, --8bit", "--8Bit"],
+    choices=["10", "10bit", "10Bit", "8", "8bit", "8Bit"],
     action="store",
-    default="--10bit",
+    default="10bit",
     dest="videobitdepth",
     required=True,
     type=str,
@@ -42,7 +43,7 @@ parser.add_argument(
 parser.add_argument(
     "--videotype",
     "-vt",
-    choices=["-bw", "--blackandwhite", "-c", "-color"],
+    choices=["bw", "blackandwhite", "co", "color"],
     action="store",
     required=True,
     dest="videotype",
