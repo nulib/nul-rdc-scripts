@@ -10,11 +10,13 @@ from nulrdcscripts.vproc.params import args
 import nulrdcscripts.vproc.helpers as helpers
 import nulrdcscripts.vproc.corefuncs as corefuncs
 import nulrdcscripts.vproc.checks as checks
+import progressbar
 
 # TO DO: general cleanup
 
 if sys.version_info[0] < 3:
     raise Exception("Python 3 or a more recent version is required.")
+
 
 def main():
     # the pm identifier is the name of the folder that the preservation file will be output to
@@ -40,14 +42,16 @@ def main():
     if not args.input_policy:
         movPolicy = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
-            "data/mediaconch_policies/AJA_NTSC_VHS-2SAS-MOV.xml")
+            "data/mediaconch_policies/AJA_NTSC_VHS-2SAS-MOV.xml",
+        )
     else:
         movPolicy = args.input_policy
     global mkvPolicy
     if not args.output_policy:
         mkvPolicy = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
-            "data/mediaconch_policies/AJA_NTSC_VHS-2SAS-MKV.xml")
+            "data/mediaconch_policies/AJA_NTSC_VHS-2SAS-MKV.xml",
+        )
     else:
         mkvPolicy = args.output_policy
 
@@ -93,20 +97,21 @@ def main():
 
     print("***STARTING PROCESS***")
 
-    if(args.batch):
+    if args.batch:
         batch_video(indir, outdir)
     else:
         single_video(indir, outdir)
-    
+
 
 def batch_video(input, output):
     for item in os.listdir(input):
         # changes item's path to absolute
         item = os.path.join(input, item)
-        #performs single_video on item if its a folder and hasn't been transcoded yet
+        # performs single_video on item if its a folder and hasn't been transcoded yet
         if os.path.isdir(item):
             if not os.path.isfile(os.path.join(item, "qc_log.csv")):
                 single_video(item, item)
+
 
 def single_video(input, output):
     for movFilename in glob.glob1(input, "*.mov"):
@@ -131,9 +136,7 @@ def single_video(input, output):
             acOutputFolder, baseFilename + "_" + ac_identifier + ".mp4"
         )
         metaOutputFolder = os.path.join(baseOutput, metadata_identifier)
-        jsonAbsPath = os.path.join(
-            metaOutputFolder, baseFilename + "_s" + ".json"
-        )
+        jsonAbsPath = os.path.join(metaOutputFolder, baseFilename + "_s" + ".json")
         pmMD5AbsPath = os.path.join(pmOutputFolder, mkvBaseFilename + ".md5")
 
         # generate ffprobe metadata from input
@@ -153,82 +156,87 @@ def single_video(input, output):
         inventoryCheck = checks.inventory_check(item_csvDict)
 
         print("*losslessly transcoding", baseFilename + "*")
+        with progressbar.ProgressBar(max_value=100) as ffv1progbar:
 
-        # log transcode start time
-        tstime = datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S")
+            tstime = datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S")
 
-        # losslessly transcode with ffmpeg
-        transcode_nameDict = {
-            "inputAbsPath": inputAbsPath,
-            "tempMasterFile": tempMasterFile,
-            "framemd5AbsPath": framemd5AbsPath,
-            "outputAbsPath": outputAbsPath,
-            "framemd5File": framemd5File,
-        }
-        audioStreamCounter = input_metadata["techMetaA"]["audio stream count"]
-        helpers.ffv1_lossless_transcode(
-            input_metadata, transcode_nameDict, audioStreamCounter
-        )
+            # losslessly transcode with ffmpeg
+            for i in range(100):
+                transcode_nameDict = {
+                    "inputAbsPath": inputAbsPath,
+                    "tempMasterFile": tempMasterFile,
+                    "framemd5AbsPath": framemd5AbsPath,
+                    "outputAbsPath": outputAbsPath,
+                    "framemd5File": framemd5File,
+                }
+                audioStreamCounter = input_metadata["techMetaA"]["audio stream count"]
+                ffv1progbar.update(i)
+                helpers.ffv1_lossless_transcode(
+                    input_metadata, transcode_nameDict, audioStreamCounter
+                )
 
-        # log transcode finish time
-        tftime = datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S")
+                # log transcode finish time
+                tftime = datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S")
 
         # If ffv1 file was succesfully created, do remaining verification and transcoding work
         if os.path.isfile(outputAbsPath):
             # create checksum sidecar file for preservation master
             print("*creating checksum*")
-            mkvHash = corefuncs.hashlib_md5(outputAbsPath)
-            with open(pmMD5AbsPath, "w", newline="\n") as f:
-                print(mkvHash, "*" + mkvFilename, file=f)
+            with progressbar.ProgressBar(max_value=100) as checksumffv1progbar:
+                for i in range(100):
+                    mkvHash = corefuncs.hashlib_md5(outputAbsPath)
+                    with open(pmMD5AbsPath, "w", newline="\n") as f:
+                        print(mkvHash, "*" + mkvFilename, file=f)
 
             # compare streamMD5s
             print("*verifying losslessness*")
-            mov_stream_sum = helpers.checksum_streams(
-                inputAbsPath, audioStreamCounter
-            )
-            mkv_stream_sum = helpers.checksum_streams(
-                outputAbsPath, audioStreamCounter
-            )
-            # PASS/FAIL - check if input stream md5s match output stream md5s
-            streamMD5status = checks.stream_md5_status(
-                mov_stream_sum, mkv_stream_sum
-            )
+            with progressbar.ProgressBar(max_value=100) as ffv1losslessprogbar:
+                for i in range(100):
+                    mov_stream_sum = helpers.checksum_streams(
+                        inputAbsPath, audioStreamCounter
+                    )
+                    mkv_stream_sum = helpers.checksum_streams(
+                        outputAbsPath, audioStreamCounter
+                    )
+                    # PASS/FAIL - check if input stream md5s match output stream md5s
+                    streamMD5status = checks.stream_md5_status(
+                        mov_stream_sum, mkv_stream_sum
+                    )
 
+            print("*Checking against policies*")
             # create a dictionary with the mediaconch results from the MOV and MKV files
-            mediaconchResults_dict = {
-                "MOV Mediaconch Policy": helpers.mediaconch_policy_check(
-                    inputAbsPath, movPolicy
-                ),
-                "MKV Implementation": helpers.mediaconch_implementation_check(
-                    outputAbsPath
-                ),
-                "MKV Mediaconch Policy": helpers.mediaconch_policy_check(
-                    outputAbsPath, mkvPolicy
-                ),
-            }
-            # PASS/FAIL - check if any mediaconch results failed and append failed policies to results
-            mediaconchResults = checks.parse_mediaconchResults(
-                mediaconchResults_dict
-            )
+            with progressbar.ProgressBar(max_value=100) as policyprogbar:
+                for i in range(100):
+                    mediaconchResults_dict = {
+                        "MOV Mediaconch Policy": helpers.mediaconch_policy_check(
+                            inputAbsPath, movPolicy
+                        ),
+                        "MKV Implementation": helpers.mediaconch_implementation_check(
+                            outputAbsPath
+                        ),
+                        "MKV Mediaconch Policy": helpers.mediaconch_policy_check(
+                            outputAbsPath, mkvPolicy
+                        ),
+                    }
+                    # PASS/FAIL - check if any mediaconch results failed and append failed policies to results
+                    mediaconchResults = checks.parse_mediaconchResults(
+                        mediaconchResults_dict
+                    )
 
-            # run ffprobe on the output file
-            output_metadata = helpers.ffprobe_report(
-                mkvFilename, outputAbsPath
-            )
-            # log system info
-            systemInfo = helpers.generate_system_log(
-                ffvers, tstime, tftime
-            )
+                    # run ffprobe on the output file
+                    output_metadata = helpers.ffprobe_report(mkvFilename, outputAbsPath)
+                    # log system info
+                    systemInfo = helpers.generate_system_log(ffvers, tstime, tftime)
 
-            # PASS/FAIL - are files lossless
-            losslessCheck = checks.lossless_check(
-                input_metadata, output_metadata, streamMD5status
-            )
+                    # PASS/FAIL - are files lossless
+                    losslessCheck = checks.lossless_check(
+                        input_metadata, output_metadata, streamMD5status
+                    )
 
-            # create a dictionary containing QC results
-            qcResults = helpers.qc_results(
-                inventoryCheck, losslessCheck, mediaconchResults
-            )
+                    # create a dictionary containing QC results
+                    qcResults = helpers.qc_results(
+                        inventoryCheck, losslessCheck, mediaconchResults
+                    )
 
             # create json metadata file
             # TO DO: combine checksums into a single dictionary to reduce variables needed here
@@ -248,34 +256,37 @@ def single_video(input, output):
             if not args.skip_ac:
                 # create access copy
                 print("*transcoding access copy*")
-                helpers.two_pass_h264_encoding(
-                    audioStreamCounter, outputAbsPath, acAbsPath
-                )
+                with progressbar.ProgressBar(max_value=100) as accesstranscodeprogbar:
+                    for i in range(100):
+                        helpers.two_pass_h264_encoding(
+                            audioStreamCounter, outputAbsPath, acAbsPath
+                        )
+                        accesstranscodeprogbar.update(i)
+                        # create checksum sidecar file for access copy
+                        acHash = corefuncs.hashlib_md5(acAbsPath)
+                        with open(
+                            os.path.join(
+                                acOutputFolder,
+                                baseFilename + "_" + ac_identifier + ".md5",
+                            ),
+                            "w",
+                            newline="\n",
+                        ) as f:
+                            print(
+                                acHash,
+                                "*" + baseFilename + "_" + ac_identifier + ".mp4",
+                                file=f,
+                            )
 
-                # create checksum sidecar file for access copy
-                acHash = corefuncs.hashlib_md5(acAbsPath)
-                with open(
-                    os.path.join(
-                        acOutputFolder, baseFilename + "_" + ac_identifier + ".md5"
-                    ),
-                    "w",
-                    newline="\n",
-                ) as f:
-                    print(
-                        acHash,
-                        "*" + baseFilename + "_" + ac_identifier + ".mp4",
-                        file=f,
-                    )
+                        # log access copy filename if access copy was created
+                        # TO DO: verify that access copy runtime matches pm runtime?
+                        if os.path.isfile(acAbsPath):
+                            acFilename = baseFilename + "_" + ac_identifier + ".mp4"
+                        else:
+                            acFilename = "No access copy found"
 
-            # log access copy filename if access copy was created
-            # TO DO: verify that access copy runtime matches pm runtime?
-            if os.path.isfile(acAbsPath):
-                acFilename = baseFilename + "_" + ac_identifier + ".mp4"
-            else:
-                acFilename = "No access copy found"
-
-            # get current date for logging when QC happned
-            qcDate = str(datetime.datetime.today().strftime("%Y-%m-%d"))
+                        # get current date for logging when QC happned
+                        qcDate = str(datetime.datetime.today().strftime("%Y-%m-%d"))
 
             # create the list that will go in the qc log csv file
             # should correspond to the csvHeaderList earlier in the script
@@ -291,9 +302,7 @@ def single_video(input, output):
                 None,
                 acFilename,
                 mkvFilename,
-                helpers.convert_runtime(
-                    output_metadata["file metadata"]["duration"]
-                ),
+                helpers.convert_runtime(output_metadata["file metadata"]["duration"]),
             ]
 
             # Add QC results to QC log csv file
