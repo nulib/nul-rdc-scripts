@@ -39,17 +39,18 @@ def main():
     jsondata = {}
 
     adf = get_astats(infile, txtfile)
-    lstats = get_lstats(infile)
 
-    # create txt with astats data and load txt into dataframe
-    jsondata.update(print_lstats(lstats))
+    if False:
+        lstats = get_lstats(infile)
+        jsondata.update(print_lstats(lstats))
+
     jsondata.update(find_clipping(adf))
     jsondata.update(find_silence(adf))
 
     with open(jsonfile, "w", encoding='utf-8') as f:
         json.dump(jsondata, f, ensure_ascii=False, indent=4)
 
-    # graph_astats(adf)
+    graph_astats(adf)
 
 def get_astats(infile, outfile):
     
@@ -187,7 +188,6 @@ def print_warnings(timestamps, warning, adf, min_length=0):
 
     warnings = {}
 
-
     # create groups of consecutive frames
     groups = []
     for k, g in groupby(enumerate(timestamps), lambda x: x[0]-x[1]):
@@ -200,6 +200,7 @@ def print_warnings(timestamps, warning, adf, min_length=0):
     for group in groups:
         if len(group) >=  min_length:
             long_groups.append(group)
+        
     groups = long_groups
 
     for group in groups:
