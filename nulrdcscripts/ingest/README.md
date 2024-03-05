@@ -56,7 +56,7 @@ input_folder
     Defines patterns to ignore. 
 `--description`, `-d`
     Use to specify column names to populate Meadow description field with. Can take multiple inputs. If not specified, script will default to looking for the column "inventory_title"  
-`--auxiliary`, `-x` Sets how to parse auxiliary files. Options include: `extension` (by extension; i.e. ".jpg"), `parse` (by word; i.e. "_Asset_Front"), `none` (no aux files). Default is `none`.   
+`--auxiliary`, `-x` Sets how to parse auxiliary files. Options include: `extension` (by extension; i.e. ".jpg"), `parse` (by word; i.e. "_Asset_Front"), `none` (no aux files). Default is `parse`.   
 `--prepend_accession`, `-p` Set a string to be added to the beginning of the file accession number when it is generated
 
 ## File Type Designations

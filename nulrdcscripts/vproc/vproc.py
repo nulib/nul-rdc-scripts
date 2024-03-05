@@ -77,18 +77,18 @@ def main():
     # create the list of csv headers that will go in the qc log csv file
     global csvHeaderList
     csvHeaderList = [
-        "Shot Sheet Check",
-        "Date",
-        "PM Lossless Transcoding",
-        "Date",
-        "File Format & Metadata Verification",
-        "Date",
-        "File Inspection",
-        "Date",
-        "QC Notes",
-        "AC Filename",
-        "PM Filename",
-        "Runtime",
+        "shot sheet check",
+        "date",
+        "PM lossless transcoding",
+        "date",
+        "file format & metadata verification",
+        "date",
+        "file inspection",
+        "date",
+        "QC notes",
+        "AC filename",
+        "PM filename",
+        "runtime",
     ]
 
     print("***STARTING PROCESS***")
