@@ -7,21 +7,22 @@ In order to use all of the script's functions you will need to have the followin
 ## Usage
 In the terminal, [navigate](#terminal-help) to the `nul-rdc-scripts` folder before running.  
 
-**Note: make sure valid inventory csv is in the input folder**
+**Note: make sure valid inventory csv is in the input folder**  
+**Note: qc_log is always generated (mediaconch policies are always checked)**  
 
-### Basic usage (--all defaults true)
+### Basic usage
 ```
-poetry run aproc -i INPUT_PATH
+poetry run aproc -i INPUT_PATH -a
 ```
 
-### Generate spectrograms only
+### Generate spectrograms
 ```
 poetry run aproc -i INPUT_PATH -s
 ```
 
-### Generate spectrograms and skip coding (for vendors)
+### Only generate qc_log
 ```
-poetry run aproc -i INPUT_PATH -s --skip_coding
+poetry run aproc -i INPUT_PATH
 ```
 
 ### Example File Structure
@@ -43,7 +44,7 @@ project folder (script input)
                       full path to input folder   
 `--output OUTPUT_PATH`, `-o OUTPUT_PATH`
                       full path to output csv file for QC results. If not specified this will default to creating a file in the input directory   
-`--all`, `-a`         This is equivalent to using `-t -m -j -s`. Defaults to true.  
+`--all`, `-a`         This is equivalent to using `-t -m -j -s`.  
 `--transcode`, `-t`       transcode access files   
 `--write_metadata`, `-m`  write Broadcast WAVE metadata to preservation file   
 `--write_json`, `-j`      write metadata to json file   

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nul-rdc-scripts"
-version = "0.1.0"
+version = "0.2.0a0"
 description = "Scripts for NUL RDC Digitization Team"
 authors = [
     "Northwestern University Libraries <repository@northwestern.edu>",
@@ -24,6 +24,9 @@ aproc = 'nulrdcscripts.aproc.aproc:main'
 vproc = 'nulrdcscripts.vproc.vproc:main'
 ingest = 'nulrdcscripts.ingest.ingest:main'
 aqc = 'nulrdcscripts.aqc.aqc:main'
+oyez = 'nulrdcscripts.tools.oyez.runfile:main'
+ffplaywindow = 'nulrdcscripts.tools.ffplaywindow.main:main'
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
