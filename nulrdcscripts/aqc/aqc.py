@@ -38,19 +38,35 @@ def main():
 
     jsondata = {}
 
+    infilename = os.path.basename(infile)
+    print("Starting QC for " + infilename)
+
     adf = get_astats(infile, txtfile)
 
-    if False:
-        lstats = get_lstats(infile)
-        jsondata.update(print_lstats(lstats))
+    print("\n" + infilename)
 
-    jsondata.update(find_clipping(adf))
-    jsondata.update(find_silence(adf))
+    if args.lstats:
+        lstats = get_lstats(infile)
+        print_lstats(lstats)
+        jsondata.update({"Loudness": lstats})
+    
+    if args.find_clipping:
+        clipping = find_clipping(adf)
+        if clipping:
+            jsondata.update({"Clipping": clipping})
+            print_warnings(clipping)
+
+    if args.find_silence:
+        silence = find_silence(adf)
+        if silence:
+            jsondata.update({"Silence": silence})
+            print_warnings(silence)
 
     with open(jsonfile, "w", encoding='utf-8') as f:
         json.dump(jsondata, f, ensure_ascii=False, indent=4)
 
-    graph_astats(adf)
+    if args.plot:
+        graph_astats(adf)
 
 def get_astats(infile, outfile):
     
@@ -59,6 +75,7 @@ def get_astats(infile, outfile):
     # delimit any colons
     ff_outfile = ff_outfile.replace(":", "\\\\:")
 
+    print("***Generating ffmpeg astats***")
     command = [
         "ffmpeg",
         "-i",
@@ -73,6 +90,7 @@ def get_astats(infile, outfile):
 
     # load frame data into a dict
     # this code akes more sense when you view the txt file
+    print("***Parsing astats***")
     frames = {}
     with open(outfile, "r") as f:
         for line in f:
@@ -106,6 +124,7 @@ def get_lstats(infile):
 
     lstats = {}
 
+    print("***Generating Loudness Stats")
     command = [
         "ffmpeg",
         "-i",
@@ -129,64 +148,62 @@ def get_lstats(infile):
         inquotes = re.findall(r'"(.+?)"', line)
         lstats.update({inquotes[0]: float(inquotes[1])})
     
-    return lstats
+    parsed_stats = {
+        "Max TP":lstats["input_tp"],
+        "LUFS-I":lstats["input_i"],
+        "LRA":lstats["input_lra"],
+    }
+
+    return parsed_stats
 
 def print_lstats(lstats):
 
     print("Loudness")
     print("----------------------")
-    print(f"Max TP:\t{lstats["input_tp"]:9.2f} dBTP")
-    print(f"LUFS-I:\t{lstats["input_i"]:9.2f} LUFS")
-    print(f"LRA:\t{lstats["input_lra"]:9.2f} LU\n")
+    print(f"Max TP:\t{lstats["Max TP"]:9.2f} dBTP")
+    print(f"LUFS-I:\t{lstats["LUFS-I"]:9.2f} LUFS")
+    print(f"LRA:\t{lstats["LRA"]:9.2f} LU\n")
 
-    loudness_dict = {
-        "Loudness": {
-            "Max TP":lstats["input_tp"],
-            "LUFS-I":lstats["input_i"],
-            "LRA":lstats["input_lra"],
-        }
-    }
-
-    return loudness_dict
+def print_warnings(warnings):
+    print()
+    for key in warnings:
+        print(key + ": " + warnings[key])
+    print()
 
 def find_clipping(adf):
     # find frames with clipping (flat factor being greater than a given threshold)
-    flats = adf.index[adf['Overall.Flat_factor'] > FLAT_FACTOR_THRESH].tolist()
+    flat_frames = adf.index[adf['Overall.Flat_factor'] > FLAT_FACTOR_THRESH].tolist()
     
-    digi_clips = []
-    source_clips  = []
+    flats = group_warnings(flat_frames)
 
-    for flat in flats:
-        if adf["Overall.Peak_level"][flat] > -.0004:
-            digi_clips.append(flat)
+    clips = {}
+
+    for i, flat in enumerate(flats):
+
+        if adf["Overall.Peak_level"][flat[0]] > -.0004:
+            clips.update({"Potential digital clipping" + str(i): flat})
         else:
-            source_clips.append(flat)
+            clips.update({"Potential source clipping" + str(i): flat})
 
-    clipping_data = {}
-    digi_clip_data = print_warnings(digi_clips, "Potential digital clipping", adf)
-    if(digi_clip_data):
-        clipping_data.update(digi_clip_data)
-    source_clip_data = print_warnings(source_clips, "Potential source clipping", adf)
-    if(source_clip_data):
-        clipping_data.update(source_clip_data)
 
-    return {
-        "Clipping": clipping_data
-    }
+    clipping_data = parse_warnings(clips, adf)
+    
+    return clipping_data
 
 def find_silence(adf):
-    silences = adf.index[adf['Overall.Entropy'] < ENTROPY_THRESH].tolist()
+    silent_frames = adf.index[adf['Overall.Entropy'] < ENTROPY_THRESH].tolist()
 
-    silent_data = print_warnings(silences, "Potential silence", adf, SILENCE_MIN_LENGTH)
+    silences = group_warnings(silent_frames, SILENCE_MIN_LENGTH)
+    silences_dict = {}
+    for i, s in enumerate(silences):
+        key = "Potential silence" + str(i)
+        silences_dict.update({key: s})
+    silent_data = parse_warnings(silences_dict, adf)
 
-    return {
-        "Silence": silent_data
-    }
+    return silent_data
     
 
-def print_warnings(timestamps, warning, adf, min_length=0):
-
-    warnings = {}
+def group_warnings(timestamps, min_length=0):
 
     # create groups of consecutive frames
     groups = []
@@ -194,7 +211,7 @@ def print_warnings(timestamps, warning, adf, min_length=0):
         groups.append(list(map(itemgetter(1), g)))
 
     if not groups:
-        return
+        return []
     
     long_groups = []
     for group in groups:
@@ -203,22 +220,32 @@ def print_warnings(timestamps, warning, adf, min_length=0):
         
     groups = long_groups
 
-    for group in groups:
-        start_sec = adf['pts_time'][group[0]]
-        end_sec = adf['pts_time'][group[-1]]
+    return groups
+
+def parse_warnings(groups, adf):
+
+    if not groups:
+        return
+
+    warnings = {}
+
+    for key in groups:
+        start_sec = adf['pts_time'][groups[key][0]]
+        end_sec = adf['pts_time'][groups[key][-1]]
         # format times
         start_time = sec2time(start_sec)
         end_time = sec2time(end_sec)
 
+        label = ''.join([i for i in key if not i.isdigit()])
         # for short durations, treat the clipping as a single event
         if end_sec - start_sec < COOLDOWN:
-            print(warning + ": " + start_time)
-            warnings.update({start_time: warning})
+            # print(warning + ": " + start_time)
+            warnings.update({start_time: label})
         else:
-            print(warning + ": " + start_time + " to " + end_time)
-            warnings.update({(start_time + " - " + end_time): warning})
+            # print(warning + ": " + start_time + " to " + end_time)
+            warnings.update({(start_time + " - " + end_time): label})
 
-    print()
+    # print()
     return warnings
 
 def graph_astats(adf):
