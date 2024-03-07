@@ -16,10 +16,20 @@ from nulrdcscripts.aqc.parser import args
 if sys.version_info[0] < 3:
     raise Exception("Python 3 or a more recent version is required.")
 
+"""
+Global variables static throughout script.
+Use to set/tweak parameters.
+"""
+
+# size (in samples) of audio chunk/frame analyzed in astats filter
 ASETNSAMPLES = 9600
+# lower threshold for flatness to be considered clipping
 FLAT_FACTOR_THRESH = 15
+# length that a warning is considered a duration instead of a single event
 COOLDOWN = 5
+# minimum length for a silent period to be counted
 SILENCE_MIN_LENGTH = 5
+# upper threshold for entropy to be considered silence
 ENTROPY_THRESH = .5
 
 def main():
@@ -65,12 +75,14 @@ def main():
             print_warnings(silence)
 
     with open(jsonfile, "w", encoding='utf-8') as f:
+        print("Output in " + jsonfile)
         json.dump(jsondata, f, ensure_ascii=False, indent=4)
 
     if args.plot:
         graph_astats(adf)
 
 def get_astats(infile, outfile):
+    
     
     # replace backslashes to forward slashes 
     ff_outfile = outfile.replace("\\","/")
@@ -91,18 +103,13 @@ def get_astats(infile, outfile):
 
     line = ""
     seconds = -1
-    widgets = [
-        FormatLabel("Generating astats"), ' ', 
-        PercentageLabelBar(format='%(percentage).2f%%'), ' ', 
-        AdaptiveETA(exponential_smoothing=True, exponential_smoothing_factor=0.1), ' ',
-    ]
-    with ProgressBar(widgets=widgets, max_value=100) as bar:
+    with ProgressBar(widgets=default_widgets("Generating astats"), max_value=100) as bar:
         while True:
             out = process.stdout.read(1)
             if out == b'' and process.poll() is not None:
                 break
             if out == b'\n' or out == b'\r':
-                if "Stream #0:0: Audio:" in line:
+                if re.search(r'Stream #(\d):(\d): Audio', line):
                     sample_rate = int(re.search(r'(\d+) Hz', line).group(1))
                 if "Duration" in line:
                     time = re.search(r'Duration: (.*),', line).group(1)
@@ -121,15 +128,10 @@ def get_astats(infile, outfile):
     # this code akes more sense when you view the txt file
     frames = {}
 
-    widgets = [
-        FormatLabel("Parsing astats   "), ' ', 
-        PercentageLabelBar(format='%(percentage).2f%%'), ' ', 
-        AdaptiveETA(exponential_smoothing=True, exponential_smoothing_factor=0.1), ' ',
-    ]
     with open(outfile, "r") as f:
         length = len(f.readlines())
 
-    with ProgressBar(widgets=widgets, max_value=length) as bar:
+    with ProgressBar(widgets=default_widgets("Parsing astats   "), max_value=length) as bar:
         with open(outfile, "r") as f:
             for i, line in enumerate(f):
                 # add new frame
@@ -145,7 +147,7 @@ def get_astats(infile, outfile):
                     frames.update({frame_num: frame})
                 # add data to existing frame
                 else:
-                    # fine value after equals sign
+                    # find value after equals sign
                     value_string = re.search(r'=(.*)', line).group(1)
                     if value_string == "nan":
                         value = None
@@ -178,13 +180,8 @@ def get_lstats(infile):
     output = []
     line = ""
     seconds = -1
-    widgets = [
-        FormatLabel("Generating lstats"), ' ', 
-        PercentageLabelBar(format='%(percentage).2f%%'), ' ', 
-        AdaptiveETA(exponential_smoothing=True, exponential_smoothing_factor=0.1), ' ',
-    ]
     writing = False
-    with ProgressBar(widgets=widgets, max_value=100) as bar:
+    with ProgressBar(widgets=default_widgets("Generating lstats"), max_value=100) as bar:
         while True:
             out = process.stdout.read(1)
             if out == b'' and process.poll() is not None:
@@ -229,7 +226,7 @@ def print_lstats(lstats):
 
     print(f"\nMax TP:\t{lstats["Max TP"]:9.2f} dBTP")
     print(f"LUFS-I:\t{lstats["LUFS-I"]:9.2f} LUFS")
-    print(f"LRA:\t{lstats["LRA"]:9.2f} LU\n")
+    print(f"LRA:\t{lstats["LRA"]:9.2f} LU")
 
 def print_warnings(warnings):
     print()
@@ -317,10 +314,12 @@ def parse_warnings(groups, pt_time):
 
 def graph_astats(adf):
     columns = [
-        "Overall.RMS_level", 
-        "Overall.Entropy",  
+        "Overall.Max_difference", 
+        "Overall.Min_difference",
+        "Overall.RMS_difference",  
+        "Overall.Mean_difference",
     ]
-    adf.plot(x='pts_time',y=columns, subplots=True, layout=(2,1))
+    adf.plot(x='pts_time',y=columns, subplots=True, layout=(2,2))
     plt.show()
 
 def df_print(df):
@@ -331,6 +330,15 @@ def df_print(df):
                     ):
 
         print(df)
+
+def default_widgets(label=""):
+    widgets = [
+        FormatLabel(label + " |"), ' ', 
+        Percentage(format='%(percentage)3d%%'), ' ', 
+        Bar("#"), ' ',
+        AdaptiveETA(exponential_smoothing=True, exponential_smoothing_factor=0.1), ' ',
+    ]
+    return widgets
 
 def get_total_seconds(stringHMS):
    if stringHMS == "N/A":
