@@ -22,7 +22,7 @@ Use to set/tweak parameters.
 """
 
 # size (in samples) of audio chunk/frame analyzed in astats filter
-ASETNSAMPLES = 9600
+ASETNSAMPLES = 48000
 # lower threshold for flatness to be considered clipping
 FLAT_FACTOR_THRESH = 15
 # length that a warning is considered a duration instead of a single event
@@ -30,7 +30,7 @@ COOLDOWN = 5
 # minimum length for a silent period to be counted
 SILENCE_MIN_LENGTH = 5
 # upper threshold for entropy to be considered silence
-ENTROPY_THRESH = .5
+ENTROPY_THRESH = .3
 
 def main():
 
@@ -39,9 +39,9 @@ def main():
         print("ERROR: " + args.infile + " could not be opened")
         quit()
     
-    if not args.infile.endswith(".wav"):
-        print("ERROR: input must be a .wav file")
-        quit()
+    # if not args.infile.endswith(".wav"):
+    #     print("ERROR: input must be a .wav file")
+    #     quit()
 
     infile = os.path.normpath(args.infile)
     txtfile = os.path.splitext(infile)[0] + ".txt"
@@ -52,10 +52,12 @@ def main():
     infilename = os.path.basename(infile)
     print("\nStarting QC for " + infilename)
 
-    sample_rate, seconds, adf = get_astats(infile, txtfile)
-    pt_time = ASETNSAMPLES / sample_rate
-
-    silence_min_length = SILENCE_MIN_LENGTH / pt_time
+    if args.find_clipping or args.find_silence:
+        sample_rate, seconds, adf = get_astats(infile, txtfile)
+        pt_time = ASETNSAMPLES / sample_rate
+        silence_min_length = SILENCE_MIN_LENGTH / pt_time
+    elif args.plot:
+        args.plot = False
 
     if args.lstats:
         lstats = get_lstats(infile)
@@ -109,12 +111,14 @@ def get_astats(infile, outfile):
             if out == b'' and process.poll() is not None:
                 break
             if out == b'\n' or out == b'\r':
+                # if re.search(r'Stream #(\d):(\d): Video', line):
+                #     frame_rate = float(re.search(r'(\d+\.\d+) fps', line).group(1))
                 if re.search(r'Stream #(\d):(\d): Audio', line):
                     sample_rate = int(re.search(r'(\d+) Hz', line).group(1))
                 if "Duration" in line:
-                    time = re.search(r'Duration: (.*),', line).group(1)
+                    time = re.search(r'Duration: (.*?),', line).group(1)
                     seconds = get_total_seconds(time)
-                if line.startswith("size="):
+                if re.search(r'(^size=|frame=)', line):
                     current_time = re.search(r'time=(.*) bi', line).group(1)
                     current_seconds = get_total_seconds(current_time)
                     percent = current_seconds/seconds * 100
@@ -188,9 +192,9 @@ def get_lstats(infile):
                 break
             if out == b'\n' or out == b'\r':
                 if "Duration" in line:
-                    time = re.search(r'Duration: (.*),', line).group(1)
+                    time = re.search(r'Duration: (.*?), ', line).group(1)
                     seconds = get_total_seconds(time)
-                if line.startswith("size="):
+                if re.search(r'(size=|frame=)', line):
                     current_time = re.search(r'time=(.*) bi', line).group(1)
                     current_seconds = get_total_seconds(current_time)
                     percent = current_seconds/seconds * 100
@@ -226,7 +230,7 @@ def print_lstats(lstats):
 
     print(f"\nMax TP:\t{lstats["Max TP"]:9.2f} dBTP")
     print(f"LUFS-I:\t{lstats["LUFS-I"]:9.2f} LUFS")
-    print(f"LRA:\t{lstats["LRA"]:9.2f} LU")
+    print(f"LRA:\t{lstats["LRA"]:9.2f} LU\n")
 
 def print_warnings(warnings):
     print()
@@ -297,8 +301,8 @@ def parse_warnings(groups, pt_time):
         start_sec = pt_time * groups[key][0]
         end_sec = pt_time * groups[key][-1]
         # format times
-        start_time = sec2mstime(start_sec)
-        end_time = sec2mstime(end_sec)
+        start_time = sec2time(start_sec)
+        end_time = sec2time(end_sec)
 
         label = ''.join([i for i in key if not i.isdigit()])
         # for short durations, treat the clipping as a single event
@@ -314,8 +318,8 @@ def parse_warnings(groups, pt_time):
 
 def graph_astats(adf):
     columns = [
-        "Overall.Max_difference", 
-        "Overall.Min_difference",
+        "Overall.Entropy", 
+        "Overall.RMS_level",
         "Overall.RMS_difference",  
         "Overall.Mean_difference",
     ]
