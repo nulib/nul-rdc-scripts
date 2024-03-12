@@ -34,18 +34,36 @@ ENTROPY_THRESH = .3
 
 def main():
 
-    # setup paths
-    if not os.path.isfile(args.infile):
-        print("ERROR: " + args.infile + " could not be opened")
-        quit()
-    
-    # if not args.infile.endswith(".wav"):
-    #     print("ERROR: input must be a .wav file")
-    #     quit()
+    jsonfile = os.path.splitext(args.inpath)[0] + ".json"
 
-    infile = os.path.normpath(args.infile)
+    jsondata = {}
+
+    if os.path.isfile(args.inpath):
+        jsonfile = os.path.splitext(args.inpath)[0] + ".json"
+        jsondata = {os.path.basename(args.inpath): qc_file(args.inpath)}
+    elif os.path.isdir(args.inpath):
+        jsonfile = os.path.join(args.inpath, os.path.basename(args.inpath) + ".json")
+        dirs = get_immediate_subdirectories(args.inpath)
+        for dirname in dirs:
+            pdir = os.path.join(args.inpath, dirname, "p")
+            if os.path.isdir(pdir):
+                for path, dirs, filenames in os.walk(pdir):
+                    for filename in filenames:
+                        if filename.endswith(".mkv") or filename.endswith(".wav"):
+                            file_data = qc_file(os.path.join(path, filename))
+                            jsondata.update({filename: file_data})
+    else:
+        print("ERROR: " + args.inpath + " could not be opened")
+        quit()
+
+    with open(jsonfile, "w", encoding='utf-8') as f:
+        print("\nOutput in " + jsonfile)
+        json.dump(jsondata, f, ensure_ascii=False, indent=4)
+
+def qc_file(file):
+
+    infile = os.path.normpath(file)
     txtfile = os.path.splitext(infile)[0] + ".txt"
-    jsonfile = os.path.splitext(infile)[0] + ".json"
 
     jsondata = {}
 
@@ -76,12 +94,10 @@ def main():
             jsondata.update({"Silence": silence})
             print_warnings(silence)
 
-    with open(jsonfile, "w", encoding='utf-8') as f:
-        print("Output in " + jsonfile)
-        json.dump(jsondata, f, ensure_ascii=False, indent=4)
-
     if args.plot:
         graph_astats(adf)
+
+    return jsondata
 
 def get_astats(infile, outfile):
     
@@ -228,15 +244,14 @@ def get_lstats(infile):
 
 def print_lstats(lstats):
 
-    print(f"\nMax TP:\t{lstats["Max TP"]:9.2f} dBTP")
-    print(f"LUFS-I:\t{lstats["LUFS-I"]:9.2f} LUFS")
-    print(f"LRA:\t{lstats["LRA"]:9.2f} LU\n")
+    print(f"\n\tMax TP:\t{lstats["Max TP"]:9.2f} dBTP")
+    print(f"\tLUFS-I:\t{lstats["LUFS-I"]:9.2f} LUFS")
+    print(f"\tLRA:\t{lstats["LRA"]:9.2f} LU")
 
 def print_warnings(warnings):
     print()
     for key in warnings:
-        print(key + ": " + warnings[key])
-    print()
+        print("\t" + key + ": " + warnings[key])
 
 def find_clipping(adf, pt_time):
     # find frames with clipping (flat factor being greater than a given threshold)
@@ -365,6 +380,14 @@ def sec2mstime(seconds):
     s = seconds % 3600 % 60
 
     return f"{h:02d}:{m:02d}:{s:05.2f}"
+
+def get_immediate_subdirectories(folder):
+    """
+    get list of immediate subdirectories of input
+    """
+    return [
+        name for name in os.listdir(folder) if os.path.isdir(os.path.join(folder, name))
+    ]
 
 if __name__ == "__main__":
     main()

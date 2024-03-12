@@ -8,9 +8,9 @@ parser.add_argument(
     "--input",
     "-i",
     action="store",
-    dest="infile",
+    dest="inpath",
     type=str,
-    help="full path to input file",
+    help="full path to input file or directory",
 )
 parser.add_argument(
     "--lstats",
