@@ -257,7 +257,7 @@ def find_clipping(adf, pt_time):
     # find frames with clipping (flat factor being greater than a given threshold)
     flat_frames = adf.index[adf['Overall.Flat_factor'] > FLAT_FACTOR_THRESH].tolist()
     
-    flats = group_warnings(flat_frames)
+    flats = group_warnings(flat_frames, pt_time)
 
     clips = {}
 
@@ -276,7 +276,7 @@ def find_clipping(adf, pt_time):
 def find_silence(adf, silence_min_length, pt_time):
     silent_frames = adf.index[adf['Overall.Entropy'] < ENTROPY_THRESH].tolist()
 
-    silences = group_warnings(silent_frames, silence_min_length)
+    silences = group_warnings(silent_frames, pt_time, silence_min_length)
     silences_dict = {}
     for i, s in enumerate(silences):
         key = "Potential silence" + str(i)
@@ -285,7 +285,7 @@ def find_silence(adf, silence_min_length, pt_time):
 
     return silent_data
     
-def group_warnings(timestamps, min_length=0):
+def group_warnings(timestamps, pt_time, min_length=0):
 
     # create groups of consecutive frames
     groups = []
@@ -299,9 +299,23 @@ def group_warnings(timestamps, min_length=0):
     for group in groups:
         if len(group) >=  min_length:
             long_groups.append(group)
-        
+
     groups = long_groups
 
+    
+    merged_groups = []
+    cooldown_frames = int(COOLDOWN/pt_time)
+    last_end = -cooldown_frames
+    for i, group in enumerate(groups):
+        #print(group)
+        if group[0] - last_end < cooldown_frames:
+            merged_groups[-1].extend(group)
+        else:
+            merged_groups.append(group)
+        last_end = group[-1]
+
+    groups = merged_groups
+    
     return groups
 
 def parse_warnings(groups, pt_time):
@@ -326,7 +340,7 @@ def parse_warnings(groups, pt_time):
             warnings.update({start_time: label})
         else:
             # print(warning + ": " + start_time + " to " + end_time)
-            warnings.update({(start_time + " - " + end_time): label})
+            warnings.update({start_time + " - " + end_time: label})
 
     # print()
     return warnings
