@@ -2,16 +2,15 @@
 
 import sys
 import os
-import subprocess
 import matplotlib.pyplot as plt
 import pandas as pd
 import re
-import datetime
 import json
 from colorama import Style, Fore
 from progressbar import *
-from operator import itemgetter
-from itertools import *
+import nulrdcscripts.aqc.warnings as warnings
+import nulrdcscripts.aqc.helpers as helpers
+import nulrdcscripts.aqc.ff_helpers as ff_helpers
 from nulrdcscripts.aqc.parser import args
 
 if sys.version_info[0] < 3:
@@ -44,7 +43,7 @@ def main():
         jsondata = {os.path.basename(args.inpath): qc_file(args.inpath)}
     elif os.path.isdir(args.inpath):
         jsonfile = os.path.join(args.inpath, os.path.basename(args.inpath) + ".json")
-        dirs = get_immediate_subdirectories(args.inpath)
+        dirs = helpers.get_immediate_subdirectories(args.inpath)
         for dirname in dirs:
             pdir = os.path.join(args.inpath, dirname, "p")
             if os.path.isdir(pdir):
@@ -67,13 +66,16 @@ def qc_file(file):
     infile = os.path.normpath(file)
     txtfile = os.path.splitext(infile)[0] + ".txt"
 
-    jsondata = {}
 
     infilename = os.path.basename(infile)
     print("\n" + Fore.LIGHTCYAN_EX + infilename + Style.RESET_ALL)
 
+    sample_rate = ff_helpers.get_sample_rate(infile)
+
+    jsondata = {}
+
     if args.find_clipping or args.find_silence:
-        sample_rate, seconds, adf = get_astats(infile, txtfile)
+        adf = get_astats(infile, txtfile)
         pt_time = ASETNSAMPLES / sample_rate
         silence_min_length = SILENCE_MIN_LENGTH / pt_time
     elif args.plot:
@@ -82,7 +84,7 @@ def qc_file(file):
     if args.lstats:
         lstats = get_lstats(infile)
         if args.verbose:
-            print_lstats(lstats)
+            helpers.print_lstats(lstats)
         jsondata.update({"Loudness": lstats})
     
     if args.find_clipping:
@@ -90,14 +92,14 @@ def qc_file(file):
         if clipping:
             jsondata.update({"Clipping": clipping})
             if args.verbose:
-                print_warnings(clipping)
+                helpers.print_warnings(clipping)
 
     if args.find_silence:
         silence = find_silence(adf, silence_min_length, pt_time)
         if silence:
             jsondata.update({"Silence": silence})
             if args.verbose:
-                print_warnings(silence)
+                helpers.print_warnings(silence)
 
     if args.plot:
         graph_astats(adf)
@@ -105,8 +107,7 @@ def qc_file(file):
     return jsondata
 
 def get_astats(infile, outfile):
-    
-    
+
     # replace backslashes to forward slashes 
     ff_outfile = outfile.replace("\\","/")
     # delimit any colons
@@ -122,42 +123,22 @@ def get_astats(infile, outfile):
         "null",
         "-"
     ]
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    ff_helpers.ff_progress_bar(command, "Generating astats")
 
-    line = ""
-    seconds = -1
-    with ProgressBar(widgets=default_widgets("Generating astats"), max_value=100) as bar:
-        while True:
-            out = process.stdout.read(1)
-            if out == b'' and process.poll() is not None:
-                break
-            if out == b'\n' or out == b'\r':
-                # if re.search(r'Stream #(\d):(\d): Video', line):
-                #     frame_rate = float(re.search(r'(\d+\.\d+) fps', line).group(1))
-                if re.search(r'Stream #(\d):(\d): Audio', line):
-                    sample_rate = int(re.search(r'(\d+) Hz', line).group(1))
-                if "Duration" in line:
-                    time = re.search(r'Duration: (.*?),', line).group(1)
-                    seconds = get_total_seconds(time)
-                if re.search(r'(^size=|frame=)', line):
-                    current_time = re.search(r'time=(.*) bi', line).group(1)
-                    current_seconds = get_total_seconds(current_time)
-                    percent = current_seconds/seconds * 100
-                    if percent <= 100:
-                        bar.update(current_seconds/seconds * 100)
-                line = ""
-            elif out != '':
-                line = line + out.decode('utf-8')
+    frames = parse_astats(outfile)
 
+    return pd.DataFrame.from_dict(frames, orient='index')
+
+def parse_astats(file):
     # load frame data into a dict
     # this code akes more sense when you view the txt file
     frames = {}
 
-    with open(outfile, "r") as f:
+    with open(file, "r") as f:
         length = len(f.readlines())
 
-    with ProgressBar(widgets=default_widgets("Parsing astats   "), max_value=length) as bar:
-        with open(outfile, "r") as f:
+    with ProgressBar(widgets=helpers.default_widgets("Parsing astats   "), max_value=length) as bar:
+        with open(file, "r") as f:
             for i, line in enumerate(f):
                 # add new frame
                 if line.startswith("frame"):
@@ -184,7 +165,7 @@ def get_astats(infile, outfile):
                     frames[last].update({key: value})
                 bar.update(i)
 
-    return sample_rate, seconds, pd.DataFrame.from_dict(frames, orient='index')
+    return frames
 
 def get_lstats(infile):
 
@@ -200,36 +181,8 @@ def get_lstats(infile):
         "null",
         "-"
     ]
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-    output = []
-    line = ""
-    seconds = -1
-    writing = False
-    with ProgressBar(widgets=default_widgets("Generating lstats"), max_value=100) as bar:
-        while True:
-            out = process.stdout.read(1)
-            if out == b'' and process.poll() is not None:
-                break
-            if out == b'\n' or out == b'\r':
-                if "Duration" in line:
-                    time = re.search(r'Duration: (.*?), ', line).group(1)
-                    seconds = get_total_seconds(time)
-                if re.search(r'(size=|frame=)', line):
-                    current_time = re.search(r'time=(.*) bi', line).group(1)
-                    current_seconds = get_total_seconds(current_time)
-                    percent = current_seconds/seconds * 100
-                    if percent <= 100:
-                        bar.update(current_seconds/seconds * 100)
-                if line.startswith("[Parsed_loudnorm"):
-                    writing = True
-                if line.startswith("}"):
-                    writing = False
-                if writing:
-                    output.append(line)
-                line = ""
-            elif out != b'':
-                line = line + out.decode('utf-8')
+    output = ff_helpers.ff_progress_bar(command, "Generating lstats", "[Parsed_loudnorm", "}")
 
     for line in output[2:-1]:
         if "normalization_type" in line:
@@ -247,22 +200,11 @@ def get_lstats(infile):
 
     return parsed_stats
 
-def print_lstats(lstats):
-
-    print(f"\n\tMax TP:\t{lstats["Max TP"]:9.2f} dBTP")
-    print(f"\tLUFS-I:\t{lstats["LUFS-I"]:9.2f} LUFS")
-    print(f"\tLRA:\t{lstats["LRA"]:9.2f} LU")
-
-def print_warnings(warnings):
-    print()
-    for key in warnings:
-        print("\t" + key + ": " + warnings[key])
-
 def find_clipping(adf, pt_time):
     # find frames with clipping (flat factor being greater than a given threshold)
     flat_frames = adf.index[adf['Overall.Flat_factor'] > FLAT_FACTOR_THRESH].tolist()
     
-    flats = group_warnings(flat_frames, pt_time)
+    flats = warnings.group(flat_frames, pt_time, COOLDOWN)
 
     clips = {}
 
@@ -273,80 +215,21 @@ def find_clipping(adf, pt_time):
         else:
             clips.update({"Potential source clipping" + str(i): flat})
 
-
-    clipping_data = parse_warnings(clips, pt_time)
+    clipping_data = warnings.parse(clips, pt_time, COOLDOWN)
     
     return clipping_data
 
 def find_silence(adf, silence_min_length, pt_time):
     silent_frames = adf.index[adf['Overall.Entropy'] < ENTROPY_THRESH].tolist()
 
-    silences = group_warnings(silent_frames, pt_time, silence_min_length)
+    silences = warnings.group(silent_frames, pt_time, COOLDOWN, silence_min_length)
     silences_dict = {}
     for i, s in enumerate(silences):
         key = "Potential silence" + str(i)
         silences_dict.update({key: s})
-    silent_data = parse_warnings(silences_dict, pt_time)
+    silent_data = warnings.parse(silences_dict, pt_time, COOLDOWN)
 
     return silent_data
-    
-def group_warnings(timestamps, pt_time, min_length=0):
-
-    # create groups of consecutive frames
-    groups = []
-    for k, g in groupby(enumerate(timestamps), lambda x: x[0]-x[1]):
-        groups.append(list(map(itemgetter(1), g)))
-
-    if not groups:
-        return []
-    
-    long_groups = []
-    for group in groups:
-        if len(group) >=  min_length:
-            long_groups.append(group)
-
-    groups = long_groups
-
-    
-    merged_groups = []
-    cooldown_frames = int(COOLDOWN/pt_time)
-    last_end = -cooldown_frames
-    for i, group in enumerate(groups):
-        #print(group)
-        if group[0] - last_end < cooldown_frames:
-            merged_groups[-1].extend(group)
-        else:
-            merged_groups.append(group)
-        last_end = group[-1]
-
-    groups = merged_groups
-    
-    return groups
-
-def parse_warnings(groups, pt_time):
-
-    if not groups:
-        return
-
-    warnings = {}
-
-
-    for key in groups:
-        start_sec = pt_time * groups[key][0]
-        end_sec = pt_time * groups[key][-1]
-        # format times
-        start_time = sec2time(start_sec)
-        end_time = sec2time(end_sec)
-
-        label = ''.join([i for i in key if not i.isdigit()])
-        # for short durations, treat the clipping as a single event
-        if end_sec - start_sec <= COOLDOWN:
-            warnings.update({start_time: label})
-        else:
-            warnings.update({start_time + " - " + end_time: label})
-
-    # print()
-    return warnings
 
 def graph_astats(adf):
     columns = [
@@ -357,55 +240,6 @@ def graph_astats(adf):
     ]
     adf.plot(x='pts_time',y=columns, subplots=True, layout=(2,2))
     plt.show()
-
-def df_print(df):
-    # print with my own settings
-    with pd.option_context('display.max_rows', 8,
-                    'display.max_columns', 4,
-                    'display.precision', 2,
-                    ):
-
-        print(df)
-
-def default_widgets(label=""):
-    widgets = [
-        FormatLabel(label + " |"), ' ', 
-        Percentage(format='%(percentage)3d%%'), ' ', 
-        Bar("#"), ' ',
-        Timer(format='Time: %(elapsed)s', timedelta = '0:00:01.00')
-        #AdaptiveETA(exponential_smoothing=True, exponential_smoothing_factor=0.1), ' ',
-    ]
-    return widgets
-
-def get_total_seconds(stringHMS):
-   if stringHMS == "N/A":
-       return -1
-   
-   timedeltaObj = datetime.datetime.strptime(stringHMS, "%H:%M:%S.%f") - datetime.datetime(1900,1,1)
-   return timedeltaObj.total_seconds()
-
-def sec2time(seconds):
-    seconds = int(seconds)
-    h = seconds // 3600
-    m = seconds % 3600 // 60
-    s = seconds % 3600 % 60
-
-    return f"{h:02d}:{m:02d}:{s:02d}"
-
-def sec2mstime(seconds):
-    h = int(seconds // 3600)
-    m = int(seconds % 3600 // 60)
-    s = seconds % 3600 % 60
-
-    return f"{h:02d}:{m:02d}:{s:05.2f}"
-
-def get_immediate_subdirectories(folder):
-    """
-    get list of immediate subdirectories of input
-    """
-    return [
-        name for name in os.listdir(folder) if os.path.isdir(os.path.join(folder, name))
-    ]
 
 if __name__ == "__main__":
     main()
