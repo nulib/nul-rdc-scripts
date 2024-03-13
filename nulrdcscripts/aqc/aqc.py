@@ -8,6 +8,7 @@ import pandas as pd
 import re
 import datetime
 import json
+from colorama import Style, Fore
 from progressbar import *
 from operator import itemgetter
 from itertools import *
@@ -69,7 +70,7 @@ def qc_file(file):
     jsondata = {}
 
     infilename = os.path.basename(infile)
-    print("\n" + infilename)
+    print("\n" + Fore.LIGHTCYAN_EX + infilename + Style.RESET_ALL)
 
     if args.find_clipping or args.find_silence:
         sample_rate, seconds, adf = get_astats(infile, txtfile)
@@ -339,11 +340,9 @@ def parse_warnings(groups, pt_time):
 
         label = ''.join([i for i in key if not i.isdigit()])
         # for short durations, treat the clipping as a single event
-        if end_sec - start_sec < COOLDOWN:
-            # print(warning + ": " + start_time)
+        if end_sec - start_sec <= COOLDOWN:
             warnings.update({start_time: label})
         else:
-            # print(warning + ": " + start_time + " to " + end_time)
             warnings.update({start_time + " - " + end_time: label})
 
     # print()
@@ -373,7 +372,8 @@ def default_widgets(label=""):
         FormatLabel(label + " |"), ' ', 
         Percentage(format='%(percentage)3d%%'), ' ', 
         Bar("#"), ' ',
-        AdaptiveETA(exponential_smoothing=True, exponential_smoothing_factor=0.1), ' ',
+        Timer(format='Time: %(elapsed)s', timedelta = '0:00:01.00')
+        #AdaptiveETA(exponential_smoothing=True, exponential_smoothing_factor=0.1), ' ',
     ]
     return widgets
 
