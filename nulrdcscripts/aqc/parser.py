@@ -44,4 +44,12 @@ parser.add_argument(
     default=False,
     help="use to check for silence",
 )
+parser.add_argument(
+    "--verbose",
+    "-v",
+    action="store_true",
+    dest="verbose",
+    default=False,
+    help="use to print stats to terminal ni addition to json file",
+)
 args = parser.parse_args()

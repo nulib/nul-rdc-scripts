@@ -56,8 +56,9 @@ def main():
         print("ERROR: " + args.inpath + " could not be opened")
         quit()
 
+    print("\n***QC Finished***")
     with open(jsonfile, "w", encoding='utf-8') as f:
-        print("\nOutput in " + jsonfile)
+        print("output in " + jsonfile + "\n")
         json.dump(jsondata, f, ensure_ascii=False, indent=4)
 
 def qc_file(file):
@@ -68,7 +69,7 @@ def qc_file(file):
     jsondata = {}
 
     infilename = os.path.basename(infile)
-    print("\nStarting QC for " + infilename)
+    print("\n" + infilename)
 
     if args.find_clipping or args.find_silence:
         sample_rate, seconds, adf = get_astats(infile, txtfile)
@@ -79,20 +80,23 @@ def qc_file(file):
 
     if args.lstats:
         lstats = get_lstats(infile)
-        print_lstats(lstats)
+        if args.verbose:
+            print_lstats(lstats)
         jsondata.update({"Loudness": lstats})
     
     if args.find_clipping:
         clipping = find_clipping(adf, pt_time)
         if clipping:
             jsondata.update({"Clipping": clipping})
-            print_warnings(clipping)
+            if args.verbose:
+                print_warnings(clipping)
 
     if args.find_silence:
         silence = find_silence(adf, silence_min_length, pt_time)
         if silence:
             jsondata.update({"Silence": silence})
-            print_warnings(silence)
+            if args.verbose:
+                print_warnings(silence)
 
     if args.plot:
         graph_astats(adf)
