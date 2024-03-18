@@ -56,7 +56,7 @@ def main():
         print("ERROR: " + args.inpath + " could not be opened")
         quit()
 
-    print("\n***QC Finished***")
+    print("\n" + Fore.LIGHTCYAN_EX + "***QC Finished***" + Style.RESET_ALL)
     with open(jsonfile, "w", encoding='utf-8') as f:
         print("output in " + jsonfile + "\n")
         json.dump(jsondata, f, ensure_ascii=False, indent=4)
@@ -236,7 +236,7 @@ def graph_astats(adf):
         "Overall.Entropy", 
         "Overall.RMS_level",
         "Overall.RMS_difference",  
-        "Overall.Mean_difference",
+        "Overall.Flat_factor",
     ]
     adf.plot(x='pts_time',y=columns, subplots=True, layout=(2,2))
     plt.show()
