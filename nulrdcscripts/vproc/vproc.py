@@ -6,6 +6,7 @@ import os
 import glob
 import subprocess
 import datetime
+import progressbar
 from nulrdcscripts.vproc.params import args
 import nulrdcscripts.vproc.helpers as helpers
 import nulrdcscripts.vproc.corefuncs as corefuncs
@@ -166,18 +167,15 @@ def single_video(input, output):
             "framemd5File": framemd5File,
         }
         audioStreamCounter = input_metadata["techMetaA"]["audio stream count"]
-        helpers.ffv1_lossless_transcode(
-            input_metadata, transcode_nameDict, audioStreamCounter
-        )
-
+        
         # log transcode finish time
         tftime = datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S")
 
         # If ffv1 file was succesfully created, do remaining verification and transcoding work
-        if os.path.isfile(outputAbsPath):
+        if os.path.isfile(inputAbsPath):
             # create checksum sidecar file for preservation master
             print("*creating checksum*")
-            mkvHash = corefuncs.hashlib_md5(outputAbsPath)
+            mkvHash = corefuncs.hashlib_md5(inputAbsPath)
             with open(pmMD5AbsPath, "w", newline="\n") as f:
                 print(mkvHash, "*" + mkvFilename, file=f)
 

@@ -228,10 +228,10 @@ def ffprobe_report(filename, input_file_abspath):
 
     return ffprobe_metadata
 
-def ffv1Encoding(inputAbsPath):
+def ffv1_checksum(inputAbsPath):
     pass
 
-def two_pass_h264_transcoding(transcode_nameDict, audioStreamCounter):
+def two_pass_h264_encoding(transcode_nameDict, audioStreamCounter):
     with progressbar.ProgressBar(max_value=100) as h264prog:
         for t in range(100):
             # get relevant names from nameDict
