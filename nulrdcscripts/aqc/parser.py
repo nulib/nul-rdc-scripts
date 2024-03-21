@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+"""
+Argument parser for aqc.
+"""
+
 import argparse
 
 parser = argparse.ArgumentParser()
