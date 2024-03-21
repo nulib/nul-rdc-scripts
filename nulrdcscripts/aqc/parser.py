@@ -25,6 +25,14 @@ parser.add_argument(
     help="use to get loudness statistics",
 )
 parser.add_argument(
+    "--inventory",
+    action="store",
+    dest="inventory",
+    required=False,
+    type=str,
+    help="use to get load specific inventory",
+)
+parser.add_argument(
     "--plot",
     "-p",
     action="store_true",

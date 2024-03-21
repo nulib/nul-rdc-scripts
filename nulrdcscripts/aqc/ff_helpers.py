@@ -65,10 +65,10 @@ def ff_progress_bar(command: list, label: str, begin_save: str = None, stop_save
             if out == b'\n' or out == b'\r':
                 if "Duration" in line:
                     time = re.search(r'Duration: (.*?), ', line).group(1)
-                    seconds = helpers.get_total_seconds(time)
+                    seconds = helpers.hms2seconds(time)
                 if re.search(r'(size=|frame=)', line):
                     current_time = re.search(r'time=(.*) bi', line).group(1)
-                    current_seconds = helpers.get_total_seconds(current_time)
+                    current_seconds = helpers.hms2seconds(current_time)
                     percent = current_seconds/seconds * 100
                     if percent <= 100:
                         bar.update(current_seconds/seconds * 100)

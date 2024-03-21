@@ -15,6 +15,7 @@ from progressbar import *
 import nulrdcscripts.aqc.warnings as warnings
 import nulrdcscripts.aqc.helpers as helpers
 import nulrdcscripts.aqc.ff_helpers as ff_helpers
+import nulrdcscripts.aqc.inventory_helpers as i_helpers
 from nulrdcscripts.aqc.parser import args
 
 if sys.version_info[0] < 3:
@@ -52,16 +53,46 @@ def main():
     # input is a directory, run through every p file
     elif os.path.isdir(args.inpath):
         jsonfile = os.path.join(args.inpath, os.path.basename(args.inpath) + ".json")
-        dirs = helpers.get_immediate_subdirectories(args.inpath)
-        for dirname in dirs:
-            pdir = os.path.join(args.inpath, dirname, "p")
-            if os.path.isdir(pdir):
-                for path, dirs, filenames in os.walk(pdir):
-                    for filename in filenames:
-                        # save qc data for each p-file
-                        if filename.endswith(".mkv") or filename.endswith(".wav"):
-                            file_data = qc_file(os.path.join(path, filename))
-                            jsondata.update({filename: file_data})
+
+        if args.inventory:
+            i_helpers.check_inventory(args.inventory)
+            inventory_path = args.inventory
+        else:
+            inventory_path = i_helpers.find_inventory(args.inpath)
+            
+        if inventory_path:
+            inventory_dict = i_helpers.load_inventory(inventory_path)
+            dirs = helpers.get_immediate_subdirectories(args.inpath)
+            for dirname in dirs:
+                pdir = os.path.join(args.inpath, dirname, "p")
+                if os.path.isdir(pdir):
+                    for path, dirs, filenames in os.walk(pdir):
+                        for filename in filenames:
+                            # save qc data for each p-file
+
+                            if filename.endswith(".mkv") or filename.endswith(".wav"):
+                                
+                                inv_filename = os.path.splitext(filename)[0]
+                                if inv_filename.endswith("_p"):
+                                    inv_filename = inv_filename[:-2]
+                                for index, item in enumerate(inventory_dict):
+                                    if item["filename"] == inv_filename:
+                                        inventory_dict[index]["found"] = True
+                                        print("found")
+
+                                        # file_data = qc_file(os.path.join(path, filename))
+                                        # jsondata.update({filename: file_data})
+        else:
+            dirs = helpers.get_immediate_subdirectories(args.inpath)
+            for dirname in dirs:
+                pdir = os.path.join(args.inpath, dirname, "p")
+                if os.path.isdir(pdir):
+                    for path, dirs, filenames in os.walk(pdir):
+                        for filename in filenames:
+                            # save qc data for each p-file
+                            if filename.endswith(".mkv") or filename.endswith(".wav"):
+                                file_data = qc_file(os.path.join(path, filename))
+                                jsondata.update({filename: file_data})
     else:
         print("ERROR: " + args.inpath + " could not be opened")
         quit()
