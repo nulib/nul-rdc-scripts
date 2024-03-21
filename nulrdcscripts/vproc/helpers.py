@@ -13,6 +13,14 @@ import nulrdcscripts.vproc.equipment_dict as equipment_dict
 from nulrdcscripts.vproc.params import args
 
 
+
+copyMixCommand = ["-c:a","aac","-b:a","256k"]
+fourto3Mixcommand = ["-filter_complex","[0:a:0][0:a:1]amerge=inputs=2[a]", "-map", "0:v", "-map", "[a]","-map","0:a:2","-map","0:a:3",]
+fourto2Mixcommand = ["-filter-complex","[0:a:0][:0:a:1]amerge=inputs=2[a];[0:a:2][0:a:3]amerge=inputs=2[b]","-map","0:v", "-map","[a]", "-map", "[b]",]
+twoto1Mixcommand = ["-filter-complex","[0:a:0][0:a:1]amerge=inputs=2[a]","-map","0:v","-map","[a]",]
+inputvideocommand = ["-y","-i",inputAbsPath,"-c:v","libx264","-preset","medium",'-b:v","8000k',"-pix_fmt","yuv420p"]
+
+
 def create_transcode_output_folders(baseOutput, outputFolderList):
     if not os.path.isdir(baseOutput):
         try:
@@ -220,70 +228,73 @@ def ffprobe_report(filename, input_file_abspath):
 
     return ffprobe_metadata
 
+def ffv1Encoding(inputAbsPath):
+    pass
 
-def ffv1_lossless_transcode(input_metadata, transcode_nameDict, audioStreamCounter):
-    with progressbar.ProgressBar(max_value=100) as ffv1prog:
+def two_pass_h264_transcoding(transcode_nameDict, audioStreamCounter):
+    with progressbar.ProgressBar(max_value=100) as h264prog:
         for t in range(100):
             # get relevant names from nameDict
             inputAbsPath = transcode_nameDict.get("inputAbsPath")
             tempMasterFile = transcode_nameDict.get("tempMasterFile")
             framemd5AbsPath = transcode_nameDict.get("framemd5AbsPath")
-            outputAbsPath = transcode_nameDict.get("outputAbsPath")
+            acAbsPath = transcode_nameDict.get("acAbsPath")
             framemd5File = transcode_nameDict.get("framemd5File")
-            ffv1prog.update(t)
+            h264prog.update(t)
             # create ffmpeg command
-            ffmpeg_command = [args.ffmpeg_path]
+            if os.name == "nt":
+                nullOut = "NUL"
+            else:
+                nullOut="/dev/null"
+            pass1 = [args.ffmpeg.path]
             if not args.verbose:
-                ffmpeg_command.extend(("-loglevel", "error"))
-            ffmpeg_command.extend(
-                [
-                    "-i",
-                    inputAbsPath,
-                    "-map",
-                    "0",
-                    "-dn",
-                    "-c:v",
-                    "ffv1",
-                    "-level",
-                    "3",
-                    "-g",
-                    "1",
-                    "-slices",
-                    str(args.ffv1_slice_count),
-                    "-slicecrc",
-                    "1",
-                ]
-            )
-            # TO DO: consider putting color data in a list or dict to replace the following if statements with a single if statement in a for loop
-            ffv1prog.update(t)
-            if input_metadata["techMetaV"]["color primaries"]:
-                ffmpeg_command.extend(
-                    ("-color_primaries", input_metadata["techMetaV"]["color primaries"])
-                )
-            if input_metadata["techMetaV"]["color transfer"]:
-                ffmpeg_command.extend(
-                    ("-color_trc", input_metadata["techMetaV"]["color transfer"])
-                )
-            if input_metadata["techMetaV"]["color space"]:
-                ffmpeg_command.extend(
-                    ("-colorspace", input_metadata["techMetaV"]["color space"])
-                )
+                pass1 += ["-loglevel", "error"]
+            pass1 += [inputvideocommand,
+                "-pass",
+                "1",
+            ]
+            
+            h264prog.update(t)
             if audioStreamCounter > 0:
-                ffmpeg_command.extend(("-c:a", "copy"))
-            ffmpeg_command.extend(
-                (
-                    tempMasterFile if args.embed_framemd5 else outputAbsPath,
-                    "-f",
-                    "framemd5",
-                    "-an",
-                    framemd5AbsPath,
-                )
-            )
+                if args.mixdown == "copy":
+                    pass1 += copyMixCommand
+                if args.mixdown == "4to3" and audioStreamCounter == 4:
+                    pass1 += fourto3Mixcommand
+                if args.mixdown == "4to2" and audioStreamCounter == 4:
+                    pass1 += fourto2Mixcommand
+                if args.mixdown == "2to1" and audioStreamCounter == 2:
+                    pass1 += twoto1Mixcommand
+            h264prog.update(t)
+            pass1 += ["-f", "mp4", nullOut]
+            pass2 = [args.ffmpeg_path]
+            if not args.verbose:
+                pass2 += ["-loglevel", "error"]
+            pass2 += [inputvideocommand,
+                "-pass",
+                "2",
+            ]
+            if audioStreamCounter > 0:
+                if args.mixdown == "copy":
+                    pass2 += copyMixCommand
+                if args.mixdown == "4to3" and audioStreamCounter == 4:
+                    pass2 += fourto3Mixcommand
+                if args.mixdown == "4to2" and audioStreamCounter == 4:
+                    pass2 += fourto2Mixcommand
+                if args.mixdown == "2to1" and audioStreamCounter == 2:
+                    pass2 += twoto1Mixcommand
+            pass2 += [acAbsPath]
+            h264prog.update(t)
+            subprocess.run(pass1)
+            h264prog.update(t)
+            subprocess.run(pass2)
 
-            # execute ffmpeg command
-            ffv1prog.update(t)
-            subprocess.run(ffmpeg_command)
-            ffv1prog.update(t)
+            # sometimes these files are created I'm not sure why
+            current_dir = os.getcwd()
+            if os.path.isfile(os.path.join(current_dir, "ffmpeg2pass-0.log")):
+                os.remove(os.path.join(current_dir, "ffmpeg2pass-0.log"))
+            if os.path.isfile(os.path.join(current_dir, "ffmpeg2pass-0.log.mbtree")):
+                os.remove(os.path.join(current_dir, "ffmpeg2pass-0.log.mbtree"))
+
             # remux to attach framemd5
             if args.embed_framemd5:
                 add_attachment = [
@@ -302,7 +313,7 @@ def ffv1_lossless_transcode(input_metadata, transcode_nameDict, audioStreamCount
                     "mimetype=application/octet-stream",
                     "-metadata:s:t:0",
                     "filename=" + framemd5File,
-                    outputAbsPath,
+                    inputAbsPath,
                 ]
                 if os.path.isfile(tempMasterFile):
                     subprocess.call(add_attachment)
@@ -356,138 +367,6 @@ def checksum_streams(input, audioStreamCounter):
         )
         stream_sum.append(audio_stream_sum.replace("MD5=", ""))
     return stream_sum
-
-
-def two_pass_h264_encoding(audioStreamCounter, outputAbsPath, acAbsPath):
-    with progressbar.ProgressBar(max_value=100) as h264prog:
-        for t in range(100):
-            if os.name == "nt":
-                nullOut = "NUL"
-            else:
-                nullOut = "/dev/null"
-            pass1 = [args.ffmpeg_path]
-            if not args.verbose:
-                pass1 += ["-loglevel", "error"]
-            pass1 += [
-                "-y",
-                "-i",
-                outputAbsPath,
-                "-c:v",
-                "libx264",
-                "-preset",
-                "medium",
-                "-b:v",
-                "8000k",
-                "-pix_fmt",
-                "yuv420p",
-                "-pass",
-                "1",
-            ]
-            h264prog.update(t)
-            if audioStreamCounter > 0:
-                if args.mixdown == "copy":
-                    pass1 += ["-c:a", "aac", "-b:a", "256k"]
-                if args.mixdown == "4to3" and audioStreamCounter == 4:
-                    pass1 += [
-                        "-filter_complex",
-                        "[0:a:0][0:a:1]amerge=inputs=2[a]",
-                        "-map",
-                        "0:v",
-                        "-map",
-                        "[a]",
-                        "-map",
-                        "0:a:2",
-                        "-map",
-                        "0:a:3",
-                    ]
-                if args.mixdown == "4to2" and audioStreamCounter == 4:
-                    pass1 += [
-                        "-filter_complex",
-                        "[0:a:0][0:a:1]amerge=inputs=2[a];[0:a:2][0:a:3]amerge=inputs=2[b]",
-                        "-map",
-                        "0:v",
-                        "-map",
-                        "[a]",
-                        "-map",
-                        "[b]",
-                    ]
-                if args.mixdown == "2to1" and audioStreamCounter == 2:
-                    pass1 += [
-                        "-filter_complex",
-                        "[0:a:0][0:a:1]amerge=inputs=2[a]",
-                        "-map",
-                        "0:v",
-                        "-map",
-                        "[a]",
-                    ]
-            h264prog.update(t)
-            pass1 += ["-f", "mp4", nullOut]
-            pass2 = [args.ffmpeg_path]
-            if not args.verbose:
-                pass2 += ["-loglevel", "error"]
-            pass2 += [
-                "-y",
-                "-i",
-                outputAbsPath,
-                "-c:v",
-                "libx264",
-                "-preset",
-                "medium",
-                "-b:v",
-                "8000k",
-                "-pix_fmt",
-                "yuv420p",
-                "-pass",
-                "2",
-            ]
-            if audioStreamCounter > 0:
-                if args.mixdown == "copy":
-                    pass2 += ["-c:a", "aac", "-b:a", "256k"]
-                if args.mixdown == "4to3" and audioStreamCounter == 4:
-                    pass2 += [
-                        "-filter_complex",
-                        "[0:a:0][0:a:1]amerge=inputs=2[a]",
-                        "-map",
-                        "0:v",
-                        "-map",
-                        "[a]",
-                        "-map",
-                        "0:a:2",
-                        "-map",
-                        "0:a:3",
-                    ]
-                if args.mixdown == "4to2" and audioStreamCounter == 4:
-                    pass2 += [
-                        "-filter_complex",
-                        "[0:a:0][0:a:1]amerge=inputs=2[a];[0:a:2][0:a:3]amerge=inputs=2[b]",
-                        "-map",
-                        "0:v",
-                        "-map",
-                        "[a]",
-                        "-map",
-                        "[b]",
-                    ]
-                if args.mixdown == "2to1" and audioStreamCounter == 2:
-                    pass2 += [
-                        "-filter_complex",
-                        "[0:a:0][0:a:1]amerge=inputs=2[a]",
-                        "-map",
-                        "0:v",
-                        "-map",
-                        "[a]",
-                    ]
-            pass2 += [acAbsPath]
-            h264prog.update(t)
-            subprocess.run(pass1)
-            h264prog.update(t)
-            subprocess.run(pass2)
-
-            # sometimes these files are created I'm not sure why
-            current_dir = os.getcwd()
-            if os.path.isfile(os.path.join(current_dir, "ffmpeg2pass-0.log")):
-                os.remove(os.path.join(current_dir, "ffmpeg2pass-0.log"))
-            if os.path.isfile(os.path.join(current_dir, "ffmpeg2pass-0.log.mbtree")):
-                os.remove(os.path.join(current_dir, "ffmpeg2pass-0.log.mbtree"))
 
 
 def generate_spectrogram(input, channel_layout_list, outputFolder, outputName):

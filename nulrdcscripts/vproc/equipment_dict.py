@@ -40,7 +40,6 @@ def equipment_dict():
         "DPS-295": dps_295,
         "FA-510": fa_510,
         "HD10AVA": hd10ava,
-        "Kona-1-T-R0": kona1,
     }
 
     return equipment_dict
