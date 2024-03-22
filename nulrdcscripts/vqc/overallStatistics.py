@@ -1,7 +1,7 @@
 from collections import namedtuple
 
-error = namedtuple("Error", ["criteria", "video value", "standard value"])
-
+errortuple = namedtuple("Error", ["type", "criteria", "video value", "standard value"])
+errors = {}
 
 def setOperatorIR(fullCriteria):
     """Sets the operator to assess if video value is in range"""
@@ -21,14 +21,14 @@ def setOperatorCL(fullCriteria):
     return operatorCL
 
 
-def runyuvanalysis(videodata, standardsDF, fullCriteria, error):
+def runyuvanalysis(videodata, standardsDF, fullCriteria, errors):
     if fullCriteria.endswith("low"):
         level = "low"
     else:
         level = "high"
     extractSumData = videodata.at(
         fullCriteria, level
-    )  # grabs data from dataframe at this matrix intersection # NEED TO FIX
+    ) 
     extractStandDataBRNG = standardsDF.at(fullCriteria, "brngout")
     extractStandDataClipping = standardsDF.at(fullCriteria, "clipping")
     operatorIR = setOperatorIR(level)
@@ -41,42 +41,57 @@ def runyuvanalysis(videodata, standardsDF, fullCriteria, error):
         equationCL = extractSumData + operatorCL + extractStandDataClipping
         tfCL = eval(equationCL)
         if tfCL:
-            error = {""}
-
+            errors = {'Error Type': 'Clipping', 'criteria':fullCriteria, 'Video Value':extractSumData, 'Standard Value':extractStandDataClipping}
+            #error = errortuple("clipping",fullCriteria,extractSumData,extractStandDataClipping)
+            return errors
+        else:
+            errors = {'Error Type':'Out of Broadcasting Range', 'criteria':fullCriteria, 'Video Value':extractSumData, 'Standard Value': extractStandDataBRNG}
+            #error = errortuple("brngout",fullCriteria,extractSumData,extractStandDataBRNG)
+            return errors
 
 def runcheckyuv(videodata, standardsDF):
     """Runs the yuvchecks by looping through each yuv value and then the level that is being checked. Returns errors."""
     criteria = ["y", "u", "v"]
     levels = ["low", "high"]
     for fullCriteria in (f"{c}{l}" for c in criteria for l in levels):
-        errorsYUV = runyuvanalysis(
+        errors = runyuvanalysis(
             fullCriteria,
             videodata,
             standardsDF,
         )
-    return errorsYUV
+    return errors
 
 
-def runsatanalysis(videodata, standardsDF, error):
-    criteria = "sat'"
+def runsatanalysis(videodata, standardsDF, errors):
+    criteria = "sat"
     leveltoCheck = "max"
     fullCriteria = criteria + leveltoCheck
-    extractSumData = videodata.at(leveltoCheck, fullCriteria)  # ADD
+    extractSumData = videodata.at(leveltoCheck, fullCriteria)  
     extractStandDataBRNG = standardsDF.at(criteria, "brnglimit")
     extractStandDataClipping = standardsDF.at(criteria, "clippinglimit")
     extractStandDataIllegal = standardsDF.at(criteria, "illegal")
     if extractSumData <= extractStandDataBRNG:
-        status = "pass"
-        errorsSat = error(fullCriteria)
+        pass
     else:
         if extractSumData >= extractStandDataIllegal:
-            status = "fail"
-            errorsSat = error(
-                fullCriteria, status, extractSumData, extractStandDataIllegal
-            )
+            errortype = "illegal"
+            errors = {'Error Type': 'Illegal', 'criteria': fullCriteria, 'Video Value': extractSumData, 'Standard Value':extractStandDataIllegal}
+            #error = errortuple("illegal",fullCriteria, extractSumData, extractStandDataIllegal)
+            return errors
         else:
-            status = "fail"
-            errorsSat = error(
-                fullCriteria, status, extractSumData, extractStandDataClipping
-            )
-    return errorsSat
+            errors = {'Error Type':'Clipping','criteria':fullCriteria, 'Video Value': extractSumData, 'Standard Value': extractStandDataClipping}
+            #error = errortuple("clipping", fullCriteria, extractSumData,extractStandDataClipping)
+            return errors
+
+def runTOUTandVREPanalysis(videodata,standardsDF, errors):
+    criterium = ["tout","vrep"]
+    for c in criterium:
+        criteria=criterium[c]
+        level = "max"
+        extractSumData =videodata.at(level, criteria)
+        extractStandDataMax = standardsDF.at(criteria,level)
+        if extractSumData >= extractStandDataMax:
+            errors = {"Error Type": 'Exceeds Standard', 'criteria':criteria,'Video Value':extractSumData, 'Standard Value': extractStandDataMax}
+            return errors
+        else:
+            pass
