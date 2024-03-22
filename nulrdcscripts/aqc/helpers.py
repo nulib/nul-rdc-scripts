@@ -6,6 +6,7 @@ General helper functions for aqc.
 
 from progressbar import *
 import pandas as pd
+import csv
 import os
 import datetime
 
@@ -32,6 +33,23 @@ def print_warnings(warnings: dict):
     print()
     for key in warnings:
         print("\t" + key + ": " + warnings[key])
+
+def write_csv(outfile: str, csv_data: list[dict[str, str]]):
+    """
+    Writes dict data to a csv.
+    
+    :param str outfile: fullpath to output file including extension
+    :param list csv_fields: fieldnames(headers) for csv file
+    :param list csv_data: data to be written to csv
+    """
+
+    csv_fields = list(csv_data[0].keys())
+
+    with open(outfile, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=csv_fields)
+        writer.writeheader()
+        for row in csv_data:
+            writer.writerow(row)
 
 def df_print(df: pd.DataFrame):
 

@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import re
 import json
-from colorama import Style, Fore
+import csv
+from colorama import Style, Fore, Back
 from progressbar import *
 import nulrdcscripts.aqc.warnings as warnings
 import nulrdcscripts.aqc.helpers as helpers
@@ -78,7 +79,6 @@ def main():
                                 for index, item in enumerate(inventory_dict):
                                     if item["filename"] == inv_filename:
                                         inventory_dict[index]["found"] = True
-                                        print("found")
 
                                         # file_data = qc_file(os.path.join(path, filename))
                                         # jsondata.update({filename: file_data})
@@ -97,8 +97,19 @@ def main():
         print("ERROR: " + args.inpath + " could not be opened")
         quit()
 
+    print()
+
+    for item in inventory_dict:
+        if not item["found"]:
+            print(Fore.RED + "Warning: " + Style.BRIGHT 
+                  + item["filename"] + Style.RESET_ALL 
+                  + Fore.RED + " not found in directory!")
+            print(Style.RESET_ALL)
+    csvfile = os.path.join(os.path.dirname(jsonfile), "aqc_log.csv")
+    helpers.write_csv(csvfile, inventory_dict)
+
     # print final message and write json file
-    print("\n" + Fore.LIGHTCYAN_EX + "***QC Finished***" + Style.RESET_ALL)
+    print(Fore.LIGHTCYAN_EX + "***QC Finished***" + Style.RESET_ALL)
     with open(jsonfile, "w", encoding='utf-8') as f:
         print("output in " + jsonfile + "\n")
         json.dump(jsondata, f, ensure_ascii=False, indent=4)
