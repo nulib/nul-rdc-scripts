@@ -3,24 +3,24 @@ import pandas as pd
 from collections import namedtuple
 
 # errortuple = namedtuple("Error", ["type", "criteria", "video value", "standard value"])
-standardcsv = "/Users/_sophia/Documents/GitHub/nul-rdc-scripts/nulrdcscripts/vqc/Video10BitValues.csv"
-standardDF = pd.read_csv(standardcsv, sep=",")
-videodatasum = "/Users/_sophia/Documents/GitHub/nul-rdc-scripts/nulrdcscripts/vqc/testdata.csv"
-videoDSDF = pd.read_csv(videodatasum, sep=",")
+standardcsv = "nulrdcscripts/vqc/Video10BitValues.csv"
+standardDF = pd.read_csv(standardcsv, sep=",",index_col=0)
+videodata = "/Users/_sophia/Documents/GitHub/nul-rdc-scripts/nulrdcscripts/vqc/testdata.csv"
+sumdata = pd.read_csv(videodata,sep=",",index_col=0)
+print(sumdata)
 
-
-def setOperatorIR(fullCriteria):
+def setOperatorIR(level):
     """Sets the operator to assess if video value is in range"""
-    if fullCriteria.endswith("low"):
+    if level.endswith("low"):
         operatorIR = ">"
     else:
         operatorIR = "<"
     return operatorIR
 
 
-def setOperatorCL(fullCriteria):
+def setOperatorCL(level):
     """Sets operator to use to assess clipping"""
-    if fullCriteria.endswith("low"):
+    if level.endswith("low"):
         operatorCL = "<="
     else:
         operatorCL = ">="
@@ -34,18 +34,27 @@ def setLevel(fullCriteria):
         level = "low"
     return level
 
-def runyuvanalysis(videoDSDF, standardDF, fullCriteria,level):
-    extractSumData = videoDSDF.at(fullCriteria, level)
-    extractStandDataBRNG = standardDF.at(fullCriteria, "brngout")
-    extractStandDataClipping = standardDF.at(fullCriteria, "clipping")
-    operatorIR = setOperatorIR(level)
-    equationIR = extractSumData + operatorIR + extractStandDataBRNG
+def setLeveltoCheck(level):
+    if level == "high":
+        leveltoCheck ="max"
+    else:
+        leveltoCheck ="min"
+    return leveltoCheck
+
+def runyuvanalysis(standardDF, sumdata, fullCriteria,level):
+    leveltoCheck = setLeveltoCheck(level)
+    extractSumData = sumdata.at[leveltoCheck, fullCriteria]
+    print(extractSumData)
+    extractStandDataBRNG = standardDF.at[fullCriteria, "brngout"]
+    extractStandDataClipping = standardDF.at[fullCriteria, "clipping"]
+    operatorIR = setOperatorIR(leveltoCheck)
+    equationIR = str(extractSumData) + operatorIR + str(extractStandDataBRNG)
     tfIR = eval(equationIR)
     if tfIR:
         pass
     else:
         operatorCL = setOperatorCL(level)
-        equationCL = extractSumData + operatorCL + extractStandDataClipping
+        equationCL = str(extractSumData) + operatorCL + str(extractStandDataClipping)
         tfCL = eval(equationCL)
         if tfCL:
             errors = {
@@ -67,7 +76,7 @@ def runyuvanalysis(videoDSDF, standardDF, fullCriteria,level):
             return errors
 
 
-def runcheckyuv(videoDSDF, standardsDF):
+def runcheckyuv(standardDF, sumdata):
     """Runs the yuvchecks by looping through each yuv value and then the level that is being checked. Returns errors."""
     yuverrors = {}
     criteria = ["y", "u", "v"]
@@ -75,17 +84,16 @@ def runcheckyuv(videoDSDF, standardsDF):
     for fullCriteria in (f"{c}{l}" for c in criteria for l in levels):
         level = setLevel(fullCriteria)
         yuverrors = runyuvanalysis(
-            videoDSDF,
-            standardsDF,fullCriteria,level
+            standardDF,sumdata,fullCriteria,level
         )
     return yuverrors
 
 
-def runsatanalysis(videoDSDF, standardDF, errors):
+def runsatanalysis(standardDF, sumdata, errors):
     criteria = "sat"
     leveltoCheck = "max"
     fullCriteria = criteria + leveltoCheck
-    extractSumData = videoDSDF.at(leveltoCheck, fullCriteria)
+    extractSumData = sumdata.at(leveltoCheck, fullCriteria)
     extractStandDataBRNG = standardDF.at(criteria, "brnglimit")
     extractStandDataClipping = standardDF.at(criteria, "clippinglimit")
     extractStandDataIllegal = standardDF.at(criteria, "illegal")
@@ -131,11 +139,11 @@ def runTOUTandVREPanalysis(videoDSDF, standardDF, errors):
             pass
 
 
-def runOverallVideo(standardDF, videoDSDF):
-    yuverrors = runcheckyuv(standardDF, videoDSDF)
+def runOverallVideo(standardDF, sumdata):
+    yuverrors = runcheckyuv(standardDF, sumdata)
     print(yuverrors)
     # saterrors = runsatanalysis(standardDF, videoDSDF)
     # toutVREPErrors = runTOUTandVREPanalysis(standardDF, videoDSDF)
 
 
-runOverallVideo(standardDF, videoDSDF)
+runOverallVideo(standardDF, sumdata)
