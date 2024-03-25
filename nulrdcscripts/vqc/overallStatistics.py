@@ -3,9 +3,9 @@ import pandas as pd
 from collections import namedtuple
 
 # errortuple = namedtuple("Error", ["type", "criteria", "video value", "standard value"])
-standardcsv = "nulrdcscripts\\vqc\Video10BitValues.csv"
+standardcsv = "/Users/_sophia/Documents/GitHub/nul-rdc-scripts/nulrdcscripts/vqc/Video10BitValues.csv"
 standardDF = pd.read_csv(standardcsv, sep=",")
-videodatasum = "testdata.csv"
+videodatasum = "/Users/_sophia/Documents/GitHub/nul-rdc-scripts/nulrdcscripts/vqc/testdata.csv"
 videoDSDF = pd.read_csv(videodatasum, sep=",")
 
 
@@ -26,12 +26,15 @@ def setOperatorCL(fullCriteria):
         operatorCL = ">="
     return operatorCL
 
-
-def runyuvanalysis(videoDSDF, standardDF, fullCriteria):
-    if fullCriteria.endswith("low"):
-        level = "low"
+def setLevel(fullCriteria):
+    boollevel = fullCriteria.endswith("high")
+    if boollevel:
+        level ="high"
     else:
-        level = "high"
+        level = "low"
+    return level
+
+def runyuvanalysis(videoDSDF, standardDF, fullCriteria,level):
     extractSumData = videoDSDF.at(fullCriteria, level)
     extractStandDataBRNG = standardDF.at(fullCriteria, "brngout")
     extractStandDataClipping = standardDF.at(fullCriteria, "clipping")
@@ -70,11 +73,10 @@ def runcheckyuv(videoDSDF, standardsDF):
     criteria = ["y", "u", "v"]
     levels = ["low", "high"]
     for fullCriteria in (f"{c}{l}" for c in criteria for l in levels):
-        fullCriteria = str(fullCriteria)
+        level = setLevel(fullCriteria)
         yuverrors = runyuvanalysis(
-            fullCriteria,
             videoDSDF,
-            standardsDF,
+            standardsDF,fullCriteria,level
         )
     return yuverrors
 
