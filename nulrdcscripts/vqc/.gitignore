@@ -1,0 +1,9 @@
+# Prevents CSVs from being uploaded to GitHub and wasting space
+*.csv
+*.conda
+*.vscode
+
+
+# Exceptions
+!Video8BitValues.csv
+!Video10BitValues.csv

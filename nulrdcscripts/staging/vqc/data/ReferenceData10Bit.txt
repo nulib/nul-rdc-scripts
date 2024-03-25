@@ -1,0 +1,36 @@
+10 Bit Data Ranges for Average Videos
+
+Digital Luma Range: 64-940
+Digital Chroma Range: 64 - 960
+Ideal U & V Range: 340 - 680
+Yav: ~512
+Yrang: ~516 - 876
+Uav: ~512
+Vav: ~512
+TOUT: 0 - 0.009
+TOUTc: <10
+SAT Ideal Range: 0 - 88.7
+SATb: <1000 frames
+SATi: <1000 frames
+Hue Ideal Range: 480 - 588 (for skin tones)
+BRNGav: <0.02
+BRNGc: <1000
+MSEf: ~0
+MSEfY: <10
+VREP Ideal: 0
+
+Y Channel Range: 0-1020 IRE
+Y Channel Ideal Range: 64 - 940 IRE
+    Y LOW : 64 IRE
+    Y AVG : 512 IRE
+    Y HIGH : 940 IRE
+
+U Channel Ideal Range: 340 - 680 IRE
+V Channel Ideal Range: 340 - 680 IRE
+
+
+YUV Diff : Closer to 0 the better
+
+SAT Ideal RAnge: 0 - 354.8
+
+
