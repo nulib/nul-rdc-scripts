@@ -1,7 +1,13 @@
+import nulrdcscripts.vqc.setup as setup
+import pandas as pd
 from collections import namedtuple
 
-errortuple = namedtuple("Error", ["type", "criteria", "video value", "standard value"])
-errors = {}
+# errortuple = namedtuple("Error", ["type", "criteria", "video value", "standard value"])
+standardcsv = "nulrdcscripts\\vqc\Video10BitValues.csv"
+standardDF = pd.read_csv(standardcsv, sep=",")
+videodatasum = "testdata.csv"
+videoDSDF = pd.read_csv(videodatasum, sep=",")
+
 
 def setOperatorIR(fullCriteria):
     """Sets the operator to assess if video value is in range"""
@@ -21,16 +27,14 @@ def setOperatorCL(fullCriteria):
     return operatorCL
 
 
-def runyuvanalysis(videodata, standardsDF, fullCriteria, errors):
+def runyuvanalysis(videoDSDF, standardDF, fullCriteria):
     if fullCriteria.endswith("low"):
         level = "low"
     else:
         level = "high"
-    extractSumData = videodata.at(
-        fullCriteria, level
-    ) 
-    extractStandDataBRNG = standardsDF.at(fullCriteria, "brngout")
-    extractStandDataClipping = standardsDF.at(fullCriteria, "clipping")
+    extractSumData = videoDSDF.at(fullCriteria, level)
+    extractStandDataBRNG = standardDF.at(fullCriteria, "brngout")
+    extractStandDataClipping = standardDF.at(fullCriteria, "clipping")
     operatorIR = setOperatorIR(level)
     equationIR = extractSumData + operatorIR + extractStandDataBRNG
     tfIR = eval(equationIR)
@@ -41,57 +45,95 @@ def runyuvanalysis(videodata, standardsDF, fullCriteria, errors):
         equationCL = extractSumData + operatorCL + extractStandDataClipping
         tfCL = eval(equationCL)
         if tfCL:
-            errors = {'Error Type': 'Clipping', 'criteria':fullCriteria, 'Video Value':extractSumData, 'Standard Value':extractStandDataClipping}
-            #error = errortuple("clipping",fullCriteria,extractSumData,extractStandDataClipping)
+            errors = {
+                "Error Type": "Clipping",
+                "criteria": fullCriteria,
+                "Video Value": extractSumData,
+                "Standard Value": extractStandDataClipping,
+            }
+            # error = errortuple("clipping",fullCriteria,extractSumData,extractStandDataClipping)
             return errors
         else:
-            errors = {'Error Type':'Out of Broadcasting Range', 'criteria':fullCriteria, 'Video Value':extractSumData, 'Standard Value': extractStandDataBRNG}
-            #error = errortuple("brngout",fullCriteria,extractSumData,extractStandDataBRNG)
+            errors = {
+                "Error Type": "Out of Broadcasting Range",
+                "criteria": fullCriteria,
+                "Video Value": extractSumData,
+                "Standard Value": extractStandDataBRNG,
+            }
+            # error = errortuple("brngout",fullCriteria,extractSumData,extractStandDataBRNG)
             return errors
 
-def runcheckyuv(videodata, standardsDF):
+
+def runcheckyuv(videoDSDF, standardsDF):
     """Runs the yuvchecks by looping through each yuv value and then the level that is being checked. Returns errors."""
+    yuverrors = {}
     criteria = ["y", "u", "v"]
     levels = ["low", "high"]
     for fullCriteria in (f"{c}{l}" for c in criteria for l in levels):
-        errors = runyuvanalysis(
+        fullCriteria = str(fullCriteria)
+        yuverrors = runyuvanalysis(
             fullCriteria,
-            videodata,
+            videoDSDF,
             standardsDF,
         )
-    return errors
+    return yuverrors
 
 
-def runsatanalysis(videodata, standardsDF, errors):
+def runsatanalysis(videoDSDF, standardDF, errors):
     criteria = "sat"
     leveltoCheck = "max"
     fullCriteria = criteria + leveltoCheck
-    extractSumData = videodata.at(leveltoCheck, fullCriteria)  
-    extractStandDataBRNG = standardsDF.at(criteria, "brnglimit")
-    extractStandDataClipping = standardsDF.at(criteria, "clippinglimit")
-    extractStandDataIllegal = standardsDF.at(criteria, "illegal")
+    extractSumData = videoDSDF.at(leveltoCheck, fullCriteria)
+    extractStandDataBRNG = standardDF.at(criteria, "brnglimit")
+    extractStandDataClipping = standardDF.at(criteria, "clippinglimit")
+    extractStandDataIllegal = standardDF.at(criteria, "illegal")
     if extractSumData <= extractStandDataBRNG:
         pass
     else:
         if extractSumData >= extractStandDataIllegal:
-            errortype = "illegal"
-            errors = {'Error Type': 'Illegal', 'criteria': fullCriteria, 'Video Value': extractSumData, 'Standard Value':extractStandDataIllegal}
-            #error = errortuple("illegal",fullCriteria, extractSumData, extractStandDataIllegal)
+            errors = {
+                "Error Type": "Illegal",
+                "criteria": fullCriteria,
+                "Video Value": extractSumData,
+                "Standard Value": extractStandDataIllegal,
+            }
+            # error = errortuple("illegal",fullCriteria, extractSumData, extractStandDataIllegal)
             return errors
         else:
-            errors = {'Error Type':'Clipping','criteria':fullCriteria, 'Video Value': extractSumData, 'Standard Value': extractStandDataClipping}
-            #error = errortuple("clipping", fullCriteria, extractSumData,extractStandDataClipping)
+            errors = {
+                "Error Type": "Clipping",
+                "criteria": fullCriteria,
+                "Video Value": extractSumData,
+                "Standard Value": extractStandDataClipping,
+            }
+            # error = errortuple("clipping", fullCriteria, extractSumData,extractStandDataClipping)
             return errors
 
-def runTOUTandVREPanalysis(videodata,standardsDF, errors):
-    criterium = ["tout","vrep"]
+
+def runTOUTandVREPanalysis(videoDSDF, standardDF, errors):
+    criterium = ["tout", "vrep"]
     for c in criterium:
-        criteria=criterium[c]
+        criteria = criterium[c]
         level = "max"
-        extractSumData =videodata.at(level, criteria)
-        extractStandDataMax = standardsDF.at(criteria,level)
+        extractSumData = videoDSDF.at(level, criteria)
+        extractStandDataMax = standardDF.at(criteria, level)
         if extractSumData >= extractStandDataMax:
-            errors = {"Error Type": 'Exceeds Standard', 'criteria':criteria,'Video Value':extractSumData, 'Standard Value': extractStandDataMax}
+            errors = {
+                "Error Type": "Exceeds Standard",
+                "criteria": criteria,
+                "Video Value": extractSumData,
+                "Standard Value": extractStandDataMax,
+            }
             return errors
         else:
             pass
+
+
+def runOverallVideo(standardDF, videoDSDF):
+    yuverrors = runcheckyuv(standardDF, videoDSDF)
+    print(yuverrors)
+    # saterrors = runsatanalysis(standardDF, videoDSDF)
+    # toutVREPErrors = runTOUTandVREPanalysis(standardDF, videoDSDF)
+
+
+runOverallVideo(standardDF, videoDSDF)

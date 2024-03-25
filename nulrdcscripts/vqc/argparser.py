@@ -45,7 +45,6 @@ parser.add_argument(
     "-vt",
     choices=["bw", "blackandwhite", "co", "color"],
     action="store",
-    required=True,
     dest="videotype",
     help="Tells script what video type to run: black and white or color",
 )

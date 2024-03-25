@@ -1,5 +1,4 @@
-﻿10 Bit Standard Values,,,,,,,,,
-criteria,brngout,clipping,avglow,avghigh,brnglimit,clippinglimit,illegal,ideal,max
+﻿criteria,brngout,clipping,avglow,avghigh,brnglimit,clippinglimit,illegal,ideal,max
 ylow,64,0,,,,,,,
 yhigh,940,1023,,,,,,,
 yavg,,,321,682,,,,,

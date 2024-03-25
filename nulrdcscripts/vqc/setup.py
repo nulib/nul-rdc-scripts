@@ -33,10 +33,10 @@ def outputCheck(outputPath, inputPath):
 def setVideoBitDepth(videobitdepth):
     """Sets and assigns the values for bit depth for data comparison"""
     if videobitdepth == "8bit" or "8" or "8Bit":
-        standardsDF = pd.read_csv(csv8Bit, sep=",", index_col="criteria")
+        standardDF = pd.read_csv(csv8Bit, sep=",", index_col="criteria")
     elif videobitdepth == "10bit" or "10" or "10Bit":
-        standardsDF = pd.read_csv(csv10Bit, sep=",", index_col="criteria")
-    return standardsDF
+        standardDF = pd.read_csv(csv10Bit, sep=",", index_col="criteria")
+    return standardDF
 
 
 def setInputFileType(inputPath):
