@@ -43,4 +43,4 @@ sumVideoStatsCSV = dataparsing.videostatstocsv(videoDSDF)
 sumAudioStatsCSV = dataparsing.audiostatstocsv(audioDSDF)
 print("*****Generated Full Video Descriptive Statistics*****")
 
-# print("*****Analysing Full Video Descriptive Statistics*****")
+print("*****Analysing Full Video Descriptive Statistics*****")
