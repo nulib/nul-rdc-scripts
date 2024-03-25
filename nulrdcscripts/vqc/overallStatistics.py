@@ -5,13 +5,12 @@ from collections import namedtuple
 # errortuple = namedtuple("Error", ["type", "criteria", "video value", "standard value"])
 standardcsv = "nulrdcscripts/vqc/Video10BitValues.csv"
 standardDF = pd.read_csv(standardcsv, sep=",",index_col=0)
-videodata = "/Users/_sophia/Documents/GitHub/nul-rdc-scripts/nulrdcscripts/vqc/testdata.csv"
+videodata = "nulrdcscripts/vqc/testdata.csv"
 sumdata = pd.read_csv(videodata,sep=",",index_col=0)
-print(sumdata)
 
 def setOperatorIR(level):
     """Sets the operator to assess if video value is in range"""
-    if level.endswith("low"):
+    if level == ("low"):
         operatorIR = ">"
     else:
         operatorIR = "<"
@@ -20,7 +19,7 @@ def setOperatorIR(level):
 
 def setOperatorCL(level):
     """Sets operator to use to assess clipping"""
-    if level.endswith("low"):
+    if level == ("low"):
         operatorCL = "<="
     else:
         operatorCL = ">="
@@ -34,6 +33,7 @@ def setLevel(fullCriteria):
         level = "low"
     return level
 
+
 def setLeveltoCheck(level):
     if level == "high":
         leveltoCheck ="max"
@@ -44,7 +44,6 @@ def setLeveltoCheck(level):
 def runyuvanalysis(standardDF, sumdata, fullCriteria,level):
     leveltoCheck = setLeveltoCheck(level)
     extractSumData = sumdata.at[leveltoCheck, fullCriteria]
-    print(extractSumData)
     extractStandDataBRNG = standardDF.at[fullCriteria, "brngout"]
     extractStandDataClipping = standardDF.at[fullCriteria, "clipping"]
     operatorIR = setOperatorIR(leveltoCheck)
@@ -83,7 +82,8 @@ def runcheckyuv(standardDF, sumdata):
     levels = ["low", "high"]
     for fullCriteria in (f"{c}{l}" for c in criteria for l in levels):
         level = setLevel(fullCriteria)
-        yuverrors = runyuvanalysis(
+        errorcriteria=str(fullCriteria)
+        yuverrors[errorcriteria]= runyuvanalysis(
             standardDF,sumdata,fullCriteria,level
         )
     return yuverrors
