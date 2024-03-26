@@ -89,14 +89,14 @@ def runcheckyuv(standardDF, sumdata):
     return yuverrors
 
 
-def runsatanalysis(standardDF, sumdata, errors):
+def runsatanalysis(standardDF, sumdata):
     criteria = "sat"
     leveltoCheck = "max"
     fullCriteria = criteria + leveltoCheck
-    extractSumData = sumdata.at(leveltoCheck, fullCriteria)
-    extractStandDataBRNG = standardDF.at(criteria, "brnglimit")
-    extractStandDataClipping = standardDF.at(criteria, "clippinglimit")
-    extractStandDataIllegal = standardDF.at(criteria, "illegal")
+    extractSumData = sumdata.at[leveltoCheck, fullCriteria]
+    extractStandDataBRNG = standardDF.at[criteria, "brnglimit"]
+    extractStandDataClipping = standardDF.at[criteria, "clippinglimit"]
+    extractStandDataIllegal = standardDF.at[criteria, "illegal"]
     if extractSumData <= extractStandDataBRNG:
         pass
     else:
@@ -120,13 +120,14 @@ def runsatanalysis(standardDF, sumdata, errors):
             return errors
 
 
-def runTOUTandVREPanalysis(videoDSDF, standardDF, errors):
+def runTOUTandVREPanalysis(standardDF, sumdata):
     criterium = ["tout", "vrep"]
-    for c in criterium:
-        criteria = criterium[c]
+    i=0
+    while i<len(criterium):
+        criteria = criterium[i]
         level = "max"
-        extractSumData = videoDSDF.at(level, criteria)
-        extractStandDataMax = standardDF.at(criteria, level)
+        extractSumData = sumdata.at[level, criteria]
+        extractStandDataMax = standardDF.at[criteria, level]
         if extractSumData >= extractStandDataMax:
             errors = {
                 "Error Type": "Exceeds Standard",
@@ -137,12 +138,16 @@ def runTOUTandVREPanalysis(videoDSDF, standardDF, errors):
             return errors
         else:
             pass
+        i+=1
 
 
 def runOverallVideo(standardDF, sumdata):
     yuverrors = runcheckyuv(standardDF, sumdata)
+    saterrors =runsatanalysis(standardDF,sumdata)
+    toutVREPErrors = runTOUTandVREPanalysis(standardDF,sumdata)
+    dict_list = [yuverrors,saterrors,toutVREPErrors]
     with open("sample.json","w") as outfile:
-        json.dump(yuverrors,outfile)
+        json.dump(dict_list,outfile)
     # saterrors = runsatanalysis(standardDF, videoDSDF)
     # toutVREPErrors = runTOUTandVREPanalysis(standardDF, videoDSDF)
 
