@@ -1,6 +1,6 @@
 import nulrdcscripts.vqc.setup as setup
 import pandas as pd
-from collections import namedtuple
+import json
 
 # errortuple = namedtuple("Error", ["type", "criteria", "video value", "standard value"])
 standardcsv = "nulrdcscripts/vqc/Video10BitValues.csv"
@@ -46,7 +46,7 @@ def runyuvanalysis(standardDF, sumdata, fullCriteria,level):
     extractSumData = sumdata.at[leveltoCheck, fullCriteria]
     extractStandDataBRNG = standardDF.at[fullCriteria, "brngout"]
     extractStandDataClipping = standardDF.at[fullCriteria, "clipping"]
-    operatorIR = setOperatorIR(leveltoCheck)
+    operatorIR = setOperatorIR(level)
     equationIR = str(extractSumData) + operatorIR + str(extractStandDataBRNG)
     tfIR = eval(equationIR)
     if tfIR:
@@ -141,7 +141,8 @@ def runTOUTandVREPanalysis(videoDSDF, standardDF, errors):
 
 def runOverallVideo(standardDF, sumdata):
     yuverrors = runcheckyuv(standardDF, sumdata)
-    print(yuverrors)
+    with open("sample.json","w") as outfile:
+        json.dump(yuverrors,outfile)
     # saterrors = runsatanalysis(standardDF, videoDSDF)
     # toutVREPErrors = runTOUTandVREPanalysis(standardDF, videoDSDF)
 
