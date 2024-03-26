@@ -1,0 +1,28 @@
+Date: {pl_date}
+Your video {pl_filename}, contains the following errors:
+
+YLow {pl_ylpassfail}:
+    Error Type: {pl_ylerrorType}
+    Video Value: {pl_ylVideoValue}
+
+YHigh {pl_yhpassfail}:
+    Error Type: {pl_yherrorType}
+    Video Value: {pl_yhVideoValue}
+
+
+ULow {pl_ulpassfail}:
+    Error Type: {pl_ulerrorType}
+    Video Value: {pl_ulVideoValue}
+
+UHigh {pl_uhpassfail}:
+    Error Type: {pl_uherrorType}
+    Video Value: {pl_uhVideoValue}
+
+VLow {pl_vlpassfail}:
+    Error Type: {pl_vlerrorType}
+    Video Value: {pl_vlVideoValue}
+
+VHigh {pl_vhpassfail}:
+    Error Type: {pl_vherrorType}
+    Video Value: {pl_vhVideoValue}
+
