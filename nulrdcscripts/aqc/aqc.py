@@ -139,8 +139,9 @@ def main():
 
     # print final message and write json file
     print(Fore.LIGHTCYAN_EX + "***QC Finished***" + Style.RESET_ALL)
+    print("general output in " + csvfile)
     with open(jsonfile, "w", encoding='utf-8') as f:
-        print("output in " + jsonfile + "\n")
+        print("detailed output in " + jsonfile + "\n")
         json.dump(jsondata, f, ensure_ascii=False, indent=4)
 
 def qc_file(file: str):
