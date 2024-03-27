@@ -31,7 +31,7 @@ FLAT_FACTOR_THRESH = 15
 """threshold for flatness to be considered clipping"""
 COOLDOWN = 5
 """length that a warning is considered a duration instead of separate events"""
-SILENCE_MIN_LENGTH = 5
+SILENCE_MIN_LENGTH = 10
 """minimum length for a silent period to be counted"""
 ENTROPY_THRESH = .3
 """upper threshold for entropy to be considered silence"""
@@ -42,6 +42,14 @@ def main():
     Runs qc on a single file or a project directory. 
     Writes output to json file.
     """
+
+    wav_policy = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "mediaconch_policies/wav_policy.xml",
+    )
+    mkv_policy = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "mediaconch_policies/mkv_policy.xml")
 
     jsondata = {}
 
@@ -62,35 +70,51 @@ def main():
             inventory_path = i_helpers.find_inventory(args.inpath)
             
         if inventory_path:
-            inventory_dict = i_helpers.load_inventory(inventory_path)
-            dirs = helpers.get_immediate_subdirectories(args.inpath)
-            for dirname in dirs:
-                pdir = os.path.join(args.inpath, dirname, "p")
-                if os.path.isdir(pdir):
-                    for path, dirs, filenames in os.walk(pdir):
-                        for filename in filenames:
-                            # save qc data for each p-file
+            inventory_dictlist = i_helpers.load_inventory(inventory_path)
+        else:
+            inventory_dictlist = []
 
-                            if filename.endswith(".mkv") or filename.endswith(".wav"):
-                                
+        dirs = helpers.get_immediate_subdirectories(args.inpath)
+        for dirname in dirs:
+            pdir = os.path.join(args.inpath, dirname, "p")
+            if os.path.isdir(pdir):
+                for path, dirs, filenames in os.walk(pdir):
+                    for filename in filenames:
+                        # save qc data for each p-file
+
+                        if filename.endswith(".mkv") or filename.endswith(".wav"):
+                            file = os.path.join(path, filename)
+                            if inventory_path:
                                 inv_filename = os.path.splitext(filename)[0]
                                 if inv_filename.endswith("_p"):
                                     inv_filename = inv_filename[:-2]
-                                for index, item in enumerate(inventory_dict):
+                                for index, item in enumerate(inventory_dictlist):
                                     if item["filename"] == inv_filename:
-                                        inventory_dict[index]["found"] = True
+                                        
+                                        inventory_dictlist[index]["found"] = True
+                                        if filename.endswith(".mkv"):
+                                            file_check = helpers.mediaconch_policy_check(file, mkv_policy)
+                                        elif filename.endswith(".wav"):
+                                            file_check = helpers.mediaconch_policy_check(file, wav_policy)
 
-                                        # file_data = qc_file(os.path.join(path, filename))
-                                        # jsondata.update({filename: file_data})
-        else:
-            dirs = helpers.get_immediate_subdirectories(args.inpath)
-            for dirname in dirs:
-                pdir = os.path.join(args.inpath, dirname, "p")
-                if os.path.isdir(pdir):
-                    for path, dirs, filenames in os.walk(pdir):
-                        for filename in filenames:
-                            # save qc data for each p-file
-                            if filename.endswith(".mkv") or filename.endswith(".wav"):
+                                        inventory_dictlist[index]["file_check"] = file_check
+
+                                        file_data = qc_file(file)
+                                        jsondata.update({filename: file_data})
+                                        inventory_dictlist[index].update({
+                                            "clipping": ("Clipping" in jsondata[filename]),
+                                            "silence": ("Silence" in jsondata[filename])
+                                        })
+                            else:
+                                file_data = qc_file(os.path.join(path, filename))
+                                jsondata.update({filename: file_data})
+                                inventory_dictlist.append({
+                                    "filename": filename,
+                                    "found": True,
+                                    "file_check": False,
+                                    "clipping": ("Clipping" in jsondata),
+                                    "silence": ("Silence" in jsondata)
+                                })
                                 file_data = qc_file(os.path.join(path, filename))
                                 jsondata.update({filename: file_data})
     else:
@@ -99,14 +123,14 @@ def main():
 
     print()
 
-    for item in inventory_dict:
+    for item in inventory_dictlist:
         if not item["found"]:
             print(Fore.RED + "Warning: " + Style.BRIGHT 
                   + item["filename"] + Style.RESET_ALL 
                   + Fore.RED + " not found in directory!")
             print(Style.RESET_ALL)
     csvfile = os.path.join(os.path.dirname(jsonfile), "aqc_log.csv")
-    helpers.write_csv(csvfile, inventory_dict)
+    helpers.write_csv(csvfile, inventory_dictlist)
 
     # print final message and write json file
     print(Fore.LIGHTCYAN_EX + "***QC Finished***" + Style.RESET_ALL)

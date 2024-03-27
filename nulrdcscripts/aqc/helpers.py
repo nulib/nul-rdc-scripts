@@ -9,6 +9,7 @@ import pandas as pd
 import csv
 import os
 import datetime
+import subprocess
 
 def print_lstats(lstats: dict):
 
@@ -149,3 +150,12 @@ def get_immediate_subdirectories(folder: str):
     return [
         name for name in os.listdir(folder) if os.path.isdir(os.path.join(folder, name))
     ]
+
+def mediaconch_policy_check(input, policy):
+    mediaconchResults = (
+        subprocess.check_output(["mediaconch", "--policy=" + policy, input])
+        .decode("ascii")
+        .rstrip()
+        .split()[0]
+    )
+    return mediaconchResults == "pass!"
