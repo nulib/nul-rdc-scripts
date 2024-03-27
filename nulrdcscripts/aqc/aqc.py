@@ -108,12 +108,17 @@ def main():
                             else:
                                 file_data = qc_file(os.path.join(path, filename))
                                 jsondata.update({filename: file_data})
+                                if filename.endswith(".mkv"):
+                                    file_check = helpers.mediaconch_policy_check(file, mkv_policy)
+                                elif filename.endswith(".wav"):
+                                    file_check = helpers.mediaconch_policy_check(file, wav_policy)
+
                                 inventory_dictlist.append({
                                     "filename": filename,
                                     "found": True,
-                                    "file_check": False,
-                                    "clipping": ("Clipping" in jsondata),
-                                    "silence": ("Silence" in jsondata)
+                                    "file_check": file_check,
+                                    "clipping": ("Clipping" in jsondata[filename]),
+                                    "silence": ("Silence" in jsondata[filename])
                                 })
                                 file_data = qc_file(os.path.join(path, filename))
                                 jsondata.update({filename: file_data})
