@@ -3,10 +3,12 @@ import pandas as pd
 import json
 
 # errortuple = namedtuple("Error", ["type", "criteria", "video value", "standard value"])
-standardcsv = "nulrdcscripts/vqc/Video10BitValues.csv"
-standardDF = pd.read_csv(standardcsv, sep=",",index_col=0)
-videodata = "nulrdcscripts/vqc/testdata.csv"
-sumdata = pd.read_csv(videodata,sep=",",index_col=0)
+standardcsv = "Video10BitValues.csv"
+standardDF = pd.read_csv(standardcsv, sep=",", index_col=0)
+videodata = "testdata.csv"
+sumdata = pd.read_csv(videodata, sep=",", index_col=0)
+errors = {}
+
 
 def setOperatorIR(level):
     """Sets the operator to assess if video value is in range"""
@@ -25,10 +27,11 @@ def setOperatorCL(level):
         operatorCL = ">="
     return operatorCL
 
+
 def setLevel(fullCriteria):
     boollevel = fullCriteria.endswith("high")
     if boollevel:
-        level ="high"
+        level = "high"
     else:
         level = "low"
     return level
@@ -36,12 +39,13 @@ def setLevel(fullCriteria):
 
 def setLeveltoCheck(level):
     if level == "high":
-        leveltoCheck ="max"
+        leveltoCheck = "max"
     else:
-        leveltoCheck ="min"
+        leveltoCheck = "min"
     return leveltoCheck
 
-def runyuvanalysis(standardDF, sumdata, fullCriteria,level):
+
+def runyuvanalysis(standardDF, sumdata, fullCriteria, level):
     leveltoCheck = setLeveltoCheck(level)
     extractSumData = sumdata.at[leveltoCheck, fullCriteria]
     extractStandDataBRNG = standardDF.at[fullCriteria, "brngout"]
@@ -58,7 +62,6 @@ def runyuvanalysis(standardDF, sumdata, fullCriteria,level):
         if tfCL:
             errors = {
                 "Error Type": "Clipping",
-                "criteria": fullCriteria,
                 "Video Value": extractSumData,
                 "Standard Value": extractStandDataClipping,
             }
@@ -67,7 +70,6 @@ def runyuvanalysis(standardDF, sumdata, fullCriteria,level):
         else:
             errors = {
                 "Error Type": "Out of Broadcasting Range",
-                "criteria": fullCriteria,
                 "Video Value": extractSumData,
                 "Standard Value": extractStandDataBRNG,
             }
@@ -77,16 +79,13 @@ def runyuvanalysis(standardDF, sumdata, fullCriteria,level):
 
 def runcheckyuv(standardDF, sumdata):
     """Runs the yuvchecks by looping through each yuv value and then the level that is being checked. Returns errors."""
-    yuverrors = {}
     criteria = ["y", "u", "v"]
     levels = ["low", "high"]
     for fullCriteria in (f"{c}{l}" for c in criteria for l in levels):
         level = setLevel(fullCriteria)
-        errorcriteria=str(fullCriteria)
-        yuverrors[errorcriteria]= runyuvanalysis(
-            standardDF,sumdata,fullCriteria,level
-        )
-    return yuverrors
+        errorcriteria = str(fullCriteria)
+        errors[errorcriteria] = runyuvanalysis(standardDF, sumdata, fullCriteria, level)
+    return errors
 
 
 def runsatanalysis(standardDF, sumdata):
@@ -101,53 +100,51 @@ def runsatanalysis(standardDF, sumdata):
         pass
     else:
         if extractSumData >= extractStandDataIllegal:
-            errors = {
+            errors[fullCriteria] = {
                 "Error Type": "Illegal",
-                "criteria": fullCriteria,
                 "Video Value": extractSumData,
                 "Standard Value": extractStandDataIllegal,
             }
             # error = errortuple("illegal",fullCriteria, extractSumData, extractStandDataIllegal)
-            return errors
         else:
-            errors = {
+            errors[fullCriteria] = {
                 "Error Type": "Clipping",
-                "criteria": fullCriteria,
                 "Video Value": extractSumData,
                 "Standard Value": extractStandDataClipping,
             }
             # error = errortuple("clipping", fullCriteria, extractSumData,extractStandDataClipping)
-            return errors
+        return errors
 
 
 def runTOUTandVREPanalysis(standardDF, sumdata):
     criterium = ["tout", "vrep"]
-    i=0
-    while i<len(criterium):
-        criteria = criterium[i]
+    for criteria in criterium:
         level = "max"
         extractSumData = sumdata.at[level, criteria]
         extractStandDataMax = standardDF.at[criteria, level]
-        if extractSumData >= extractStandDataMax:
-            errors = {
-                "Error Type": "Exceeds Standard",
-                "criteria": criteria,
-                "Video Value": extractSumData,
-                "Standard Value": extractStandDataMax,
-            }
-            return errors
-        else:
-            pass
-        i+=1
+        errors = toutVREPcheck(extractSumData, extractStandDataMax, criteria)
+    return errors
+
+
+def toutVREPcheck(extractSumData, extractStandDataMax, criteria):
+    if extractSumData >= extractStandDataMax:
+        errors[criteria] = {
+            "Error Type": "Exceeds Standard",
+            "Video Value": extractSumData,
+            "Standard Value": extractStandDataMax,
+        }
+        return errors
+    else:
+        pass
 
 
 def runOverallVideo(standardDF, sumdata):
-    yuverrors = runcheckyuv(standardDF, sumdata)
-    saterrors =runsatanalysis(standardDF,sumdata)
-    toutVREPErrors = runTOUTandVREPanalysis(standardDF,sumdata)
-    dict_list = [yuverrors,saterrors,toutVREPErrors]
-    with open("sample.json","w") as outfile:
-        json.dump(dict_list,outfile)
+    runcheckyuv(standardDF, sumdata)
+    runsatanalysis(standardDF, sumdata)
+    runTOUTandVREPanalysis(standardDF, sumdata)
+    # dict_list = [yuverrors, saterrors, toutVREPErrors]
+    with open("sample.json", "w") as outfile:
+        json.dump(errors, outfile, indent=4)
     # saterrors = runsatanalysis(standardDF, videoDSDF)
     # toutVREPErrors = runTOUTandVREPanalysis(standardDF, videoDSDF)
 
