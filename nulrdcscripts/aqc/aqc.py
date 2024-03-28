@@ -53,28 +53,76 @@ def main():
 
     jsondata = {}
 
+    # validate/find inventory path
+    if args.inventory:
+        i_helpers.check_inventory(args.inventory)
+        inventory_path = args.inventory
+    else:
+        inventory_path = i_helpers.find_inventory(args.inpath)
+    
+    # initialize inventory
+    if inventory_path:
+        inventory_dictlist = i_helpers.load_inventory(inventory_path)
+    else:
+        inventory_dictlist = []
+
     # input is a file, run a single file
     if os.path.isfile(args.inpath):
         jsonfile = os.path.splitext(args.inpath)[0] + ".json"
-        basename = os.path.basename(args.inpath)
-        jsondata = {basename: qc_file(args.inpath)}
+        filename = os.path.basename(args.inpath)
+
+        if inventory_path:
+            # inventory filename doesn't have extension or _p
+            inv_filename = os.path.splitext(filename)[0]
+            if inv_filename.endswith("_p"):
+                inv_filename = inv_filename[:-2]
+            # search inventory for file
+            for index, item in enumerate(inventory_dictlist):
+                if item["filename"] == inv_filename:
+                    
+                    inventory_dictlist[index]["found"] = True
+
+                    # run mediaconch policy
+                    if filename.endswith(".mkv"):
+                        file_check = helpers.mediaconch_policy_check(args.inpath, mkv_policy)
+                    elif filename.endswith(".wav"):
+                        file_check = helpers.mediaconch_policy_check(args.inpath, wav_policy)
+                    inventory_dictlist[index]["file_check"] = file_check
+
+                    # get astats data
+                    file_data = qc_file(file)
+                    jsondata.update({filename: file_data})
+                    # update inventory info
+                    inventory_dictlist[index].update({
+                        "clipping": ("Clipping" in jsondata[filename]),
+                        "silence": ("Silence" in jsondata[filename])
+                    })
+        # if inventory wasn't loaded
+        else:
+
+            # get astats data
+            file_data = qc_file(args.inpath)
+            jsondata.update({filename: file_data})
+            # run mediaconch policy
+            if filename.endswith(".mkv"):
+                file_check = helpers.mediaconch_policy_check(args.inpath, mkv_policy)
+            elif filename.endswith(".wav"):
+                file_check = helpers.mediaconch_policy_check(args.inpath, wav_policy)
+            # add entry to inventory
+            inventory_dictlist.append({
+                "filename": filename,
+                "found": True,
+                "file_check": file_check,
+                "clipping": ("Clipping" in jsondata[filename]),
+                "silence": ("Silence" in jsondata[filename])
+            })
+            # add astats data
+            jsondata.update({filename: file_data})
+
 
     # input is a directory, run through every p file
     elif os.path.isdir(args.inpath):
         jsonfile = os.path.join(args.inpath, os.path.basename(args.inpath) + ".json")
-
-        # validate/find inventory path
-        if args.inventory:
-            i_helpers.check_inventory(args.inventory)
-            inventory_path = args.inventory
-        else:
-            inventory_path = i_helpers.find_inventory(args.inpath)
-        
-        # initialize inventory
-        if inventory_path:
-            inventory_dictlist = i_helpers.load_inventory(inventory_path)
-        else:
-            inventory_dictlist = []
 
         # go though every folder
         dirs = helpers.get_immediate_subdirectories(args.inpath)
@@ -134,7 +182,6 @@ def main():
                                     "silence": ("Silence" in jsondata[filename])
                                 })
                                 # add astats data
-                                file_data = qc_file(os.path.join(path, filename))
                                 jsondata.update({filename: file_data})
     else:
         print("ERROR: " + args.inpath + " could not be opened")
@@ -187,8 +234,7 @@ def qc_file(file: str):
     jsondata = {}
 
     # get astats
-    if args.find_clipping or args.find_silence:
-        adf = get_astats(infile, txtfile)
+    adf = get_astats(infile, txtfile)
         
 
     # get loudness stats
@@ -424,6 +470,7 @@ def graph_astats(adf: pd.DataFrame):
     :param pandas.DataFrame adf: DataFrame with astats data
     """
 
+    """
     columns = [
         "Overall.Entropy", 
         "Overall.RMS_level",
@@ -432,6 +479,41 @@ def graph_astats(adf: pd.DataFrame):
     ]
     adf.plot(x='pts_time',y=columns, subplots=True, layout=(2,2))
     plt.show()
+    """
+
+    xaxis = adf["pts_time"][1:-1].to_list()
+
+    columns = [
+        "Overall.RMS_level",
+        "Overall.Peak_level",  
+        "Overall.Entropy", 
+        "Overall.Flat_factor",
+    ]
+
+    if os.path.isfile(args.inpath):
+        graphs_dir = os.path.join(os.path.dirname(args.inpath), "graphs")
+    else:
+        graphs_dir = os.path.join(args.inpath, "graphs")
+    if not os.path.isdir(graphs_dir):
+        os.mkdir(graphs_dir)
+
+    for column in columns:
+        
+        if column == "Overall.Entropy":
+            plt.axhline(y = ENTROPY_THRESH, color = 'r', linestyle = ':')
+        if column == "Overall.Flat_factor":
+            plt.axhline(y = FLAT_FACTOR_THRESH, color = 'r', linestyle = ':')
+
+        yaxis = adf[column][1:-1].to_list()
+        plt.plot(xaxis, yaxis)
+        plt.xlabel("time (s)")
+        plt.title(column)
+        padding = (max(yaxis) - min(yaxis)) / 20.
+        plt.ylim(min(yaxis) - padding, max(yaxis) + padding)
+        
+        image_path = os.path.join(graphs_dir, column + ".png")
+        plt.savefig(image_path)
+        plt.clf()
 
 if __name__ == "__main__":
     main()
