@@ -1,13 +1,12 @@
-from jinja2 import Template
+from jinja2 import Template as temp
 
 values = ["clipping","illegal","brng","Exceeds Standards"]
 v=0
-def videoOutData(errors):
-    for i in errors:
-            for v in values:
-                value = values[v]
-                errortype = errors.get("Error Type")
 
-
-def funneldata(errors):
-     pass
+def fullvideoSVR (errors):
+    ylpassfail = errors[ylow]["Pass/Fail"]
+    ylVideoValue == errors[ylow]["Video Value"]
+    if ylpassfail == "Pass":
+        pass
+    else:
+        ylVideoValue

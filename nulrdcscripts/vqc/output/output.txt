@@ -26,3 +26,14 @@ VHigh {pl_vhpassfail}:
     Error Type: {pl_vherrorType}
     Video Value: {pl_vhVideoValue}
 
+SAT {pl_satpassfail}:
+    Error Type: {pl_saterrorType}
+    Video Value: {pl_satVideoValue}
+
+TOUT {pl_toutpassfail}:
+    Error Type: {pl_touterrorType}
+    Video Value: {pl_toutVideoValue}
+
+VREP {pl_vreppassfail}:
+    Error Type: {pl_vreperrorType}
+    Video Value: {pl_vrepVideoValue}
