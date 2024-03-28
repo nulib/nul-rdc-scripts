@@ -63,56 +63,69 @@ def main():
     elif os.path.isdir(args.inpath):
         jsonfile = os.path.join(args.inpath, os.path.basename(args.inpath) + ".json")
 
+        # validate/find inventory path
         if args.inventory:
             i_helpers.check_inventory(args.inventory)
             inventory_path = args.inventory
         else:
             inventory_path = i_helpers.find_inventory(args.inpath)
-            
+        
+        # initialize inventory
         if inventory_path:
             inventory_dictlist = i_helpers.load_inventory(inventory_path)
         else:
             inventory_dictlist = []
 
+        # go though every folder
         dirs = helpers.get_immediate_subdirectories(args.inpath)
         for dirname in dirs:
             pdir = os.path.join(args.inpath, dirname, "p")
             if os.path.isdir(pdir):
                 for path, dirs, filenames in os.walk(pdir):
                     for filename in filenames:
-                        # save qc data for each p-file
-
+                        
+                        # ignores any files that aren't .mkv or .wav in p folders
                         if filename.endswith(".mkv") or filename.endswith(".wav"):
                             file = os.path.join(path, filename)
+                            # if an inventory was loaded
                             if inventory_path:
+                                # inventory filename doesn't have extension or _p
                                 inv_filename = os.path.splitext(filename)[0]
                                 if inv_filename.endswith("_p"):
                                     inv_filename = inv_filename[:-2]
+                                # search inventory for file
                                 for index, item in enumerate(inventory_dictlist):
                                     if item["filename"] == inv_filename:
                                         
                                         inventory_dictlist[index]["found"] = True
+
+                                        # run mediaconch policy
                                         if filename.endswith(".mkv"):
                                             file_check = helpers.mediaconch_policy_check(file, mkv_policy)
                                         elif filename.endswith(".wav"):
                                             file_check = helpers.mediaconch_policy_check(file, wav_policy)
-
                                         inventory_dictlist[index]["file_check"] = file_check
 
+                                        # get astats data
                                         file_data = qc_file(file)
                                         jsondata.update({filename: file_data})
+                                        # update inventory info
                                         inventory_dictlist[index].update({
                                             "clipping": ("Clipping" in jsondata[filename]),
                                             "silence": ("Silence" in jsondata[filename])
                                         })
+                            # if inventory wasn't loaded
                             else:
+
+                                # get astats data
                                 file_data = qc_file(os.path.join(path, filename))
                                 jsondata.update({filename: file_data})
+                                # run mediaconch policy
                                 if filename.endswith(".mkv"):
                                     file_check = helpers.mediaconch_policy_check(file, mkv_policy)
                                 elif filename.endswith(".wav"):
                                     file_check = helpers.mediaconch_policy_check(file, wav_policy)
-
+                                # add entry to inventory
                                 inventory_dictlist.append({
                                     "filename": filename,
                                     "found": True,
@@ -120,6 +133,7 @@ def main():
                                     "clipping": ("Clipping" in jsondata[filename]),
                                     "silence": ("Silence" in jsondata[filename])
                                 })
+                                # add astats data
                                 file_data = qc_file(os.path.join(path, filename))
                                 jsondata.update({filename: file_data})
     else:
@@ -128,6 +142,7 @@ def main():
 
     print()
 
+    # print any inventory items that weren't found
     for item in inventory_dictlist:
         if not item["found"]:
             print(Fore.RED + "Warning: " + Style.BRIGHT 
@@ -135,9 +150,10 @@ def main():
                   + Fore.RED + " not found in directory!")
             print(Style.RESET_ALL)
     csvfile = os.path.join(os.path.dirname(jsonfile), "aqc_log.csv")
+    # write the inventory to a csv file, shows a quick rundown of the qc
     helpers.write_csv(csvfile, inventory_dictlist)
 
-    # print final message and write json file
+    # print final message and write json file with more detailed info
     print(Fore.LIGHTCYAN_EX + "***QC Finished***" + Style.RESET_ALL)
     print("general output in " + csvfile)
     with open(jsonfile, "w", encoding='utf-8') as f:
