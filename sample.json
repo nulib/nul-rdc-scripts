@@ -1,0 +1,52 @@
+{
+    "ylow": {
+        "Error Type": "Clipping",
+        "Video Value": 0.0,
+        "Standard Value": 0.0,
+        "Pass/Fail": "Fail"
+    },
+    "yhigh": {
+        "Error Type": "Clipping",
+        "Video Value": 1030.0,
+        "Standard Value": 1023.0,
+        "Pass/Fail": "Fail"
+    },
+    "ulow": {
+        "Error Type": "Out of Broadcasting Range",
+        "Video Value": 29.0,
+        "Standard Value": 64.0,
+        "Pass/Fail": "Fail"
+    },
+    "uhigh": {
+        "Error Type": "Out of Broadcasting Range",
+        "Video Value": 980.0,
+        "Standard Value": 960.0,
+        "Pass/Fail": "Fail"
+    },
+    "vlow": {
+        "Video Value": 67.0,
+        "Pass/Fail": "Pass"
+    },
+    "vhigh": {
+        "Video Value": 456.0,
+        "Pass/Fail": "Pass"
+    },
+    "satmax": {
+        "Error Type": "Clipping",
+        "Video Value": 365.0,
+        "Standard Value": 472.8,
+        "Pass/Fail": "Fail"
+    },
+    "tout": {
+        "Error Type": "Exceeds Standard",
+        "Video Value": 0.01,
+        "Standard Value": 0.009,
+        "Pass/Fail": "Fail"
+    },
+    "vrep": {
+        "Error Type": "Exceeds Standard",
+        "Video Value": 0.05,
+        "Standard Value": 0.03,
+        "Pass/Fail": "Fail"
+    }
+}
