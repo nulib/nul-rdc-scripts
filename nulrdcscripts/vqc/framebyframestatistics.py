@@ -23,7 +23,7 @@ def runyuvfbyfanalysis(standardDF, videodataDF, fullCriteria, level, frame):
     equationIR = str(exVideoVal) + operatorIR + str(exStandBRNG)
     tfIR = eval(equationIR)
     if tfIR:
-        pass
+        errors = {"Video Value": exVideoVal, "Pass/Fail": "Pass"}
     else:
         operatorCL = setOperatorCL(level)
         equationCL = str(exVideoVal) + operatorCL + str(exStandClipping)
@@ -35,7 +35,6 @@ def runyuvfbyfanalysis(standardDF, videodataDF, fullCriteria, level, frame):
                 "Standard Value": "above " + str(exStandBRNG),
                 "Pass/Fail": "Fail",
             }
-            return errors
         else:
             errors = {
                 "Error Type": "Out of Broadcast Range",
@@ -43,7 +42,7 @@ def runyuvfbyfanalysis(standardDF, videodataDF, fullCriteria, level, frame):
                 "Standard Value": "above " + str(exStandBRNG),
                 "Pass/Fail": "Fail",
             }
-            return errors
+    return errors
 
 
 def runfbyfyuv(standardDF, videodataDF, frame):
@@ -64,10 +63,10 @@ def runfbyfsat(standardDF, videodataDF, frame):
     criteria = "sat"
     leveltoCheck = "max"
     fullCriteria = criteria + leveltoCheck
-    exVideoVal = videodataDF.at(frame, fullCriteria)
-    exBRNG = standardDF.at(fullCriteria, "brnglimit")
-    exClipping = standardDF.at(fullCriteria, "clipping")
-    exIllegal = standardDF.at(fullCriteria, "illegal")
+    exVideoVal = videodataDF.at[frame, fullCriteria]
+    exBRNG = standardDF.at[criteria, "brnglimit"]
+    exClipping = standardDF.at[criteria, "clippinglimit"]
+    exIllegal = standardDF.at[criteria, "illegal"]
     if exVideoVal <= exBRNG:
         errors[fullCriteria] = {"Video Values": exVideoVal, "Pass/Fail": "Pass"}
     else:
@@ -91,16 +90,16 @@ def runfbyfsat(standardDF, videodataDF, frame):
 
 
 def runTOUTandVREPanalysis(standardDF, videodataDF, frame):
-    criterium = ["tout", "vrep"]
-    for criteria in criterium:
+    criteria = ["tout", "vrep"]
+    for c in criteria:
         level = "max"
-        exVideoVal = videodataDF.at[frame, criteria]
-        exStandMax = standardDF.at[criteria, level]
-        errors = runfbyfToutVrep(exVideoVal, exStandMax, criteria)
+        exVideoVal = videodataDF.at[frame, c]
+        exStandMax = standardDF.at[c, level]
+        errors = runfbyfToutVrep(exStandMax, exVideoVal, c)
     return errors
 
 
-def runfbyfToutVrep(exVideoVal, exStandMax, criteria):
+def runfbyfToutVrep(exStandMax, exVideoVal, criteria):
     errors = {}
     if exVideoVal >= exStandMax:
         errors[criteria] = {
@@ -113,20 +112,23 @@ def runfbyfToutVrep(exVideoVal, exStandMax, criteria):
         errors[criteria] = {"Video Value": exVideoVal, "Pass/Fail": "Pass"}
     return errors
 
-
+def joindict (errors,errorsSat,errorsTOUTVREP):
+        errors.update(errorsSat)
+        errors.update(errorsTOUTVREP)
+        return errors
 def runfbyfanalysis(standardDF, videodataDF):
     frame = 1
     while frame <= videodataDFLen:
-        frameerrors[frame] = runfbyfyuv(standardDF, videodataDF, frame)
-        frameerrors[frame] = runfbyfsat(standardDF, videodataDF, frame)
-        # frameerrors[frame] = runfbyfToutVrep (standardDF,videodataDF,frame)
+        errors= runfbyfyuv(standardDF, videodataDF, frame)
+        errorsSat=runfbyfsat(standardDF, videodataDF, frame)
+        errorsTOUTVREP = runTOUTandVREPanalysis (standardDF,videodataDF,frame)
+        frameerrors[frame] = joindict(errors,errorsSat,errorsTOUTVREP)
         frame += 1
     return frameerrors
 
-
 def makejson(frameerrors):
     with open("samplefbyf.json", "w") as outfile:
-        json.dump(frameerrors, outfile, indent=4)
+        json.dump(frameerrors, outfile, indent=4,default=str)
 
 
 frameerrors = runfbyfanalysis(standardDF, videodataDF)
