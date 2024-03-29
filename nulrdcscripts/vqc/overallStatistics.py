@@ -121,7 +121,6 @@ def runOverallVideo(standardDF, sumdata):
     # dict_list = [yuverrors, saterrors, toutVREPErrors]
     with open("sample.json", "w") as outfile:
         json.dump(errors, outfile, indent=4)
-    # saterrors = runsatanalysis(standardDF, videoDSDF)
     # toutVREPErrors = runTOUTandVREPanalysis(standardDF, videoDSDF)
 
 
