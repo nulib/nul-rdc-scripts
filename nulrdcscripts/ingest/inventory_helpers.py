@@ -171,7 +171,7 @@ def get_description_fields(desc_arg: list[str], inventory_fields: list[str]):
     :rtype: list of str
     """
     if not desc_arg:
-        return ["inventory_title"]
+        return ["description"]
 
     #find missing description fields
     missing_fields = [
