@@ -1,22 +1,15 @@
 import pandas as pd
-import json
+import progressbar
 from nulrdcscripts.vqc.multiuse import (
-    setLeveltoCheck,
     setLevel,
     setOperatorCL,
     setOperatorIR,
 )
-
-videodata = "nulrdcscripts/vqc/ExampleVideoDataCSV.csv"
-videodataDF = pd.read_csv(videodata, sep=",", index_col=0)
-videodataDFLen = len(videodataDF)
-standardcsv = "nulrdcscripts/vqc/Video10BitValues.csv"
-standardDF = pd.read_csv(standardcsv, sep=",", index_col=0)
 frameerrors = {}
 
 
-def runyuvfbyfanalysis(standardDF, videodataDF, fullCriteria, level, frame):
-    exVideoVal = videodataDF.at[frame, fullCriteria]
+def runyuvfbyfanalysis(standardDF, videodata, fullCriteria, level, frame):
+    exVideoVal = videodata.at[frame, fullCriteria]
     exStandBRNG = standardDF.at[fullCriteria, "brngout"]
     exStandClipping = standardDF.at[fullCriteria, "clipping"]
     operatorIR = setOperatorIR(level)
@@ -45,7 +38,7 @@ def runyuvfbyfanalysis(standardDF, videodataDF, fullCriteria, level, frame):
     return errors
 
 
-def runfbyfyuv(standardDF, videodataDF, frame):
+def runfbyfyuv(standardDF, videodata, frame):
     criteria = ["y", "u", "v"]
     levels = ["low", "high"]
     errors = {}
@@ -53,17 +46,17 @@ def runfbyfyuv(standardDF, videodataDF, frame):
         level = setLevel(fullCriteria)
         errorCriteria = str(fullCriteria)
         errors[errorCriteria] = runyuvfbyfanalysis(
-            standardDF, videodataDF, fullCriteria, level, frame
+            standardDF, videodata, fullCriteria, level, frame
         )
     return errors
 
 
-def runfbyfsat(standardDF, videodataDF, frame):
+def runfbyfsat(standardDF, videodata, frame):
     errors = {}
     criteria = "sat"
     leveltoCheck = "max"
     fullCriteria = criteria + leveltoCheck
-    exVideoVal = videodataDF.at[frame, fullCriteria]
+    exVideoVal = videodata.at[frame, fullCriteria]
     exBRNG = standardDF.at[criteria, "brnglimit"]
     exClipping = standardDF.at[criteria, "clippinglimit"]
     exIllegal = standardDF.at[criteria, "illegal"]
@@ -89,11 +82,11 @@ def runfbyfsat(standardDF, videodataDF, frame):
     return errors
 
 
-def runTOUTandVREPanalysis(standardDF, videodataDF, frame):
+def runTOUTandVREPanalysis(standardDF, videodata, frame):
     criteria = ["tout", "vrep"]
     for c in criteria:
         level = "max"
-        exVideoVal = videodataDF.at[frame, c]
+        exVideoVal = videodata.at[frame, c]
         exStandMax = standardDF.at[c, level]
         errors = runfbyfToutVrep(exStandMax, exVideoVal, c)
     return errors
@@ -116,14 +109,21 @@ def joindict (errors,errorsSat,errorsTOUTVREP):
         errors.update(errorsSat)
         errors.update(errorsTOUTVREP)
         return errors
-def runfbyfanalysis(standardDF, videodataDF):
+def runfbyfanalysis(standardDF, videodata):
     frame = 1
-    while frame <= videodataDFLen:
-        errors= runfbyfyuv(standardDF, videodataDF, frame)
-        errorsSat=runfbyfsat(standardDF, videodataDF, frame)
-        errorsTOUTVREP = runTOUTandVREPanalysis (standardDF,videodataDF,frame)
-        frameerrors[frame] = joindict(errors,errorsSat,errorsTOUTVREP)
-        frame += 1
+    videodataDFlen=len(videodata)
+    while frame <= videodataDFlen:
+        with progressbar.ProgressBar(max_value=100) as fbyfBar:
+            for i in range(100):
+                errors= runfbyfyuv(standardDF, videodata, frame)
+                fbyfBar.update(i)
+                errorsSat=runfbyfsat(standardDF, videodata, frame)
+                fbyfBar.update(i)
+                errorsTOUTVREP = runTOUTandVREPanalysis (standardDF,videodata,frame)
+                fbyfBar.update(i)
+                frameerrors[frame] = joindict(errors,errorsSat,errorsTOUTVREP)
+                fbyfBar.update(i)
+                frame += 1
     return frameerrors
 
 
@@ -134,5 +134,4 @@ def dictodftojson (frameerrors):
     return jsonframefails
 
 
-frameerrors = runfbyfanalysis(standardDF, videodataDF)
 dictodftojson(frameerrors)
