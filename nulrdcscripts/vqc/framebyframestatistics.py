@@ -126,10 +126,13 @@ def runfbyfanalysis(standardDF, videodataDF):
         frame += 1
     return frameerrors
 
-def makejson(frameerrors):
-    with open("samplefbyf.json", "w") as outfile:
-        json.dump(frameerrors, outfile, indent=4,default=str)
+
+def dictodftojson (frameerrors):
+    frameerrorsDF = pd.DataFrame.from_dict(frameerrors)
+    framefails = frameerrorsDF[frameerrorsDF['Pass/Fail'] == "Fail"]
+    jsonframefails = framefails.to_json("samplefbyf.json", orient="table")
+    return jsonframefails
 
 
 frameerrors = runfbyfanalysis(standardDF, videodataDF)
-makejson(frameerrors)
+dictodftojson(frameerrors)
