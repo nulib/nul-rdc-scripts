@@ -5,6 +5,12 @@ from nulrdcscripts.vproc.params import args
 
 """Functions that check and setup the script to run"""
 
+
+def checkforskipsifnotCheck():
+    if not args.skipqcli:
+        qcli_check()
+
+
 def inventory_check(item_csvDict):
     if item_csvDict is None:
         print("unable to locate file in csv data!")
@@ -27,6 +33,7 @@ def qcli_check():
         print("Error locating qcli")
         quit()
 
+
 def mediaconch_check():
     """
     checks that mediaconch exists by running its -v command
@@ -38,6 +45,7 @@ def mediaconch_check():
     except:
         print("Error locating mediaconch")
         quit()
+
 
 def get_ffmpeg_version():
     """
@@ -71,7 +79,7 @@ def ffprobe_check():
         quit()
 
 
-def mediaconch_policy_exists(policy_path):
+def mediaconch_policy_exists(mvkPolicy):
     """
     checks that the specified mediaconch policy exists
     """
@@ -79,6 +87,7 @@ def mediaconch_policy_exists(policy_path):
         print("unable to find mediaconch policy:", policy_path)
         print("Check if file exists before running")
         quit()
+
 
 def input_check():
     """
@@ -120,3 +129,12 @@ def check_mixdown_arg():
         print("The selected audio mixdown is not a valid value")
         print("please use one of: copy, 4to3, 4to2, 2to1")
         quit()
+
+
+def noReturnchecks(mkvPolicy):
+    checkforskipsifnotCheck()
+    mediaconch_check()
+    mediaconch_policy_exists(mkvPolicy)
+    get_ffmpeg_version()
+    ffprobe_check()
+    check_mixdown_arg()

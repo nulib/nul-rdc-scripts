@@ -5,11 +5,13 @@ import platform
 import progressbar
 import subprocess
 from nulrdcscripts.vproc.params import args
+
 """Functions that generate the output files. i.e. spectrogram generation, QCTools report generation"""
+
 
 def ffprobe_report(filename):
     """
-    returns nested dictionary with ffprobe metadata
+    returns nested dictionary with ffprobe metadata. Used to create works technical metadata
     """
     input_file_abspath = args.input_file_abspath
     video_output = json.loads(
@@ -184,6 +186,7 @@ def ffprobe_report(filename):
 
     return ffprobe_metadata
 
+
 def generate_spectrogram(input, channel_layout_list, outputFolder, outputName):
     """
     Creates a spectrogram for each audio track in the input
@@ -212,6 +215,7 @@ def generate_spectrogram(input, channel_layout_list, outputFolder, outputName):
                 spectrogram_args += [output]
                 spectroprog.update(t)
                 subprocess.run(spectrogram_args)
+
 
 def generate_qctools(input):
     """

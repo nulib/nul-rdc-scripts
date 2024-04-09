@@ -102,13 +102,6 @@ parser.add_argument(
     help="skip generating spectrograms",
 )
 parser.add_argument(
-    "--keep_filename",
-    required=False,
-    action="store_true",
-    dest="keep_filename",
-    help="MKV preservation master will have the same filename as the source MOV file",
-)
-parser.add_argument(
     "--embed_framemd5",
     required=False,
     action="store_true",
@@ -135,7 +128,7 @@ parser.add_argument(
     required=False,
     action="store_true",
     dest="batch",
-    help="For batches of video files"
+    help="For batches of video files",
 )
 
 args = parser.parse_args()

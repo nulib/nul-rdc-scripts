@@ -121,9 +121,8 @@ def single_video(input, output):
         outputAbsPath = os.path.join(presPath, mkvFile)
         framemd5File = mkvBaseFilename + ".framemd5"
         framemd5AbsPath = os.path.join(presPath, framemd5File)
-        acOutputFolder = os.path.join(baseOutput, ac_identifier)
         acAbsPath = os.path.join(
-            acOutputFolder, baseFilename + "_" + ac_identifier + ".mp4"
+            baseFilename + "_" + ac_identifier + ".mp4"
         )
         metaOutputFolder = os.path.join(baseOutput, metadata_identifier)
         jsonAbsPath = os.path.join(
@@ -134,12 +133,6 @@ def single_video(input, output):
         # generate ffprobe metadata from input
         input_metadata = helpers.ffprobe_report(mkvFile, inputAbsPath)
 
-        # create a list of needed output folders and make them
-        if not args.skip_ac:
-            outFolders = [presPath, acOutputFolder, metaOutputFolder]
-        else:
-            outFolders = [presPath, metaOutputFolder]
-        helpers.create_transcode_output_folders(baseOutput, outFolders)
 
         # get information about item from csv inventory
         print("*checking inventory for", baseFilename + "*")
