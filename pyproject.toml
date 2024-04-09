@@ -23,6 +23,7 @@ vproc = 'nulrdcscripts.vproc.vproc:main'
 ingest = 'nulrdcscripts.ingest.ingest:main'
 oyez = 'nulrdcscripts.tools.oyez.runfile:main'
 ffplaywindow = 'nulrdcscripts.tools.ffplaywindow.main:main'
+ffprobedata = 'nulrdcscripts.tools.ffprobedata.extractvideodata:main'
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
