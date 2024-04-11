@@ -1,0 +1,5 @@
+Hardware,VTR SN,VTR NU Tag,VTR Out,TBC,TBC SN,TBC NU Tag,TBC Out,A/D,A/D SN,A/D NUTag,A/D Out,Capture Card,Capture Card NUTag
+Sony SVO-5800 Rack 1,,,Component,Built-In,N/A,N/A,N/A,AJA HD10AVA Rack 1,K0190697,10519,SDI,BlackMagic DeckLink Studio 4K Rack 1,11270
+Sony SVO-5800 Rack 2,E0707415,95094,Component,Built-In,N/A,N/A,N/A,AJA HD10AVA Rack 2,,,SDI,BlackMagic DeckLink Studio 4K Rack 2,11269
+Panasonic AG-1980 Rack 1,JSTC00083,10518,S-Video,DPS-295,9211295054,10517,Component,AJA HD10AVA Rack 1,K0190697,10519,SDI,BlackMagic DeckLink Studio 4K Rack 1,11270
+Panasonic AG-1980 Rack 2,,,S-Video,DPS-575,LHTI0192186004,10697,Component,AJA HD10AVA Rack 2,,,SDI,BlackMagic DeckLink Studio 4K Rack 2,11269

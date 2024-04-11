@@ -3,6 +3,12 @@ import subprocess
 from nulrdcscripts.tools.ffprobedata.params import args
 
 
+def swapSlashes(item):
+    fixed_path = item.replace("\\", "/")
+    fixed_path = fixed_path.replace(":", "\\\\:")
+    return fixed_path
+
+
 def setRunType(norm_input):
     batchTF = os.path.isdir(norm_input)
     if batchTF:
@@ -28,12 +34,17 @@ def batchvideos():
 
 
 def singlevideo(norm_input):
-    command = (
-        "ffprobe -f lavfi movie="
-        + norm_input
-        + ","
-        + "signalstats='stat=brng' -show_frames -of json"
-    )
+    fixed_input = swapSlashes(norm_input)
+    command = [
+        args.ffprobe_path,
+        "-f",
+        "lavfi",
+        "movie=" + fixed_input + ",signalstats='stat=tout+vrep+brng'",
+        "-show_frames",
+        "-of",
+        "json",
+    ]
+    print(command)
     subprocess.run(command)
 
 
