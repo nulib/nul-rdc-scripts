@@ -627,7 +627,7 @@ def import_csv(csvInventory):
                 ["work_accession_number"],
                 ["box/folder alma number", "Box/Folder\nAlma number"],
                 ["barcode"],
-                ["inventory_title"],
+                ["description", "inventory_title"],
                 ["record date/time"],
                 ["housing/container markings"],
                 ["condition notes"],
@@ -680,7 +680,7 @@ def import_csv(csvInventory):
                     id1 = row[fieldnames["work_accession_number"]]
                     id2 = row[fieldnames["box/folder alma number"]]
                     id3 = row[fieldnames["barcode"]]
-                    title = row[fieldnames["inventory_title"]]
+                    description = row[fieldnames["description"]]
                     record_date = row[fieldnames["record date/time"]]
                     container_markings = row[fieldnames["housing/container markings"]]
                     if container_markings:
@@ -725,7 +725,7 @@ def import_csv(csvInventory):
                         "accession number/call number": id1,
                         "box/folder alma number": id2,
                         "barcode": id3,
-                        "inventory_title": title,
+                        "description": description,
                         "record date": record_date,
                         "housing/container markings": container_markings,
                         "condition notes": condition_notes,
