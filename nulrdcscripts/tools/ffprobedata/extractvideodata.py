@@ -33,8 +33,8 @@ def setFilename(
     input,
     output,
 ):
-    basefilename = os.path.basename(input)
-    filepath = output + basefilename
+    basefilename = os.path.splitext(os.path.basename(input))[0]
+    filepath = output + "\\" + basefilename + ".json"
     return filepath
 
 
@@ -56,13 +56,6 @@ def batchvideos(norm_input, norm_output):
             with open(filepath, "w") as f:
                 subprocess.run(command, stdout=f)
                 f.close()
-            with open(filepath, "r") as file:
-                data = file.read()
-                data = data.replace("frames.frame.", "")
-                file.close()
-            with open(filepath, "w") as file:
-                file.write(data)
-                file.close()
         else:
             raise Exception("There are no eligible files in the supplied directory")
 
