@@ -1,20 +1,16 @@
-"""
-Argument parser for in-house ffv1 to mp4 script
-"""
-
 import argparse
-import sys
 
 parser = argparse.ArgumentParser()
 
 parser.add_argument(
     "--input",
     "-i",
-    action="store",
+    acition="store",
     dest="input_path",
     type=str,
     help="full path to input folder",
 )
+
 parser.add_argument(
     "--output",
     "-o",
@@ -23,6 +19,7 @@ parser.add_argument(
     type=str,
     help="full path to output folder",
 )
+
 parser.add_argument(
     "--ffmpeg",
     action="store",
@@ -100,13 +97,6 @@ parser.add_argument(
     help="skip generating spectrograms",
 )
 parser.add_argument(
-    "--keep_filename",
-    required=False,
-    action="store_true",
-    dest="keep_filename",
-    help="MKV preservation master will have the same filename as the source MOV file",
-)
-parser.add_argument(
     "--embed_framemd5",
     required=False,
     action="store_true",
@@ -126,6 +116,14 @@ parser.add_argument(
     action="store",
     dest="output_policy",
     help="Mediaconch policy for output files",
+)
+parser.add_argument(
+    "--batch",
+    "-b",
+    required=False,
+    action="store_true",
+    dest="batch",
+    help="For batches of video files",
 )
 
 args = parser.parse_args()
