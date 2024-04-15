@@ -29,12 +29,47 @@ def setOutput(norm_input, runType):
     return norm_output
 
 
-def batchvideos():
-    pass
+def setFilename(
+    input,
+    output,
+):
+    basefilename = os.path.basename(input)
+    filepath = output + basefilename
+    return filepath
 
 
-def singlevideo(norm_input):
+def batchvideos(norm_input, norm_output):
+    ext = (".mp4", ".mkv", ".mov")
+    for file in norm_input:
+        if file.endswith(ext):
+            filepath = setFilename(file, norm_output)
+            fixed_input = swapSlashes(norm_input)
+            command = [
+                args.ffprobe_path,
+                "-f",
+                "lavfi",
+                "movie=" + fixed_input + ",signalstats='stat=tout+vrep+brng'",
+                "-show_frames",
+                "-of",
+                "json",
+            ]
+            with open(filepath, "w") as f:
+                subprocess.run(command, stdout=f)
+                f.close()
+            with open(filepath, "r") as file:
+                data = file.read()
+                data = data.replace("frames.frame.", "")
+                file.close()
+            with open(filepath, "w") as file:
+                file.write(data)
+                file.close()
+        else:
+            raise Exception("There are no eligible files in the supplied directory")
+
+
+def singlevideo(norm_input, norm_output):
     fixed_input = swapSlashes(norm_input)
+    filepath = setFilename(norm_input, norm_output)
     command = [
         args.ffprobe_path,
         "-f",
@@ -44,19 +79,19 @@ def singlevideo(norm_input):
         "-of",
         "json",
     ]
-    print(command)
-    subprocess.run(command)
+    with open(filepath, "w") as f:
+        subprocess.run(command, stdout=f)
+        f.close()
 
 
 def main():
     norm_input = os.path.abspath(args.input_path)
-    print(norm_input)
     runType = setRunType(norm_input)
     norm_output = setOutput(norm_input, runType)
     if runType == "batch":
-        batchvideos()
+        batchvideos(norm_input, norm_output)
     else:
-        singlevideo(norm_input)
+        singlevideo(norm_input, norm_output)
 
 
 main()
