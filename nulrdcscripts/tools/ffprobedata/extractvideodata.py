@@ -21,11 +21,11 @@ def setRunType(norm_input):
 def setOutput(norm_input, runType):
     if args.output_path == None:
         if runType == "file":
-            norm_output = os.path.abspath(os.path.dirname(norm_input))
+            norm_output = (os.path.abspath(os.path.dirname(norm_input))) + "/videodata"
         else:
             norm_output = norm_input + "/videodata"
     else:
-        norm_output = os.path.abspath(args.output_path)
+        norm_output = (os.path.abspath(args.output_path)) + "/videodata"
     return norm_output
 
 
