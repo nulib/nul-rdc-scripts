@@ -4,7 +4,7 @@ from nulrdcscripts.staging.vprocwip import args
 
 
 def basefilename():
-    filename
+    pass
 
 
 def input_check():
@@ -59,3 +59,32 @@ def exists(item):
         ).rstrip().splitlines()[0].split()[2]
     except:
         raise Exception("Error Locating:" + item)
+
+
+def runmethod(indir):
+    for item in os.listdir(indir):
+        countfiles = 0
+        countfolders = 0
+
+        item_path = os.path.join(indir, item)
+        if os.path.isdir(item_path):
+            countfolders += 1
+        elif os.path.isfile(item_path):
+            files = os.path.basefilename(item_path)
+            if files.endswith(".mkv"):
+                countfiles += 1
+            else:
+                pass
+        if countfolders >= 0 and countfiles == 0:
+            runmethod = "batchT1"
+            return runmethod
+        elif countfolders == 0 and countfiles == 1:
+            runmethod = "single"
+            return runmethod
+        elif countfolders == 0 and countfiles >= 1:
+            runmethod = "batchT2"
+            return runmethod
+        else:
+            raise Exception(
+                "Your input file structure is not supported. See associated documentation for more information"
+            )

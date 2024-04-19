@@ -5,6 +5,10 @@ if sys.version_info[0] < 3:
     raise Exception("Python 3 or higher is required")
 
 
+def single_video(input, output):
+    pass
+
+
 def main():
     indir = setup.input_check()
     outdir = setup.output_check()
@@ -18,4 +22,4 @@ def main():
     setup.exists(ffprobe_path)
     # Checks that the mixdown provided (optional) is valid
     setup.checkmixdown()
-    basefilename = setup.basefilename()
+    runmethod = setup.runmethod(indir)

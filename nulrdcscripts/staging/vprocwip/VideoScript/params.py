@@ -83,11 +83,11 @@ parser.add_argument(
     help="skip access copy transcoding",
 )
 parser.add_argument(
-    "--skipqcli",
+    "--runqcli",
     required=False,
     action="store_true",
-    dest="skip_qcli",
-    help="skip generating qc tools report",
+    dest="run_qcli",
+    help="generate qc tools report",
 )
 parser.add_argument(
     "--skipspectrogram",
