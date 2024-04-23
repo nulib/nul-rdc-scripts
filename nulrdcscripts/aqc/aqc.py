@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import re
 import json
-import csv
 from colorama import Style, Fore, Back
 from progressbar import *
 import nulrdcscripts.aqc.warnings as warnings
