@@ -55,3 +55,7 @@ def hashlib_md5(filename):
                 last_percent_done = percent_done
     md5_output = chksm.hexdigest()
     return md5_output
+
+
+def ffprobe_report(file, inputfilepath):
+    pass
