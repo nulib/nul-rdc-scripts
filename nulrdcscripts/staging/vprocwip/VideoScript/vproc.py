@@ -1,6 +1,7 @@
 import sys
 import os
 from nulrdcscripts.staging.vprocwip import setup, assists, csvwork
+from nulrdcscripts.tools.FFProbeDataReport import main as ffprobedatareportmain
 
 if sys.version_info[0] < 3:
     raise Exception("Python 3 or higher is required")
@@ -11,6 +12,7 @@ def single_video(input, output):
     for file in os.listdir(input):
         if file.endswith(".mkv"):
             inputfilepath = os.path.join(input, file)
+            input_abs_path = os.path.abspath(inputfilepath)
             baseFilename = file.replace(".mkv", "")
             frameMD5File = baseFilename + ".framemd5"
             frameMD5Path = os.path.join(output, frameMD5File)
@@ -20,6 +22,7 @@ def single_video(input, output):
             inputMetaData = assists.ffprobereport(file, inputfilepath)
             print("*Checking inventory for", baseFilename + "*")
             item_csvDict = csvwork.get(baseFilename)
+            input_metadata = ffprobedatareportmain.generalreport(file, input_abs_path)
 
 
 def batchT1(input, output):
