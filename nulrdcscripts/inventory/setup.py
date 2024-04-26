@@ -45,6 +45,11 @@ def ask_pages():
     return pages_yn
 
 
+def ask_num_pages():
+    num_pages = input("How many pages are in this work?")
+    return num_pages
+
+
 def ask_newBoxFolder():
     new_boxFolder = input("Do you want to add a new work - y for yes, n for no")
     new_boxFolder = new_boxFolder.lower()

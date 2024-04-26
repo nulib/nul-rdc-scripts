@@ -9,8 +9,8 @@ def pageTrue(project_number, project_4letterID, box_number, folder_number, csvna
     If you use this route the loop will increment for pages and lead to a request for additional works at the end.
     """
     file = setup.ask_worknumber
-    pages = setup.ask_pages  # number to loop by
-    pages = inputvalidation.checkpages(pages)
+    pages = setup.ask_num_pages  # number to loop by
+    pages = inputvalidation.check_pages(pages)
     page_number = 1
     while (
         page_number <= pages
