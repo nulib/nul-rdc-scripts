@@ -23,6 +23,7 @@ def dataparsingandtabulatingaudioXML(inputPath):
                 elem.clear()
     dfAudio = pd.DataFrame.from_dict(audiodata)
     dfAudio = dfAudio.transpose()
+    dfAudio.to_csv("audiodata.csv", index=True)
     return dfAudio
 
 
@@ -47,6 +48,7 @@ def dataparsingandtabulatingvideoXML(inputPath):
                 elem.clear()
     dfVideo = pd.DataFrame.from_dict(videodata)
     dfVideo = dfVideo.transpose()
+    videodataDF = dfVideo.to_csv("videodata.csv", index=True)
     return dfVideo
 
 
@@ -62,13 +64,17 @@ def audiodatastatistics(audiodata):
     return audiodataDSDF
 
 
-def videostatstocsv(videoDSDF):
+def videostatsdftocsv(videoDSDF):
     """Takes video descriptive statistics and puts them into a csv file"""
     summarydatavideocsv = videoDSDF.to_csv("videosummarystats.csv", index=True)
     return summarydatavideocsv
 
 
-def audiostatstocsv(audioDSDF):
+def audiostatsdftocsv(audioDSDF):
     """Takes audio descriptive statistics and puts them into a csv file."""
     summarydataaudiocsv = audioDSDF.to_csv("audiosummarystats.csv", index=True)
     return summarydataaudiocsv
+
+
+def rawvideodatatocsv(videodata):
+    videodatacsv = videodata.to_csv("videodata.csv", index=True)
