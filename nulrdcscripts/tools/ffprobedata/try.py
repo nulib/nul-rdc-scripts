@@ -19,7 +19,7 @@ def singlevideo(norm_input):
         "movie=" + fixed_input + ",signalstats='stat=tout+vrep+brng'",
         "-show_frames",
         "-of",
-        "json",
+        "xml",
     ]
     with open(filepath, "w") as f:
         subprocess.run(command, stdout=f)
