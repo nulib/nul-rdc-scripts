@@ -36,7 +36,7 @@ def dataparsingandtabulatingvideoXML(inputPath):
             if elem.tag == "frame":
                 if elem.get("media_type") == "video":
                     framenumberV = framenumberV + 1
-                    frametime = elem.get("pkt_pts_time")
+                    frametime = elem.get("pts_time")
                     videodata[framenumberV] = {}
                     for tag in elem.iter("tag"):
                         criteria = tag.attrib["key"]
