@@ -17,9 +17,9 @@ def inputCheck(inputPath):
         pass
 
 
-def outputCheck(outputPath, inputPath):
+def outputCheck(inputPath, outputPath):
     """Checks if there is an output path. If there isn't, the file goes to the directory of the input file. Otherwise, checks if the output path is a folder"""
-    if outputPath == "input":
+    if outputPath == "":
         outputPath = os.path.dirname(inputPath)
     else:
         outputPathTF = os.path.isdir(outputPath)

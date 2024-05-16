@@ -1,5 +1,4 @@
 import pandas as pd
-from tabulate import tabulate
 from nulrdcscripts.vqc.multiuse import (
     setLevel,
     setOperatorCL,
@@ -7,7 +6,8 @@ from nulrdcscripts.vqc.multiuse import (
 )
 
 frameerrors = {}
-
+videodata = "videodata.csv"
+standardDF = "Video8BitValues.csv"
 
 def runyuvfbyfanalysis(standardDF, videodata, fullCriteria, level, frame):
     exVideoVal = videodata.at[frame, fullCriteria]
@@ -126,12 +126,9 @@ def runfbyfanalysis(standardDF, videodata):
 
 
 def dictodftojson(frameerrors):
+    
+frameerrorsDF = pd.DataFrame.from_dict(frameerrors)
 
-    frameerrorsDF = pd.DataFrame.from_dict(frameerrors)
-    with pd.option_context("display.max_rows", 20):
-        print(tabulate(frameerrorsDF, headers="key", tablefmt="psql"))
-
-
-# framefails = frameerrorsDF[frameerrorsDF["Pass/Fail"] == "Fail"]
-# jsonframefails = framefails.to_json("samplefbyf.json", orient="table")
-# return jsonframefails
+framefails = frameerrorsDF[frameerrorsDF["Pass/Fail"] == "Fail"]
+jsonframefails = framefails.to_json("samplefbyf.json", orient="table")
+return jsonframefails

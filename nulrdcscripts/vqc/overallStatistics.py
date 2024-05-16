@@ -1,12 +1,16 @@
 import pandas as pd
 import progressbar
 import json
-from nulrdcscripts.vqc.multiuse import setLevel,setOperatorCL,setOperatorIR,setLeveltoCheck
+from nulrdcscripts.vqc.multiuse import (
+    setLevel,
+    setOperatorCL,
+    setOperatorIR,
+    setLeveltoCheck,
+)
+
 # errortuple = namedtuple("Error", ["type", "criteria", "video value", "standard value"])
 
 errors = {}
-
-
 
 
 def runyuvanalysis(standardDF, sumdatavideo, fullCriteria, level):
@@ -18,11 +22,7 @@ def runyuvanalysis(standardDF, sumdatavideo, fullCriteria, level):
     equationIR = str(extractSumData) + operatorIR + str(extractStandDataBRNG)
     tfIR = eval(equationIR)
     if tfIR:
-        errors= {
-            "Video Value":extractSumData,
-            "Pass/Fail": "Pass"
-
-        }
+        errors = {"Video Value": extractSumData, "Pass/Fail": "Pass"}
     else:
         operatorCL = setOperatorCL(level)
         equationCL = str(extractSumData) + operatorCL + str(extractStandDataClipping)
@@ -32,7 +32,7 @@ def runyuvanalysis(standardDF, sumdatavideo, fullCriteria, level):
                 "Error Type": "Clipping",
                 "Video Value": extractSumData,
                 "Standard Value": extractStandDataClipping,
-                "Pass/Fail": "Fail"
+                "Pass/Fail": "Fail",
             }
             # error = errortuple("clipping",fullCriteria,extractSumData,extractStandDataClipping)
         else:
@@ -40,7 +40,7 @@ def runyuvanalysis(standardDF, sumdatavideo, fullCriteria, level):
                 "Error Type": "Out of Broadcasting Range",
                 "Video Value": extractSumData,
                 "Standard Value": extractStandDataBRNG,
-                "Pass/Fail": "Fail"
+                "Pass/Fail": "Fail",
             }
             # error = errortuple("brngout",fullCriteria,extractSumData,extractStandDataBRNG)
     return errors
@@ -53,7 +53,9 @@ def runcheckyuv(standardDF, sumdatavideo):
     for fullCriteria in (f"{c}{l}" for c in criteria for l in levels):
         level = setLevel(fullCriteria)
         errorcriteria = str(fullCriteria)
-        errors[errorcriteria] = runyuvanalysis(standardDF, sumdatavideo, fullCriteria, level)
+        errors[errorcriteria] = runyuvanalysis(
+            standardDF, sumdatavideo, fullCriteria, level
+        )
     return errors
 
 
@@ -66,16 +68,14 @@ def runsatanalysis(standardDF, sumdatavideo):
     extractStandDataClipping = standardDF.at[criteria, "clippinglimit"]
     extractStandDataIllegal = standardDF.at[criteria, "illegal"]
     if extractSumData <= extractStandDataBRNG:
-        errors[fullCriteria] = {
-            "Video Values": extractSumData,
-            "Pass/Fail": "Pass"}
+        errors[fullCriteria] = {"Video Values": extractSumData, "Pass/Fail": "Pass"}
     else:
         if extractSumData >= extractStandDataIllegal:
             errors[fullCriteria] = {
                 "Error Type": "Illegal",
                 "Video Value": extractSumData,
                 "Standard Value": extractStandDataIllegal,
-                "Pass/Fail": "Fail"
+                "Pass/Fail": "Fail",
             }
             # error = errortuple("illegal",fullCriteria, extractSumData, extractStandDataIllegal)
         else:
@@ -83,7 +83,7 @@ def runsatanalysis(standardDF, sumdatavideo):
                 "Error Type": "Clipping",
                 "Video Value": extractSumData,
                 "Standard Value": extractStandDataClipping,
-                "Pass/Fail": "Fail"
+                "Pass/Fail": "Fail",
             }
             # error = errortuple("clipping", fullCriteria, extractSumData,extractStandDataClipping)
     return errors
@@ -105,22 +105,19 @@ def toutVREPcheck(extractSumData, extractStandDataMax, criteria):
             "Error Type": "Exceeds Standard",
             "Video Value": extractSumData,
             "Standard Value": extractStandDataMax,
-            "Pass/Fail":"Fail"
+            "Pass/Fail": "Fail",
         }
     else:
-        errors[criteria] = {"Video Value":extractSumData,"Pass/Fail":"Pass"}
+        errors[criteria] = {"Video Value": extractSumData, "Pass/Fail": "Pass"}
     return errors
+
 
 def runOverallVideo(standardDF, sumdatavideo):
     errors.clear()
     with progressbar.ProgressBar(max_value=100) as overallBar:
         for i in range(100):
             runcheckyuv(standardDF, sumdatavideo)
-            overallBar.update(i)
             runsatanalysis(standardDF, sumdatavideo)
-            overallBar.update(i)
             runTOUTandVREPanalysis(standardDF, sumdatavideo)
-            overallBar.update(i)
             with open("sample.json", "w") as outfile:
                 json.dump(errors, outfile, indent=4)
-

@@ -20,7 +20,7 @@ parser.add_argument(
     "-o",
     action="store",
     dest="output_path",
-    default="input",
+    default="",
     type=str,
     help="Enter the full path to where you want your output files",
 )
