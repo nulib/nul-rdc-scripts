@@ -60,6 +60,7 @@ def runcheckyuv(standardDF, sumdatavideo):
 
 
 def runsatanalysis(standardDF, sumdatavideo):
+    """Runs the saturation max value to see if the value is in range, out of broadcasting range,or illegal"""
     criteria = "sat"
     leveltoCheck = "max"
     fullCriteria = criteria + leveltoCheck
@@ -114,10 +115,9 @@ def toutVREPcheck(extractSumData, extractStandDataMax, criteria):
 
 def runOverallVideo(standardDF, sumdatavideo):
     errors.clear()
-    with progressbar.ProgressBar(max_value=100) as overallBar:
-        for i in range(100):
-            runcheckyuv(standardDF, sumdatavideo)
-            runsatanalysis(standardDF, sumdatavideo)
-            runTOUTandVREPanalysis(standardDF, sumdatavideo)
-            with open("sample.json", "w") as outfile:
-                json.dump(errors, outfile, indent=4)
+
+    runcheckyuv(standardDF, sumdatavideo)
+    runsatanalysis(standardDF, sumdatavideo)
+    runTOUTandVREPanalysis(standardDF, sumdatavideo)
+    with open("sample.json", "w") as outfile:
+        json.dump(errors, outfile, indent=4)

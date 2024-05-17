@@ -1,5 +1,6 @@
 import pandas as pd
 from tabulate import tabulate
+from nulrdcscripts.vqc import setup
 from nulrdcscripts.vqc.multiuse import (
     setLevel,
     setOperatorCL,
@@ -7,11 +8,13 @@ from nulrdcscripts.vqc.multiuse import (
 )
 
 frameerrors = {}
-videodata = "videodata.csv"
-standardDF = "Video8BitValues.csv"
+videodata = "nulrdcscripts/vqc/testdata.csv"
+standard = 8
 
-def runyuvfbyfanalysis(standardDF, videodata, fullCriteria, level, frame):
-    exVideoVal = videodata.at[frame, fullCriteria]
+standardDF = setup.setVideoBitDepth(standard)
+csvDF = pd.read_csv(videodata)
+def runyuvfbyfanalysis(standardDF, csvDF, fullCriteria, level, frame):
+    exVideoVal = csvDF.at[frame, fullCriteria]
     exStandBRNG = standardDF.at[fullCriteria, "brngout"]
     exStandClipping = standardDF.at[fullCriteria, "clipping"]
     operatorIR = setOperatorIR(level)
@@ -40,7 +43,7 @@ def runyuvfbyfanalysis(standardDF, videodata, fullCriteria, level, frame):
     return errors
 
 
-def runfbyfyuv(standardDF, videodata, frame):
+def runfbyfyuv(standardDF, csvDF, frame):
     criteria = ["y", "u", "v"]
     levels = ["low", "high"]
     errors = {}
@@ -48,17 +51,17 @@ def runfbyfyuv(standardDF, videodata, frame):
         level = setLevel(fullCriteria)
         errorCriteria = str(fullCriteria)
         errors[errorCriteria] = runyuvfbyfanalysis(
-            standardDF, videodata, fullCriteria, level, frame
+            standardDF, csvDF, fullCriteria, level, frame
         )
     return errors
 
 
-def runfbyfsat(standardDF, videodata, frame):
+def runfbyfsat(standardDF, csvDF, frame):
     errors = {}
     criteria = "sat"
     leveltoCheck = "max"
     fullCriteria = criteria + leveltoCheck
-    exVideoVal = videodata.at[frame, fullCriteria]
+    exVideoVal = csvDF.at[frame, fullCriteria]
     exBRNG = standardDF.at[criteria, "brnglimit"]
     exClipping = standardDF.at[criteria, "clippinglimit"]
     exIllegal = standardDF.at[criteria, "illegal"]
@@ -84,11 +87,11 @@ def runfbyfsat(standardDF, videodata, frame):
     return errors
 
 
-def runTOUTandVREPanalysis(standardDF, videodata, frame):
+def runTOUTandVREPanalysis(standardDF, csvDF, frame):
     criteria = ["tout", "vrep"]
     for c in criteria:
         level = "max"
-        exVideoVal = videodata.at[frame, c]
+        exVideoVal = csvDF.at[frame, c]
         exStandMax = standardDF.at[c, level]
         errors = runfbyfToutVrep(exStandMax, exVideoVal, c)
     return errors
@@ -114,13 +117,14 @@ def joindict(errors, errorsSat, errorsTOUTVREP):
     return errors
 
 
-def runfbyfanalysis(standardDF, videodata):
+def runfbyfanalysis(standardDF, csvDF):
+    frameerrors.clear()
     frame = 1
-    videodataDFlen = len(videodata)
+    videodataDFlen = len(csvDF)
     while frame <= (videodataDFlen - 1):
-        errors = runfbyfyuv(standardDF, videodata, frame)
-        errorsSat = runfbyfsat(standardDF, videodata, frame)
-        errorsTOUTVREP = runTOUTandVREPanalysis(standardDF, videodata, frame)
+        errors = runfbyfyuv(standardDF, csvDF, frame)
+        errorsSat = runfbyfsat(standardDF, csvDF, frame)
+        errorsTOUTVREP = runTOUTandVREPanalysis(standardDF, csvDF, frame)
         frameerrors[frame] = joindict(errors, errorsSat, errorsTOUTVREP)
         frame += 1
     return frameerrors
@@ -129,7 +133,12 @@ def runfbyfanalysis(standardDF, videodata):
 def dictodftojson(frameerrors):
     
     frameerrorsDF = pd.DataFrame.from_dict(frameerrors)
-    print(tabulate(frameerrorsDF))
+    with pd.option_context("display.max_rows", 20):
+        print(tabulate(frameerrorsDF, headers="key", tablefmt="psql"))
+
     framefails = frameerrorsDF[frameerrorsDF["Pass/Fail"] == "Fail"]
     jsonframefails = framefails.to_json("samplefbyf.json", orient="table")
     return jsonframefails
+
+frameerrors = runfbyfanalysis(standardDF, csvDF)
+dictodftojson(frameerrors)
