@@ -1,4 +1,5 @@
 import pandas as pd
+from tabulate import tabulate
 from nulrdcscripts.vqc.multiuse import (
     setLevel,
     setOperatorCL,
@@ -127,8 +128,8 @@ def runfbyfanalysis(standardDF, videodata):
 
 def dictodftojson(frameerrors):
     
-frameerrorsDF = pd.DataFrame.from_dict(frameerrors)
-
-framefails = frameerrorsDF[frameerrorsDF["Pass/Fail"] == "Fail"]
-jsonframefails = framefails.to_json("samplefbyf.json", orient="table")
-return jsonframefails
+    frameerrorsDF = pd.DataFrame.from_dict(frameerrors)
+    print(tabulate(frameerrorsDF))
+    framefails = frameerrorsDF[frameerrorsDF["Pass/Fail"] == "Fail"]
+    jsonframefails = framefails.to_json("samplefbyf.json", orient="table")
+    return jsonframefails
