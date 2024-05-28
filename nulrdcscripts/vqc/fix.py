@@ -13,6 +13,8 @@ standard = 8
 
 standardDF = setup.setVideoBitDepth(standard)
 csvDF = pd.read_csv(videodata)
+
+
 def runyuvfbyfanalysis(standardDF, csvDF, fullCriteria, level, frame):
     exVideoVal = csvDF.at[frame, fullCriteria]
     exStandBRNG = standardDF.at[fullCriteria, "brngout"]
@@ -131,14 +133,10 @@ def runfbyfanalysis(standardDF, csvDF):
 
 
 def dictodftojson(frameerrors):
-    
-    frameerrorsDF = pd.DataFrame.from_dict(frameerrors)
-    with pd.option_context("display.max_rows", 20):
-        print(tabulate(frameerrorsDF, headers="key", tablefmt="psql"))
 
-    framefails = frameerrorsDF[frameerrorsDF["Pass/Fail"] == "Fail"]
-    jsonframefails = framefails.to_json("samplefbyf.json", orient="table")
-    return jsonframefails
+    df = pd.DataFrame.from_dict(frameerrors, orient="index")
+    print(tabulate(df))
+
 
 frameerrors = runfbyfanalysis(standardDF, csvDF)
 dictodftojson(frameerrors)
