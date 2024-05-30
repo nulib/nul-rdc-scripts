@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nul-rdc-scripts"
-version = "0.2.1"
+version = "0.3.0a0"
 description = "Scripts for NUL RDC Digitization Team"
 authors = [
     "Northwestern University Libraries <repository@northwestern.edu>",
@@ -21,7 +21,7 @@ python = "^3.10"
 aproc = 'nulrdcscripts.aproc.aproc:main'
 vproc = 'nulrdcscripts.vproc.vproc:main'
 ingest = 'nulrdcscripts.ingest.ingest:main'
-oyez = 'nulrdcscripts.tools.oyez.runfile:main'
+embedExtract = 'nulrdcscripts.tools.EmbedExtract.runfile:main'
 ffplaywindow = 'nulrdcscripts.tools.ffplaywindow.main:main'
 md5 = 'nulrdcscripts.tools.md5generation.main:main'
 [build-system]
