@@ -1,10 +1,14 @@
+from nulrdcscripts.tools.md5generation.params import args
 import os
 import sys
 import hashlib
 
-outputAbsPath = "Z:\\RDC\\ACTIVE_AV\\p0479_gree\\Sophia\\toedit\\p0479_gree_99-2020428420-2441_v01\\p0479_gree_99-2020428420-2441_v01\\a\\p0479_gree_99-2020428420-2441_v01_a.mp4"
-basefilename = os.path.basename(outputAbsPath)
-md5output = "Z:\\RDC\\ACTIVE_AV\\p0479_gree\\Sophia\\toedit\\p0479_gree_99-2020428420-2441_v01\\p0479_gree_99-2020428420-2441_v01\\a\\p0479_gree_99-2020428420-2441_v01_a.md5"
+filename = os.path.abspath(args.input_path)
+basefilename = os.path.basename(filename)
+basefilename = basefilename.replace(".mkv","")
+basedir = os.path.dirname(filename)
+md5file = basefilename + ".md5"
+md5output = os.path.join(basedir + "/",md5file)
 def hashlib_md5(filename):
     """
     Uses hashlib to return an MD5 checksum of an input filename
@@ -32,6 +36,6 @@ def hashlib_md5(filename):
 
 
 
-mkvHash = hashlib_md5(outputAbsPath)
+mkvHash = hashlib_md5(filename)
 with open(md5output, "w", newline="\n") as f:
     print(mkvHash, "*" + basefilename, file=f)
