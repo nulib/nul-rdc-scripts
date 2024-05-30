@@ -35,7 +35,11 @@ def hashlib_md5(filename):
     return md5_output
 
 
+def main():
+    mkvHash = hashlib_md5(filename)
+    with open(md5output, "w", newline="\n") as f:
+        print(mkvHash, "*" + basefilename, file=f)
 
-mkvHash = hashlib_md5(filename)
-with open(md5output, "w", newline="\n") as f:
-    print(mkvHash, "*" + basefilename, file=f)
+
+if __name__ == "__main__":
+    main()
