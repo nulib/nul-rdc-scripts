@@ -2,7 +2,6 @@
 import os
 import subprocess
 from nulrdcscripts.vproc.params import args
-
 """Functions that check and setup the script to run"""
 
 
@@ -79,7 +78,7 @@ def ffprobe_check():
         quit()
 
 
-def mediaconch_policy_exists(mvkPolicy):
+def mediaconch_policy_exists(policy_path):
     """
     checks that the specified mediaconch policy exists
     """
@@ -131,10 +130,10 @@ def check_mixdown_arg():
         quit()
 
 
-def noReturnchecks(mkvPolicy):
+def noReturnchecks(policy_path):
     checkforskipsifnotCheck()
     mediaconch_check()
-    mediaconch_policy_exists(mkvPolicy)
+    mediaconch_policy_exists(policy_path)
     get_ffmpeg_version()
     ffprobe_check()
     check_mixdown_arg()

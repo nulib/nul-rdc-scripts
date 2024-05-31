@@ -8,6 +8,8 @@ import nulrdcscripts.vproc.setup as setup
 import nulrdcscripts.vproc.helpers as helpers
 import nulrdcscripts.vproc.csvfunctions as csvfunctions
 from nulrdcscripts.vproc.params import args
+from nulrdcscripts.vproc import assists
+from nulrdcscripts.vproc import corefuncs
 
 if sys.version_info[0] < 3:
     raise Exception("Python 3 or higher is required")
@@ -47,6 +49,20 @@ def batch_video(indir, outdir):
 
 def single_video_folder(indir, outdir):
     for mkvFile in (indir, "*.mkv"):
-        presPath = os.path.abspath(indir)
+        dirPath = os.path.abspath(indir)
+        mkvFilePath = os.path.abspath(os.path.join(indir + mkvFile))
         baseFileName = mkvFile.replace("_p.mkv", "")
+        accFile = os.path.abspath("indir" + baseFileName + "_a.mp4")
         mkvBaseFilename = mkvFile.replace(".mkv", "")
+        md5Pfile = mkvBaseFilename + ".md5"
+        md5PAbsPath = os.path.join (dirPath, md5Pfile)
+        md5Afile = baseFileName + ".md5"
+        md5AAbsPath = os.path.join (dirPath,md5Afile)
+
+        inputMeta = assists.ffprobereport(mkvFile,indir)
+        audioStreamCounter = assists.extractAudioStreamCounter(inputMeta)
+        assists.generatechecksum(mkvFile,md5PAbsPath)
+        print("***Encoding your file to h264***")
+        corefuncs.two_pass_h264_encoding(mkvFile,audioStreamCounter,accFile)
+        print("***File successfully encoded***")
+        assists.generatechecksum(accFile,md5AAbsPath)

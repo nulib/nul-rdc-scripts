@@ -196,7 +196,7 @@ def generate_spectrogram(input, channel_layout_list, outputFolder, outputName):
             spectrogram_resolution = "1920x1080"
             for index, item in enumerate(channel_layout_list):
                 output = os.path.join(
-                    outputFolder, outputName + "_spectrogram0" + str(index) + "_s.png"
+                    outputFolder, outputName + "_spectrogram0" + str(index + 1) + "_s.png"
                 )
                 spectroprog.update(t)
                 spectrogram_args = [args.ffmpeg_path]
@@ -215,17 +215,6 @@ def generate_spectrogram(input, channel_layout_list, outputFolder, outputName):
                 spectrogram_args += [output]
                 spectroprog.update(t)
                 subprocess.run(spectrogram_args)
-
-
-def generate_qctools(input):
-    """
-    uses qcli to generate a QCTools report
-    """
-    with progressbar.ProgressBar(max_value=100) as qctoolprog:
-        for t in range(100):
-            qctools_args = [args.qcli_path, "-i", input]
-            qctoolprog.update(t)
-            subprocess.run(qctools_args)
 
 
 def write_output_csv(outdir, csvHeaderList, csvWriteList, output_metadata, qcResults):

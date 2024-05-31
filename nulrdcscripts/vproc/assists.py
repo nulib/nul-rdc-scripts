@@ -3,6 +3,7 @@ import hashlib
 import os
 import sys
 import time
+from nulrdcscripts.tools.checksumCreation import main as checksumCreation
 
 def guess_date(string):
     for fmt in ["%m/%d/%Y", "%d-%m-%Y", "%m/%d/%y", "%Y-%m-%d"]:
@@ -52,3 +53,11 @@ def hashlib_md5(filename):
                 last_percent_done = percent_done
     md5_output = chksm.hexdigest()
     return md5_output
+
+def generatechecksum(filename,md5AbsPath):
+    md5ID = checksumCreation(filename)
+    with open (md5AbsPath,"w", newline="\n") as f:
+               print (md5ID, "*" + filename, flle=f)
+
+def extractAudioStreamCounter(inputMeta):
+    audioStreamCounter = inputMeta["techMetaA"]["audio stream count"]
