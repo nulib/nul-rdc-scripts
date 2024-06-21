@@ -7,7 +7,7 @@ from nulrdcscripts.tools.AudioNormalizer.params import args
 
 def normalizerAudio (input_file,norm_file):
     ffmpeg_normalize_path = args.ffmpeg_norm_path
-    command = ffmpeg_normalize_path, input_file, "-o", norm_file, "-t -18", "--keep-loudness-range-target", "-tp", "-1", "-c:a pcm_s16l2 -ar 44100"
+    command = ffmpeg_normalize_path, input_file, "-o", norm_file, "-t -18 --keep-loudness-range-target -tp -1 -c:a pcm_s16l2 -ar 44100"
     subprocess.run(command)
 
 def normalizerVideo (input_file,norm_file):
