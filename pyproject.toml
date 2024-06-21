@@ -14,6 +14,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+progressbar2 = "^4.4.2"
 
 [tool.poetry.dev-dependencies]
 
@@ -23,6 +24,7 @@ vproc = 'nulrdcscripts.vproc.vproc:main'
 ingest = 'nulrdcscripts.ingest.ingest:main'
 embedExtract = 'nulrdcscripts.tools.EmbedExtract.runfile:main'
 ffplaywindow = 'nulrdcscripts.tools.ffplaywindow.main:main'
+norm = 'nulrdcscripts.tools.AudioNormalizer.main:main'
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
