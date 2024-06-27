@@ -49,7 +49,7 @@ parser.add_argument(
     nargs = "*",
     action = "store",
     dest = "desc",
-    help = 'Use to specify column names to populate Meadow description field with. Can take multiple inputs. Information from each column will be separated by a ";" in the description. Example usage: -d "Date/Time" "Barcode". If not specified, script will default to looking for the column "inventory_title"',
+    help = 'Use to specify column names to populate Meadow description field with. Can take multiple inputs. Information from each column will be separated by a ";" in the description. Example usage: -d "Date/Time" "Barcode". If not specified, script will default to looking for the column "description"',
 )
 parser.add_argument(
     "--auxiliary",
