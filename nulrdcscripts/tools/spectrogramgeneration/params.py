@@ -25,5 +25,13 @@ parser.add_argument(
     default="ffmpeg",
     type=str,
     help="For setting a custom ffmpeg path",
+),
+parser.add_argument(
+    "--ffprobe",
+    action="store",
+    dest="ffprobe_path",
+    default="ffprobe",
+    type=str,
+    help="For setting a custom ffprobe path",
 )
 args = parser.parse_args
