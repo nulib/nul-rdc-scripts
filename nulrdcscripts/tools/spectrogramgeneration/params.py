@@ -15,6 +15,7 @@ parser.add_argument(
     "-o",
     action="store",
     dest="output_path",
+    default = "NA",
     type=str,
     help="full path to output folder",
 )
@@ -34,4 +35,12 @@ parser.add_argument(
     type=str,
     help="For setting a custom ffprobe path",
 )
-args = parser.parse_args
+parser.add_argument(
+    "--sox",
+    action="store",
+    dest="sox_path",
+    default="sox",
+    type=str,
+    help="For setting a custom sox path",
+)
+args = parser.parse_args()
