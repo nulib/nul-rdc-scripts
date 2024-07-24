@@ -1,6 +1,6 @@
 import os
 import subprocess
-from nulrdcscripts.tools.oyez.setupparser import args
+from nulrdcscripts.tools.EmbedExtract.setupparser import args
 
 
 def main():
