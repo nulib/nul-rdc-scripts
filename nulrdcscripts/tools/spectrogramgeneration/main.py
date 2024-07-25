@@ -1,22 +1,40 @@
+import progressbar
 import os
 import subprocess
 from nulrdcscripts.tools.spectrogramgeneration.params import args
 
 def generate_spectrogram(input_path,channels,output_path,spectroname,ffmpegpath):
     ''' Creates a spectrogram for each audio track in the input'''
-    for index, item in enumerate(channels):
-        spectrogram_resolution="1920x1080"
-        output = os.path.join(output_path, spectroname + "_spectrogram0" + str(index+1)+"_s.png")
-        spectrogram_args=[ffmpegpath]
-        spectrogram_args += ["-loglevel","error","-y"]
-        spectrogram_args += ["-i",input_path,"-lavfi"]
-        item = int(item)
-        if item > 1:
-            spectrogram_args += ["[0:a:%(a)s]showspectrumpic=mode=separate:s=%(b)s" % {"a":index,"b":spectrogram_resolution}]
-        else:
-            spectrogram_args += ["[0:a:%(a)s]showspectrumpic=s=%(b)s"%{"a":index,"b":spectrogram_resolution}]
-        spectrogram_args += [output]
-        subprocess.run(spectrogram_args)
+    #for index, item in enumerate(channels):
+    #    spectrogram_resolution="1928x1080"
+    #    output = os.path.join(output_path, spectroname + "_spectrogram0" + str(index+1)+"_s.png")
+    #    spectrogram_args=[ffmpegpath]
+    #    spectrogram_args += ["-loglevel","error","-y"]
+    #    spectrogram_args += ["-i",input_path,"-lavfi"]
+    #    item = int(item)
+    #    if item > 1:
+    #        spectrogram_args += ["[0:a:%(a)s]showspectrumpic=mode=separate:s=%(b)s" % {"a":index,"b":spectrogram_resolution}]
+    #    else:
+    #        spectrogram_args += ["[0:a:%(a)s]showspectrumpic=s=%(b)s"%{"a":index,"b":spectrogram_resolution}]
+    #    spectrogram_args += [output]
+    #    subprocess.run(spectrogram_args)
+    #    print("*** Spectrogram Generated ***")
+
+    sox_spectrogram_command = [
+                        args.sox_path,
+                        input_path,
+                        "-n",
+                        "spectrogram",
+                        "-Y",
+                        "1080",
+                        "-x",
+                        "1920",
+                        "-o",
+                        os.path.join(
+                            output_path, spectroname + "spectrogram_s.png"
+                        ),
+                    ]
+    subprocess.run(sox_spectrogram_command)
 
 def softwarecheck (software,softwarename):
     '''Checks that software exists'''
@@ -36,7 +54,6 @@ def getnumberchannels(ffprobe_path,input_path):
     output = subprocess.run(command, capture_output=True, text=True)
     channels = output.stdout
     channels = channels.replace("\n","")
-    print(channels)
     return channels
 
 def checkOrCreateOutput(output_path, input_path):
