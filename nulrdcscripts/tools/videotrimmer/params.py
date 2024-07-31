@@ -8,7 +8,7 @@ parser.add_argument(
     action="store",
     dest="input_path",
     type=str,
-    required = True,
+    required=True,
     help="full path to input folder",
 )
 
@@ -16,28 +16,27 @@ parser.add_argument(
     "-s",
     "--start",
     dest="start_time",
-    required = True,
-    action = "store",
+    default="00:00:00",
+    action="store",
     type=str,
-
 )
 
 parser.add_argument(
     "-e",
     "--end_time",
-    action = "store",
-    required = True,
+    action="store",
+    default="NA",
     dest="end_time",
-    type = str,
+    type=str,
 )
 
 parser.add_argument(
     "-ffmpeg",
     "--ffmpeg_path",
-    default = "ffmpeg",
-    action ="store",
+    default="ffmpeg",
+    action="store",
     type=str,
-    dest="ffmpeg_path"
+    dest="ffmpeg_path",
 )
 
 args = parser.parse_args()
