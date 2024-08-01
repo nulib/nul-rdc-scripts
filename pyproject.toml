@@ -5,7 +5,7 @@ description = "Scripts for NUL RDC Digitization Team"
 authors = [
     "Northwestern University Libraries <repository@northwestern.edu>",
     "Sophia Francis",
-    "Alec Bertoy",
+    "Alec Bertoy (until May 2024",
     "Joshua Yocum (until Oct 2022)",
 ]
 packages = [{include = "nulrdcscripts"}]
@@ -25,6 +25,7 @@ embedExtract = 'nulrdcscripts.tools.EmbedExtract.runfile:main'
 ffplaywindow = 'nulrdcscripts.tools.ffplaywindow.main:main'
 spectrograms = 'nulrdcscripts.tools.spectrogramgeneration.main:main'
 md5 = 'nulrdcscripts.tools.md5generation.main:main'
+trim = 'nulrdcscripts.tools.videotrimmer.main:main'
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
