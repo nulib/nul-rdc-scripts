@@ -15,7 +15,7 @@ Scripts used by the RDC Digitization Team.
 [Audio Processor - aproc](/nulrdcscripts/aproc)   
 
 ### Meadow
-[MigAV - Meadow Ingest Sheet Generator - ingest](/nulrdcscripts/ingest/)   
+[Ingest - Meadow Ingest Sheet Generator - ingest](/nulrdcscripts/ingest/)   
 
 ### Inventorying:
 [Inventory Creator for Image and Text Works - inventory](/nulrdcscripts/inventory/)   
