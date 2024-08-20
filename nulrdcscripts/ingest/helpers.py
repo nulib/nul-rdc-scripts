@@ -8,6 +8,7 @@ import os
 import posixpath
 import csv
 
+
 def init_io(input_path: str, output_path: str):
     """
     Sets up input directory and output csv file.
@@ -26,23 +27,22 @@ def init_io(input_path: str, output_path: str):
 
     if not output_path:
         base_folder_name = os.path.basename(input_path)
-        output_path = os.path.join(
-            input_path, 
-            base_folder_name + '_ingest.csv'
-        )
+        output_path = os.path.join(input_path, base_folder_name + "_ingest.csv")
     output_check(output_path)
 
     return input_path, output_path
 
+
 def input_check(indir: str):
     """
     Checks given input is valid. Quits if not.
-    
+
     :param str indir: fullpath to input directory to be checked
     """
     if not os.path.isdir(indir):
         print("\n--- ERROR: Input must be a directory ---\n")
         quit()
+
 
 def output_check(outfile: str):
     """
@@ -60,10 +60,11 @@ def output_check(outfile: str):
         print("\n--- ERROR: Unable to create output file", outfile + " ---\n")
         quit()
 
+
 def write_csv(outfile: str, csv_fields: list[str], csv_data: list[dict[str, str]]):
     """
     Writes ingest sheet data to a csv.
-    
+
     :param str outfile: fullpath to output file including extension
     :param list csv_fields: fieldnames(headers) for csv file
     :param list csv_data: data to be written to csv
@@ -74,6 +75,7 @@ def write_csv(outfile: str, csv_fields: list[str], csv_data: list[dict[str, str]
         for item in csv_data:
             for file_info in csv_data[item]:
                 writer.writerow(file_info)
+
 
 def clean_subdir(subdir: str, indir: str):
     """
@@ -86,6 +88,7 @@ def clean_subdir(subdir: str, indir: str):
     subdir = subdir.replace(indir, "")
     subdir = subdir.strip("/")
     return subdir
+
 
 def clean_dirs(dirs: list[str]):
     """
@@ -100,11 +103,12 @@ def clean_dirs(dirs: list[str]):
     dirs[:] = [d for d in dirs if not d[0] == "."]
     return dirs
 
+
 def clean_files(files: list[str], skip: list[str]):
     """
     Removes files to be ignored when making ingest sheet.
     By default skips ".", "Thumbs.db", ".md5", ".csv", ".py"
-    
+
     :param list files: list of files in a directory
     :param list skip: list of files to skip in addition defaults
     :returns: cleaned and sorted list of files
@@ -112,6 +116,10 @@ def clean_files(files: list[str], skip: list[str]):
     """
     files = [f for f in files if not f[0] == "."]
     files = [f for f in files if not f == "Thumbs.db"]
+    files = [f for f in files if not f.endswith(".qctools.mkv")]
+    files = [f for f in files if not f.endswith(".qctools.xmlpoetry")]
+    files = [f for f in files if not f.endswith(".qctools.xml.gz")]
+    files = [f for f in files if not f.endswith(".framemd5")]
     files = [f for f in files if not f.endswith(".md5")]
     files = [f for f in files if not f.endswith(".csv")]
     files = [f for f in files if not f.endswith(".py")]
@@ -123,11 +131,12 @@ def clean_files(files: list[str], skip: list[str]):
     sorted_files: list[str] = sorted(files)
     return sorted_files
 
+
 def get_unix_fullpath(file: str, subdir: str):
     """
     Creates fullpath filename for file.
     Uses unix style path without leading slash.
-    
+
     :param str file: input filename
     :param str subdir: fullpath to directory that file is in
     :returns: unix style path for file
@@ -138,7 +147,8 @@ def get_unix_fullpath(file: str, subdir: str):
     filename = filename.strip("/")
     return filename
 
-def yn_check(message = ""):
+
+def yn_check(message=""):
     """
     Gets yes or no response from user.
 
@@ -157,6 +167,7 @@ def yn_check(message = ""):
             return False
         else:
             print("Please respond with 'yes' or 'no'")
+
 
 if __name__ == "__main__":
     import doctest
