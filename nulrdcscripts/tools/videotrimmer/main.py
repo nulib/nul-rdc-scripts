@@ -24,15 +24,26 @@ def setTrimType(start, end):
 
 
 def trimVideo(inputfileAbsPath, outputfileAbsPath, startTime, endTime, trimType):
-    corecommand = ffmpeg_path + " " + "-i" + " " + inputfileAbsPath + " " + "-c copy"
-    if trimType == "newEnd" or trimType == "between":
+    copy_command = "-c:v copy -c:a copy "
+    corecommand = ffmpeg_path + " " + "-i" + " " + inputfileAbsPath
+    if trimType == "newEnd":
+        command = (
+            corecommand
+            + " "
+            + "-to"
+            + " "
+            + endTime
+            + " "
+            + copy_command
+            + outputfileAbsPath
+        )
+    elif trimType == "between":
         command = (
             corecommand
             + " "
             + "-ss"
             + " "
             + startTime
-            + " "
             + "-to"
             + " "
             + endTime
@@ -40,7 +51,16 @@ def trimVideo(inputfileAbsPath, outputfileAbsPath, startTime, endTime, trimType)
             + outputfileAbsPath
         )
     elif trimType == "newStart":
-        command = corecommand + " " + "-ss" + " " + startTime + " " + outputfileAbsPath
+        command = (
+            corecommand
+            + " "
+            + "-ss"
+            + " "
+            + startTime
+            + " "
+            + copy_command
+            + outputfileAbsPath
+        )
     subprocess.run(command)
 
 
