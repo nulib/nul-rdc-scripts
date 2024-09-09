@@ -35,7 +35,7 @@ This document provides information about running the inventory script, updating 
 1. Follow the same directions in VSCode Terminal option, but select 'Run Python File in Interactive Window' 
 2. A pop up window at the top of the page will give you prompts, answer them in the box below the prompt (Figure 4)
 
-![Running python file in VSCode Interactive Window](../../FilesReferenced/RunInInteractiveWindow.jpg)
+![Running python file in VSCode Interactive Window](main/docs/images/RunInInteractiveWindow.jpg)
     Figure 4
 
 # Helpful Tips
