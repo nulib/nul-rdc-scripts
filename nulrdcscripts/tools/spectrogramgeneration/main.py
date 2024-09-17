@@ -1,9 +1,8 @@
-import progressbar
 import os
 import subprocess
 from nulrdcscripts.tools.spectrogramgeneration.params import args
 
-def generate_spectrogram(input_path,channels,output_path,spectroname,ffmpegpath):
+def generate_spectrogram(input_path,channels,output_path,spectroname,ffmpeg_path):
     ''' Creates a spectrogram for each audio track in the input'''
     #for index, item in enumerate(channels):
     #    spectrogram_resolution="1928x1080"
@@ -56,7 +55,7 @@ def getnumberchannels(ffprobe_path,input_path):
     channels = channels.replace("\n","")
     return channels
 
-def checkOrCreateOutput(output_path, input_path):
+def checkOrCreateOutput(input_path, output_path):
     if output_path == "NA":
         output_path = input_path
     else:
@@ -69,6 +68,10 @@ def checkOrCreateOutput(output_path, input_path):
         output_path = os.path.dirname(output_path)
     return output_path
 
+def generatespectrogramsCall (input_path,output_path,ffprobe_path):
+    channels=getnumberchannels(ffprobe_path,input_path)
+    spectroname,ext = os.path.splitext(os.path.basename(input_path))
+    generate_spectrogram(input_path,channels,output_path,spectroname,ffprobe_path)
 
 def main():
     '''Only runs if you are running this command on it's own'''
@@ -81,7 +84,7 @@ def main():
     softwarecheck(ffmpeg_path,"ffmpeg")
     channels = getnumberchannels(ffprobe_path, input_path)
     output_path = args.output_path
-    output_path = checkOrCreateOutput(output_path, input_path)
+    output_path = checkOrCreateOutput(input_path, output_path)
     spectroname,ext = os.path.splitext(os.path.basename(input_path))
     generate_spectrogram(input_path,channels,output_path,spectroname,ffmpeg_path)
 

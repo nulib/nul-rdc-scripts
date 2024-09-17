@@ -9,6 +9,7 @@ basefilename = basefilename.replace(".mkv","")
 basedir = os.path.dirname(filename)
 md5file = basefilename + ".md5"
 md5output = os.path.join(basedir + "/",md5file)
+fileExt = [".mkv",".mp4",".wav"]
 def hashlib_md5(filename):
     """
     Uses hashlib to return an MD5 checksum of an input filename
@@ -33,6 +34,16 @@ def hashlib_md5(filename):
                 last_percent_done = percent_done
     md5_output = chksm.hexdigest()
     return md5_output
+
+def md5generationCall (input_path):
+    basefilename = os.path.basename(input_path)
+    basefilename = basefilename.replace(fileExt,"")
+    basedir = os.path.dirname(filename)
+    md5file = basefilename + ".md5"
+    md5output = os.path.join(basedir + "/",md5file)
+    mkvHash = hashlib_md5(filename)
+    with open(md5output, "w", newline="\n") as f:
+        print(mkvHash, "*" + basefilename, file=f)
 
 
 def main():
