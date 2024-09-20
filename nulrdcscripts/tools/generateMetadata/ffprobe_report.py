@@ -2,6 +2,7 @@ import os
 import subprocess
 import json
 
+from nulrdcscripts.tools.generateMetadata.params import args
 
 def audio (file,ffprobe_path):
     audio_output=json.loads(subprocess.check_output([ffprobe_path,"-v","error","-select_streams","a","-show_entries","stream=codec_long_name,bits_per_raw_sample, sample_rate, channels",file, "-of", "json"]).decode("ascii").rstrip())

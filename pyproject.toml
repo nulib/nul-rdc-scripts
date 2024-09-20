@@ -5,7 +5,7 @@ description = "Scripts for NUL DPDC Digitization Team"
 authors = [
     "Northwestern University Libraries <repository@northwestern.edu>",
     "Sophia Francis",
-    "Alec Bertoy (until May 2024),
+    "Alec Bertoy (until May 2024)",
     "Joshua Yocum (until Oct 2022)",
 ]
 packages = [{include = "nulrdcscripts"}]
@@ -14,6 +14,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+pandas = "^2.2.3"
 
 [tool.poetry.dev-dependencies]
 
