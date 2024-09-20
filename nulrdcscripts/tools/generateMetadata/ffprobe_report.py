@@ -1,7 +1,7 @@
 import os
 import subprocess
 import json
-from nulrdcscripts.tools.generateMetadata.params import args
+
 
 def audio (file,ffprobe_path):
     audio_output=json.loads(subprocess.check_output([ffprobe_path,"-v","error","-select_streams","a","-show_entries","stream=codec_long_name,bits_per_raw_sample, sample_rate, channels",file, "-of", "json"]).decode("ascii").rstrip())
@@ -94,6 +94,7 @@ def video(file,ffprobe_path):
     techMetaV=metadatalistsvideo(video_output)
     techMetaA=metadatalistsaudio(audio_output,audio_codec_name_list)
     ffprobe_metadata={'file metadata':fileMeta,'techMetaV': techMetaV,'techMetaA':techMetaA}
+    
 def ffprobe_report_solo(filename):
     ffprobe_path=os.path.abspath(args.ffprobe_path)
     
