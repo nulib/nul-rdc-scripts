@@ -129,8 +129,6 @@ class Ingest_Sheet_Maker:
             # prepend to file_accession_number
             if prepend:
                 file_accession_number = prepend + file_accession_number
-            else:
-                file_accession_number, ext = os.path.splitext(filename)
             # create meadow dict for file
             meadow_file_dict: dict[str, str] = {
                 "work_type": self.work_type,
