@@ -1,5 +1,5 @@
 # ingest   
-A script for creating Meadow ingest sheets.
+A script for creating Meadow ingest sheets for microfilm
 
 ## Usage
 
@@ -7,42 +7,28 @@ In the terminal, [navigate](#terminal-help) to the `nul-rdc-scripts` folder befo
 
 ### Basic usage
 ```
-poetry run ingest -i INPUT_PATH
+poetry run micro -i INPUT_PATH
 ```
 
 ### Using specified output
 ```
-poetry run ingest -i INPUT_PATH -o OUTPUT_FILEPATH
+poetry run micro -i INPUT_PATH -o OUTPUT_FILEPATH
 ```
 
 ### Using specified inventory
 ```
-poetry run ingest -i INPUT_PATH -l INVENTORY_PATH
+poetry run micro -i INPUT_PATH -l INVENTORY_PATH
 ```
 
-### Parse x files by filename
-```
-poetry run ingest -i INPUT_PATH -x parse
-```
-
-### Skip ".md5" files
-```
-poetry run ingest -i INPUT_PATH -s .md5
-```
-
-### Custom description
-```
-poetry run ingest -i INPUT_PATH -d "date/time" "barcode"
-```
 
 ### Example File Structure
 ```
 input_folder
 ├── inventory.csv
 ├── item_1
-│   └── item_1.mov
+│   └── item_1
 └── item_2
-    └── item_2.mov
+    └── item_2
 ```
 
 ## Commands
@@ -56,25 +42,8 @@ input_folder
     Defines patterns to ignore. 
 `--description`, `-d`
     Use to specify column names to populate Meadow description field with. Can take multiple inputs. If not specified, script will default to looking for the column "inventory_title"  
-`--auxiliary`, `-x` Sets how to parse auxiliary files. Options include: `extension` (by extension; i.e. ".jpg"), `parse` (by word; i.e. "_Asset_Front"), `none` (no aux files). Default is `parse`.   
 `--prepend_accession`, `-p` Set a string to be added to the beginning of the file accession number when it is generated
 
-## File Type Designations
-
-|A|P|S|X|  
-|:-------:|:-------:|:-------:|:-------:|  
-|-a or _a|-p or _p|-s or _s|-x or _x|
-|-am or _am|-pm or _pm|spectrogram|-asset or _asset|
-|-am- or _am\_|-pm- or _pm\_|.json|-Asset or _Asset|
-|||.log|back or Back|
-|||.pdf|front or Front|
-|||.xml|-can or _can|
-|||.xml.gz|-Can or _Can|
-|||.framemd5|-ephemera or _ephemera|
-|||.qctool.mkv|-Ephemera or _Ephemera|
-|||dpx.txt|.jpg|
-
-Anything that can't be identified will be set to 'S'
 
 ## Terminal help
 Change directory with `cd FILEPATH`
