@@ -115,7 +115,17 @@ class Ingest_Sheet_Maker:
                 role = item["role"]
                 file_accession_number = item["file_accession_number"]
             else:
-                pass
+                label, role, file_builder = self.get_ingest_LRF(filename, item["label"])
+                if item["filename"] in self.ingest_dictlist:
+                    role_count = 1 + sum(
+                        x.get("role") == role
+                        for x in self.ingest_dictlist[item["filename"]]
+                    )
+                else:
+                    role_count = 1
+                file_accession_number = (
+                    item["filename"] + file_builder + f"{role_count:03d}"
+                )
             # prepend to file_accession_number
             if prepend:
                 file_accession_number = prepend + file_accession_number
@@ -148,3 +158,37 @@ class Ingest_Sheet_Maker:
             + filename
             + " was found in your inventory +++"
         )
+
+    def get_ingest_LRF(self, filename: str, inventory_label: str):
+        """
+        Gets label, role, and file builder for ingest sheet.
+
+        :param str filename: name of input file
+        :param str inventory_label: label created from inventory
+        :returns: label, role, and file_builder for ingest sheet
+        :rtype: tuple of str
+        """
+        # run through each key in role_dict
+        role_index = -1
+        for i in self.role_dict:
+            if any(ext in filename for ext in self.role_dict[i]["identifiers"]):
+                role_index = i
+                break
+
+        role: str
+        label: str
+        file_builder: str
+        # base case if role not found
+        if role_index == -1:
+            label = filename
+            role = "S"
+            file_builder = "_supplementary_"
+        else:
+            role = self.role_dict[role_index]["role"]
+            file_builder = self.role_dict[role_index]["file_builder"]
+            label = ing_helpers.ingest_label_creator(filename, inventory_label)
+
+            # append label if role has extra info
+            if self.role_dict[role_index]["label"]:
+                label += " " + self.role_dict[role_index]["label"]
+        return label, role, file_builder
