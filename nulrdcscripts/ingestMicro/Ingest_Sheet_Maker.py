@@ -114,14 +114,13 @@ class Ingest_Sheet_Maker:
             if self.work_type == "IMAGE":
                 role = item["role"]
                 label = item["label"]
-                file_accession_number = item["file_accession_number"]
             else:
                 pass
             # prepend to file_accession_number
             if prepend:
                 file_accession_number = prepend + file_accession_number
             else:
-                file_accession_number, ext = os.path.splitext(filename)
+                file_accession_number, ext = os.path.splitext(u_file)
             # create meadow dict for file
             meadow_file_dict: dict[str, str] = {
                 "work_type": self.work_type,
