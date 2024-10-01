@@ -26,6 +26,7 @@ ffplaywindow = 'nulrdcscripts.tools.ffplaywindow.main:main'
 spectrograms = 'nulrdcscripts.tools.spectrogramgeneration.main:main'
 md5 = 'nulrdcscripts.tools.md5generation.main:main'
 trim = 'nulrdcscripts.tools.videotrimmer.main:main'
+micro = 'nulrdcscripts.ingestMicro.ingest:main'
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

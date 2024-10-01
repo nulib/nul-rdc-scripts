@@ -9,6 +9,7 @@ import nulrdcscripts.ingest.helpers as helpers
 import nulrdcscripts.ingest.inventory_helpers as inv_helpers
 import nulrdcscripts.ingest.ingest_helpers as ing_helpers
 
+
 class Ingest_Sheet_Maker:
     """
     a class for creating ingest sheet csv files
@@ -20,12 +21,8 @@ class Ingest_Sheet_Maker:
     :var list[dict] ingest_dictlist: contains ingest sheet data
     :var str work_type: type of work ingest sheet is for
     """
-    def __init__(
-            self, 
-            indir: str, 
-            outfile: str, 
-            x_parse: str
-        ):
+
+    def __init__(self, indir: str, outfile: str, x_parse: str):
         """
         Initializes Ingest_Sheet_Maker input, output, and role assignment rules.
 
@@ -38,10 +35,7 @@ class Ingest_Sheet_Maker:
         """fullpath to input directory"""
         self.outfile: str
         """fullpath to output csv file"""
-        self.indir, self.outfile = helpers.init_io(
-            indir,
-            outfile
-        )
+        self.indir, self.outfile = helpers.init_io(indir, outfile)
         self.inventory_dictlist: list[dict[str, str]] = None
         """contains inventory data"""
 
@@ -91,15 +85,9 @@ class Ingest_Sheet_Maker:
             # files and subdirs are "cleaned" in separate functions before analyzing
             for file in helpers.clean_files(files, skip):
                 self.analyze_file(
-                    file, 
-                    helpers.clean_subdir(subdir, self.indir), 
-                    prepend
+                    file, helpers.clean_subdir(subdir, self.indir), prepend
                 )
-        helpers.write_csv(
-            self.outfile, 
-            ing_helpers.get_fields(), 
-            self.ingest_dictlist
-        )
+        helpers.write_csv(self.outfile, ing_helpers.get_fields(), self.ingest_dictlist)
         print("Process complete!")
         print("Meadow inventory located at: " + self.outfile)
 
@@ -121,34 +109,34 @@ class Ingest_Sheet_Maker:
             u_file: str = helpers.get_unix_fullpath(filename, parent_dir)
             work_accession_number: str = item["work_accession_number"]
             description: str = ing_helpers.get_ingest_description(item, filename)
-            
-            #options for image or AV
+
+            # options for image or AV
             if self.work_type == "IMAGE":
                 role = item["role"]
-                label = item["label"]
                 file_accession_number = item["file_accession_number"]
             else:
-                label, role, file_builder = self.get_ingest_LRF(
-                    filename, item["label"]
-                )
+                label, role, file_builder = self.get_ingest_LRF(filename, item["label"])
                 if item["filename"] in self.ingest_dictlist:
                     role_count = 1 + sum(
-                        x.get("role") == role for x in self.ingest_dictlist[item["filename"]]
+                        x.get("role") == role
+                        for x in self.ingest_dictlist[item["filename"]]
                     )
                 else:
                     role_count = 1
-                file_accession_number = item["filename"] + file_builder + f"{role_count:03d}"
+                file_accession_number = (
+                    item["filename"] + file_builder + f"{role_count:03d}"
+                )
             # prepend to file_accession_number
             if prepend:
                 file_accession_number = prepend + file_accession_number
             # create meadow dict for file
-            meadow_file_dict: dict[str, str]= {
+            meadow_file_dict: dict[str, str] = {
                 "work_type": self.work_type,
                 "work_accession_number": work_accession_number,
                 "file_accession_number": file_accession_number,
                 "filename": u_file,
                 "description": description,
-                "label": label,
+                "label": "",
                 "role": role,
                 "work_image": None,
                 "structure": None,
@@ -164,8 +152,9 @@ class Ingest_Sheet_Maker:
         # allow user to add the file anyway
         # only gets here if file isnt found
         print(
-            "+++ WARNING: No entry matching " + filename + 
-            " was found in your inventory +++"
+            "+++ WARNING: No entry matching "
+            + filename
+            + " was found in your inventory +++"
         )
 
     def get_ingest_LRF(self, filename: str, inventory_label: str):
@@ -193,11 +182,11 @@ class Ingest_Sheet_Maker:
             role = "S"
             file_builder = "_supplementary_"
         else:
-            role  = self.role_dict[role_index]["role"]
-            file_builder  = self.role_dict[role_index]["file_builder"]
+            role = self.role_dict[role_index]["role"]
+            file_builder = self.role_dict[role_index]["file_builder"]
             label = ing_helpers.ingest_label_creator(filename, inventory_label)
 
-            #append label if role has extra info
+            # append label if role has extra info
             if self.role_dict[role_index]["label"]:
                 label += " " + self.role_dict[role_index]["label"]
         return label, role, file_builder
