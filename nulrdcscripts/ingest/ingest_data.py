@@ -89,7 +89,7 @@ role_dict = {
 }
 x_extension_dict = {
     "auxiliary": {
-        "identifiers": [".jpg", ".JPG"],
+        "identifiers": [".jpg", ".JPG", ".tif"],
         "type": "extension",
         "role": "X",
         "label": "image",
