@@ -1,0 +1,5 @@
+capture deck, VTR Cable Out,TBC,TBC Cable Out,A/D Converter, A/D Converter Out, Capture Card
+Sony SVO5800 Rack 1;NU-95094,Component,N/A,N/A,HD10AVA AJA;,SDI,BlackMagic Decklink Studio 4k;NU-11270
+Sony SVO5800 Rack 2;,Component,N/A,N/A,HD10AVA AJA;NU-11275,SDI,BlackMagic DeckLink Studio 4k;NU-11269
+Panasonic AG1980 Rack 1;NU-11374,Composite,DPS-575;NU-11372,Component,HD10AVA AJA;,SDI, BlackMagic DeckLink Studio 4k;NU-11270
+Panasonic AG1980 Rack 2;NU-11280,Composite,DPS-575;NU-10697,Component,HD10AVA AJA;NU-11275,SDI, BlackMagic DeckLink Studio 4k;NU-11269
