@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nul-rdc-scripts"
-version = "0.4.1"
+version = "0.5.0"
 description = "Scripts for NUL RDC Digitization Team"
 authors = [
     "Northwestern University Libraries <repository@northwestern.edu>",
@@ -15,6 +15,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 pandas = "^2.2.3"
+openpyxl = "^3.1.5"
 
 [tool.poetry.dev-dependencies]
 
@@ -28,6 +29,7 @@ spectrograms = 'nulrdcscripts.tools.spectrogramgeneration.main:main'
 md5 = 'nulrdcscripts.tools.md5generation.main:main'
 trim = 'nulrdcscripts.tools.videotrimmer.main:main'
 micro = 'nulrdcscripts.ingestMicro.ingest:main'
+errorgui='nulrdcscripts.tools.errortool.main:main'
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
