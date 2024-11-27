@@ -7,7 +7,16 @@ from nulrdcscripts.tools.spectrogramgeneration.params import args
 def generate_spectrogram(input_path, channels, output_path, spectroname, ffmpegpath):
     """Creates a spectrogram for each audio track in the input"""
     spectrogram_resolution = "1920x1080"  # Updated resolution
-    bar = progressbar.ProgressBar(max_value=int(channels))
+    widgets = [
+        " [",
+        progressbar.Percentage(),
+        "] ",
+        progressbar.Bar(),
+        " (",
+        progressbar.ETA(),
+        ") ",
+    ]
+    bar = progressbar.ProgressBar(max_value=int(channels), widgets=widgets)
     bar.start()
     for index in range(int(channels)):
         output = os.path.join(
