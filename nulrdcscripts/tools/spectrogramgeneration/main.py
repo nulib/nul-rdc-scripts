@@ -43,7 +43,7 @@ def generate_all_spectrograms(
     bar = progressbar.ProgressBar(max_value=int(channels), widgets=widgets)
     bar.start()
 
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=int(channels)) as executor:
         futures = [
             executor.submit(
                 generate_spectrogram,
