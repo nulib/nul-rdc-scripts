@@ -220,93 +220,6 @@ def ffprobe_report(filename, input_file_abspath):
     return ffprobe_metadata
 
 
-def ffv1_lossless_transcode(input_metadata, transcode_nameDict, audioStreamCounter):
-    # get relevant names from nameDict
-    inputAbsPath = transcode_nameDict.get("inputAbsPath")
-    tempMasterFile = transcode_nameDict.get("tempMasterFile")
-    framemd5AbsPath = transcode_nameDict.get("framemd5AbsPath")
-    outputAbsPath = transcode_nameDict.get("outputAbsPath")
-    framemd5File = transcode_nameDict.get("framemd5File")
-
-    # create ffmpeg command
-    ffmpeg_command = [args.ffmpeg_path]
-    if not args.verbose:
-        ffmpeg_command.extend(("-loglevel", "error"))
-    ffmpeg_command.extend(
-        [
-            "-i",
-            inputAbsPath,
-            "-map",
-            "0",
-            "-dn",
-            "-c:v",
-            "ffv1",
-            "-level",
-            "3",
-            "-g",
-            "1",
-            "-slices",
-            str(args.ffv1_slice_count),
-            "-slicecrc",
-            "1",
-        ]
-    )
-    # TO DO: consider putting color data in a list or dict to replace the following if statements with a single if statement in a for loop
-    if input_metadata["techMetaV"]["color primaries"]:
-        ffmpeg_command.extend(
-            ("-color_primaries", input_metadata["techMetaV"]["color primaries"])
-        )
-    if input_metadata["techMetaV"]["color transfer"]:
-        ffmpeg_command.extend(
-            ("-color_trc", input_metadata["techMetaV"]["color transfer"])
-        )
-    if input_metadata["techMetaV"]["color space"]:
-        ffmpeg_command.extend(
-            ("-colorspace", input_metadata["techMetaV"]["color space"])
-        )
-    if audioStreamCounter > 0:
-        ffmpeg_command.extend(("-c:a", "copy"))
-    ffmpeg_command.extend(
-        (
-            tempMasterFile if args.embed_framemd5 else outputAbsPath,
-            "-f",
-            "framemd5",
-            "-an",
-            framemd5AbsPath,
-        )
-    )
-
-    # execute ffmpeg command
-    subprocess.run(ffmpeg_command)
-
-    # remux to attach framemd5
-    if args.embed_framemd5:
-        add_attachment = [
-            args.ffmpeg_path,
-            "-loglevel",
-            "error",
-            "-i",
-            tempMasterFile,
-            "-c",
-            "copy",
-            "-map",
-            "0",
-            "-attach",
-            framemd5AbsPath,
-            "-metadata:s:t:0",
-            "mimetype=application/octet-stream",
-            "-metadata:s:t:0",
-            "filename=" + framemd5File,
-            outputAbsPath,
-        ]
-        if os.path.isfile(tempMasterFile):
-            subprocess.call(add_attachment)
-            filesToDelete = [tempMasterFile, framemd5AbsPath]
-            delete_files(filesToDelete)
-        else:
-            print("There was an issue finding the file", tempMasterFile)
-
-
 def delete_files(list):
     """
     Loops through a list of files and tries to delete them
@@ -353,7 +266,41 @@ def checksum_streams(input, audioStreamCounter):
     return stream_sum
 
 
-def two_pass_h264_encoding(audioStreamCounter, outputAbsPath, acAbsPath):
+fourtoThree = [
+    "-filter_complex",
+    "[0:a:0][0:a:1]amerge=inputs2[a]",
+    "-map",
+    "0:v",
+    "-map",
+    "[a]",
+    "-map",
+    "0:a:2",
+    "-map",
+    "0:a:3",
+]
+
+fourtoTwo = [
+    "-filter_complex",
+    "[0:a:0][0:a:1]amerge=inputs=2[a];[0:a:2][0:a:3]amerge=inputs=2[b]",
+    "-map",
+    "0:v",
+    "-map",
+    "[a]",
+    "-map",
+    "[b]",
+]
+
+twotoOne = [
+    "-filter_complex",
+    "[0:a:0][0:a:1]amerge=inputs=2[a]",
+    "-map",
+    "0:v",
+    "-map",
+    "[a]",
+]
+
+
+def two_pass_h264_encoding(audioStreamCounter, preservationAbsPath, accessAbsPath):
     if os.name == "nt":
         nullOut = "NUL"
     else:
@@ -364,7 +311,7 @@ def two_pass_h264_encoding(audioStreamCounter, outputAbsPath, acAbsPath):
     pass1 += [
         "-y",
         "-i",
-        outputAbsPath,
+        preservationAbsPath,
         "-c:v",
         "libx264",
         "-preset",
@@ -380,38 +327,11 @@ def two_pass_h264_encoding(audioStreamCounter, outputAbsPath, acAbsPath):
         if args.mixdown == "copy":
             pass1 += ["-c:a", "aac", "-b:a", "256k"]
         if args.mixdown == "4to3" and audioStreamCounter == 4:
-            pass1 += [
-                "-filter_complex",
-                "[0:a:0][0:a:1]amerge=inputs=2[a]",
-                "-map",
-                "0:v",
-                "-map",
-                "[a]",
-                "-map",
-                "0:a:2",
-                "-map",
-                "0:a:3",
-            ]
+            pass1 += fourtoThree
         if args.mixdown == "4to2" and audioStreamCounter == 4:
-            pass1 += [
-                "-filter_complex",
-                "[0:a:0][0:a:1]amerge=inputs=2[a];[0:a:2][0:a:3]amerge=inputs=2[b]",
-                "-map",
-                "0:v",
-                "-map",
-                "[a]",
-                "-map",
-                "[b]",
-            ]
+            pass1 += fourtoTwo
         if args.mixdown == "2to1" and audioStreamCounter == 2:
-            pass1 += [
-                "-filter_complex",
-                "[0:a:0][0:a:1]amerge=inputs=2[a]",
-                "-map",
-                "0:v",
-                "-map",
-                "[a]",
-            ]
+            pass1 += twotoOne
     pass1 += ["-f", "mp4", nullOut]
     pass2 = [args.ffmpeg_path]
     if not args.verbose:
@@ -419,7 +339,7 @@ def two_pass_h264_encoding(audioStreamCounter, outputAbsPath, acAbsPath):
     pass2 += [
         "-y",
         "-i",
-        outputAbsPath,
+        preservationAbsPath,
         "-c:v",
         "libx264",
         "-preset",
@@ -435,39 +355,12 @@ def two_pass_h264_encoding(audioStreamCounter, outputAbsPath, acAbsPath):
         if args.mixdown == "copy":
             pass2 += ["-c:a", "aac", "-b:a", "256k"]
         if args.mixdown == "4to3" and audioStreamCounter == 4:
-            pass2 += [
-                "-filter_complex",
-                "[0:a:0][0:a:1]amerge=inputs=2[a]",
-                "-map",
-                "0:v",
-                "-map",
-                "[a]",
-                "-map",
-                "0:a:2",
-                "-map",
-                "0:a:3",
-            ]
+            pass2 += fourtoThree
         if args.mixdown == "4to2" and audioStreamCounter == 4:
-            pass2 += [
-                "-filter_complex",
-                "[0:a:0][0:a:1]amerge=inputs=2[a];[0:a:2][0:a:3]amerge=inputs=2[b]",
-                "-map",
-                "0:v",
-                "-map",
-                "[a]",
-                "-map",
-                "[b]",
-            ]
+            pass2 += fourtoTwo
         if args.mixdown == "2to1" and audioStreamCounter == 2:
-            pass2 += [
-                "-filter_complex",
-                "[0:a:0][0:a:1]amerge=inputs=2[a]",
-                "-map",
-                "0:v",
-                "-map",
-                "[a]",
-            ]
-    pass2 += [acAbsPath]
+            pass2 += twotoOne
+    pass2 += [accessAbsPath]
     subprocess.run(pass1)
     subprocess.run(pass2)
 
@@ -485,7 +378,9 @@ def generate_spectrogram(input, channel_layout_list, outputFolder, outputName):
     """
     spectrogram_resolution = "1920x1080"
     for index, item in enumerate(channel_layout_list):
-        output = os.path.join(outputFolder, outputName + "_spectrogram0" + str(index) + "_s.png")
+        output = os.path.join(
+            outputFolder, outputName + "_spectrogram0" + str(index) + "_s.png"
+        )
         spectrogram_args = [args.ffmpeg_path]
         spectrogram_args += ["-loglevel", "error", "-y"]
         spectrogram_args += ["-i", input, "-lavfi"]
@@ -546,17 +441,16 @@ def generate_system_log(ffvers, tstime, tftime):
         "operating system": osinfo,
         "ffmpeg version": ffvers,
         "transcode start time": tstime,
-        "transcode end time": tftime
+        "transcode end time": tftime,
         # TO DO: add capture software/version maybe -- would have to pull from csv
     }
     return systemInfo
 
 
-def qc_results(inventoryCheck, losslessCheck, mediaconchResults):
+def qc_results(inventoryCheck, mediaconchResults):
     QC_results = {}
     QC_results["QC"] = {
         "inventory check": inventoryCheck,
-        "lossless check": losslessCheck,
         "mediaconch results": mediaconchResults,
     }
     return QC_results
@@ -614,7 +508,10 @@ def import_csv(csvInventory):
                 stream_index = f.tell()
                 # skip advancing line by line
                 line = f.readline()
-                if not ("Name of Person Inventorying" in line or "MEADOW Ingest fields" in line):
+                if not (
+                    "Name of Person Inventorying" in line
+                    or "MEADOW Ingest fields" in line
+                ):
                     # go back one line and break out of loop once fieldnames are found
                     f.seek(stream_index, os.SEEK_SET)
                     break
@@ -781,46 +678,55 @@ def write_output_csv(outdir, csvHeaderList, csvWriteList, output_metadata, qcRes
 def create_json(
     jsonAbsPath,
     systemInfo,
-    input_metadata,
-    mov_stream_sum,
+    preservation_metadata,
+    preservation_stream_sum,
     mkvHash,
-    mkv_stream_sum,
+    access_stream_sum,
     baseFilename,
-    output_metadata,
+    access_metadata,
     item_csvDict,
     qcResults,
 ):
-    input_techMetaV = input_metadata.get("techMetaV")
-    input_techMetaA = input_metadata.get("techMetaA")
-    input_file_metadata = input_metadata.get("file metadata")
-    output_techMetaV = output_metadata.get("techMetaV")
-    output_techMetaA = output_metadata.get("techMetaA")
-    output_file_metadata = output_metadata.get("file metadata")
+    preservation_techMetaV = preservation_metadata.get("techMetaV")
+    preservation_techMetaA = preservation_metadata.get("techMetaA")
+    preservation_file_metadata = preservation_metadata.get("file metadata")
+    access_techMetaV = access_metadata.get("techMetaV")
+    access_techMetaA = access_metadata.get("techMetaA")
+    access_file_metadata = access_metadata.get("file metadata")
 
     # create dictionary for json output
     data = {}
     data[baseFilename] = []
 
     # gather pre and post transcode file metadata for json output
-    mov_file_meta = {}
-    ffv1_file_meta = {}
+    preservation_file_meta = {}
+    access_file_meta = {}
     # add stream checksums to metadata
-    mov_md5_dict = {"a/v streamMD5s": mov_stream_sum}
-    ffv1_md5_dict = {"md5 checksum": mkvHash, "a/v streamMD5s": mkv_stream_sum}
-    input_file_metadata = {**input_file_metadata, **mov_md5_dict}
-    output_file_metadata = {**output_file_metadata, **ffv1_md5_dict}
-    ffv1_file_meta = {"post-transcode metadata": output_file_metadata}
-    mov_file_meta = {"pre-transcode metadata": input_file_metadata}
+    preservation_md5_dict = {
+        "md5 checksum": mkvHash,
+        "a/v streamMD5s": preservation_stream_sum,
+    }
+    access_md5_dict = {"md5 checksum": mkvHash, "a/v streamMD5s": access_stream_sum}
+    preservation_file_metadata = {**preservation_file_metadata, **preservation_md5_dict}
+    access_file_metadata = {**access_file_metadata, **access_md5_dict}
+    access_file_meta = {"access metadata": access_file_metadata}
+    preservation_file_meta = {"preservation metadata": preservation_file_metadata}
 
     # gather technical metadata for json output
     techdata = {}
-    video_techdata = {}
-    audio_techdata = {}
+    preservation_video_techdata = {}
+    preservation_audio_techdata = {}
+    access_video_techdata = {}
+    access_audio_techdata = {}
     techdata["technical metadata"] = []
-    video_techdata = {"video": input_techMetaV}
-    audio_techdata = {"audio": input_techMetaA}
-    techdata["technical metadata"].append(video_techdata)
-    techdata["technical metadata"].append(audio_techdata)
+    preservation_video_techdata = {"video": preservation_techMetaV}
+    preservation_audio_techdata = {"audio": preservation_techMetaA}
+    access_video_techdata = {"video": access_techMetaV}
+    access_audio_techdata = {"audio": access_techMetaA}
+    techdata["technical metadata"].append(preservation_video_techdata)
+    techdata["technical metadata"].append(preservation_audio_techdata)
+    techdata["technical metadata"].append(access_video_techdata)
+    techdata["technical metadata"].append(access_audio_techdata)
 
     # gather metadata from csv dictionary as capture metadata
     csv_metadata = {"inventory metadata": item_csvDict}
@@ -829,8 +735,8 @@ def create_json(
 
     data[baseFilename].append(csv_metadata)
     data[baseFilename].append(system_info)
-    data[baseFilename].append(ffv1_file_meta)
-    data[baseFilename].append(mov_file_meta)
+    data[baseFilename].append(access_file_meta)
+    data[baseFilename].append(preservation_file_meta)
     data[baseFilename].append(techdata)
     data[baseFilename].append(qcResults)
     with open(jsonAbsPath, "w", newline="\n") as outfile:
