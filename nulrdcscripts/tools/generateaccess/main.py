@@ -24,9 +24,13 @@ def transcode(file_path):
     for item in transcode_pass:
         standard_input = f"-c:v libx264 -preset medium -b:v 8000k -pass {item} -filter_complex '[0:a:0]aformat=channel_layouts=stereo[a0];[0:a:1]aformat=channel_layouts=stereo[a1]; amerge=inputs=2[a]' -map 0:v -map '[a]' -map -0:t -f mp4"
         if item == 1:
+            print("Running first pass")
             command = f"ffmpeg -y -i {file_path} {standard_input} nul"
+            print("Finished first pass")
         else:
+            print("Running second pass")
             command = f"ffmpeg -y -i {file_path} {standard_input} {outfile}"
+            print("Finished second pass")
         subprocess(command)
 
 
