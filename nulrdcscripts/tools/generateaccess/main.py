@@ -1,28 +1,21 @@
 import os
+import subprocess
 from nulrdcscripts.tools.generateaccess.params import args
 
 
 def main():
     input_path = os.path.abspath(args.input_path)
-    if os.path.isdir(input_path):
-        for folder in os.scandir(input_path):
-            if folder.is_dir():
-                for subfolder in os.scandir(folder.path):
-                    if subfolder.is_dir():
-                        for file in os.scandir(subfolder.path):
-                            if file.name.endswith(".mkv"):
-                                transcode(file.path)
-                            else:
-                                raise Exception(
-                                    "This type of file is not supported for transcoding by this script"
-                                )
-            else:
-                if folder.name.endswith(".mkv"):
-                    transcode(folder.path)
-                else:
-                    raise Exception(
-                        "This type of file is not supported for transcoding by this script"
-                    )
+    if os.path.isfile(input_path):
+        if input_path.endswith(".mkv"):
+            transcode(input_path)
+        else:
+            raise Exception(
+                "This file type or folder currently is not accepted by this script. A .mkv file is required"
+            )
+    else:
+        raise Exception(
+            "This file type or folder currently is not accepted by this script. A .mkv file is required"
+        )
 
 
 def transcode(file_path):
@@ -34,7 +27,7 @@ def transcode(file_path):
             command = f"ffmpeg -y -i {file_path} {standard_input} nul"
         else:
             command = f"ffmpeg -y -i {file_path} {standard_input} {outfile}"
-        os.system(command)
+        subprocess(command)
 
 
 if __name__ == "__main__":
