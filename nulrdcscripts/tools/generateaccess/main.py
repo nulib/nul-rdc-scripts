@@ -2,7 +2,6 @@ import os
 import subprocess
 from nulrdcscripts.tools.generateaccess.params import args
 
-
 def single_run(input):
     if input.endswith("_p.mkv"):
         outputfile = input.replace("_p.mkv", "_a.mp4")
@@ -18,6 +17,8 @@ def single_run(input):
                 "This file type is not supported by the script. File must be an .mkv with an end of .mkv or _p.mkv to work."
             )
 
+    log_file = os.path.join(os.path.dirname(input), "ffmpeg2pass-0.log")
+
     basecommand = [
         "ffmpeg",
         "-y",
@@ -29,6 +30,8 @@ def single_run(input):
         "medium",
         "-b:v",
         "8000k",
+        "-loglevel", "info",
+        "-passlogfile", log_file
     ]
     filtercommand = [
         "-filter_complex",
@@ -38,11 +41,14 @@ def single_run(input):
 
     pass1command = basecommand + ["-pass", "1"] + filtercommand + mapcommand + ["nul"]
     subprocess.run(pass1command)
-    pass2command = (
-        basecommand + ["-pass", "1"] + filtercommand + mapcommand + outputfile
-    )
+    pass2command = basecommand + ["-pass", "2"] + filtercommand + mapcommand + [outputfile]
     subprocess.run(pass2command)
 
+    # Remove log files if they exist
+    for ext in ["", ".mdat", ".temp", ".0", ".mbtree"]:
+        log_file_with_ext = log_file + ext
+        if os.path.exists(log_file_with_ext):
+            os.remove(log_file_with_ext)
 
 def main():
     input_path = os.path.abspath(args.input_path)
@@ -61,7 +67,6 @@ def main():
             raise Exception(
                 "This file type is not accepted for transcoding. Try again."
             )
-
 
 if __name__ == "__main__":
     main()
