@@ -42,6 +42,7 @@ def single_run(input):
         basecommand + ["-pass", "1"] + filtercommand + mapcommand + outputfile
     )
     subprocess.run(pass2command)
+    print("Access file is done being transcoded.")
 
 
 def main():
