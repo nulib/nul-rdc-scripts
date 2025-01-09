@@ -43,6 +43,7 @@ def single_run(input):
     subprocess.run(pass1command)
     pass2command = basecommand + ["-pass", "2"] + filtercommand + mapcommand + [outputfile]
     subprocess.run(pass2command)
+    print("Access file is done being transcoded.")
 
     # Remove log files if they exist
     for ext in ["", ".mdat", ".temp", ".0", ".mbtree"]:
