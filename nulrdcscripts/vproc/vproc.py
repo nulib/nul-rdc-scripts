@@ -108,24 +108,14 @@ def single_video(input, output):
         preservationAbsPath = os.path.join(input, preservationFilename)
         baseFilename = preservationFilename.replace("_p.mkv", "")
         baseOutput = os.path.join(output, baseFilename)
-        pmOutputFolder = os.path.join(baseOutput, pm_identifier)
-        mkvBaseFilename = (
-            (baseFilename + pm_filename_identifier)
-            if pm_filename_identifier
-            else (baseFilename)
+        preservationOutputFolder = os.path.join(baseOutput, pm_identifier)
+        accessOutputFolder = os.path.join(baseOutput, ac_identifier)
+        accessAbsPath = os.path.join(
+            accessOutputFolder, baseFilename + "_" + ac_identifier + ".mp4"
         )
-        mkvFilename = mkvBaseFilename + ".mkv"
-        outputAbsPath = os.path.join(pmOutputFolder, mkvFilename)
-        tempMasterFile = os.path.join(pmOutputFolder, baseFilename + "_tmp.mkv")
-        framemd5File = mkvBaseFilename + ".framemd5"
-        framemd5AbsPath = os.path.join(pmOutputFolder, framemd5File)
-        acOutputFolder = os.path.join(baseOutput, ac_identifier)
-        acAbsPath = os.path.join(
-            acOutputFolder, baseFilename + "_" + ac_identifier + ".mp4"
-        )
+        accessFilename = baseFilename + "_" + ac_identifier + ".mp4"
         metaOutputFolder = os.path.join(baseOutput, metadata_identifier)
         jsonAbsPath = os.path.join(metaOutputFolder, baseFilename + "_s" + ".json")
-        pmMD5AbsPath = os.path.join(pmOutputFolder, mkvBaseFilename + ".md5")
 
         # generate ffprobe metadata from input
         preservation_metadata = helpers.ffprobe_report(
@@ -154,34 +144,37 @@ def single_video(input, output):
 
         # losslessly transcode with ffmpeg
         transcode_nameDict = {
-            "inputAbsPath": inputAbsPath,
-            "tempMasterFile": tempMasterFile,
-            "framemd5AbsPath": framemd5AbsPath,
-            "outputAbsPath": outputAbsPath,
-            "framemd5File": framemd5File,
+            "inputAbsPath": preservationAbsPath,
+            "outputAbsPath": accessAbsPath,
         }
         audioStreamCounter = preservation_metadata["techMetaA"]["audio stream count"]
         # log transcode finish time
         tftime = datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S")
 
-        # If ffv1 file was succesfully created, do remaining verification and transcoding work
-        if os.path.isfile(outputAbsPath):
-            # create checksum sidecar file for preservation master
-            print("*creating checksum*")
-            mkvHash = corefuncs.hashlib_md5(outputAbsPath)
-            with open(pmMD5AbsPath, "w", newline="\n") as f:
-                print(mkvHash, "*" + mkvFilename, file=f)
+        if not args.skip_ac:
+            # create access copy
+            print("*transcoding access copy*")
+            helpers.two_pass_h264_encoding(
+                audioStreamCounter, preservationAbsPath, accessAbsPath
+            )
+            print("*successfully transcoded access copy*")
 
+        # log access copy filename if access copy was created
+        # TO DO: verify that access copy runtime matches pm runtime?
+        if os.path.isfile(accessAbsPath):
+            acFilename = baseFilename + "_" + ac_identifier + ".mp4"
+        else:
+            acFilename = "No access copy found"
+
+        # If access file was succesfully created, do remaining verification and transcoding work
+        if os.path.isfile(accessAbsPath):
             # compare streamMD5s
-            print("*verifying losslessness*")
-            mov_stream_sum = helpers.checksum_streams(inputAbsPath, audioStreamCounter)
+            preservation_stream_sum = helpers.checksum_streams(
+                preservationAbsPath, audioStreamCounter
+            )
             access_stream_sum = helpers.checksum_streams(
                 accessAbsPath, audioStreamCounter
             )
-            # PASS/FAIL - check if input stream md5s match output stream md5s
-            streamMD5status = checks.stream_md5_status(mov_stream_sum, mkv_stream_sum)
-
-            # create a dictionary with the mediaconch results from the MOV and MKV files
             mediaconchResults_dict = {
                 "MKV Implementation": helpers.mediaconch_implementation_check(
                     preservationAbsPath
@@ -205,10 +198,9 @@ def single_video(input, output):
             helpers.create_json(
                 jsonAbsPath,
                 systemInfo,
-                input_metadata,
-                mov_stream_sum,
-                mkvHash,
-                mkv_stream_sum,
+                preservation_metadata,
+                preservation_stream_sum,
+                access_stream_sum,
                 baseFilename,
                 access_metadata,
                 item_csvDict,
@@ -252,9 +244,12 @@ def single_video(input, output):
                 )
 
             # create qctools report
-            if not args.skip_qcli:
-                print("*creating qctools report*")
-                helpers.generate_qctools(outputAbsPath)
+            if args.runqcli:
+                print("*Creating QCTools Report*")
+                helpers.generate_qctools(preservationAbsPath)
+                print("*Generated QCTools Report")
+            else:
+                pass
 
         else:
             print("No file in output folder.  Skipping file processing")
