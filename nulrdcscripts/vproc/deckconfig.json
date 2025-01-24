@@ -1,0 +1,90 @@
+{
+    "Sony SVO-5800 Rack 1": {
+        "VTR": {
+            "vtr_name": "Sony SVO-5800 Rack 1",
+            "vtr_nuTag": "NUTAG",
+            "vtr_out": "Component"
+        },
+        "TBC": {
+            "tbc_name": "Sony SVO-5800 Rack 1",
+            "tbc_nuTag": "NUTAG",
+            "tbc_out": "Component"
+        },
+        "A/D Converter": {
+            "ad_name": "AJA HD10 AVA Rack 1",
+            "ad_nuTag": "NUTAG",
+            "ad_out": "SDI"
+        },
+        "Capture Card": {
+            "capturecard_name": "BlackMagic Decklink Studio 4k Rack 1",
+            "capturecard_nuTAG": "NUTAG",
+            "capturecard_out": "USB-C"
+        }
+    },
+    "Sony SVO-5800 Rack 2": {
+        "VTR": {
+            "vtr_name": "Sony SVO-5800 Rack 2",
+            "vtr_nuTag": "NUTAG",
+            "vtr_out": "Component"
+        },
+        "TBC": {
+            "tbc_name": "Sony SVO-5800 Rack 2",
+            "tbc_nuTag": "NUTAG",
+            "tbc_out": "Component"
+        },
+        "A/D Converter": {
+            "ad_name": "AJA HD10 AVA Rack 2",
+            "ad_nuTag": "NUTAG",
+            "ad_out": "SDI"
+        },
+        "Capture Card": {
+            "capturecard_name": "BlackMagic Decklink Studio 4k Rack 2",
+            "capturecard_nuTAG": "NUTAG",
+            "capturecard_out": "USB-C"
+        }
+    },
+    "Panasonic AG-1980 Rack 1": {
+        "VTR": {
+            "vtr_name": "Panasonic AG-1980 Rack 1",
+            "vtr_nuTag": "NUTAG",
+            "vtr_out": "Composite"
+        },
+        "TBC": {
+            "tbc_name": "Leitch DPS-575 Rack 1",
+            "vtr_nuTag": "NUTAG",
+            "vtr_out": "SDI"
+        },
+        "A/D Converter": {
+            "ad_name": "AJA HD10 AVA Rack 1",
+            "ad_nuTag": "NUTAG",
+            "ad_out": "SDI"
+        },
+        "Capture Card": {
+            "capturecard_name": "BlackMagic Decklink Studio 4k Rack 1",
+            "capturecard_nuTAG": "NUTAG",
+            "capturecard_out": "USB-C"
+        }
+    },
+    "Panasonic AG-1980 Rack 2": {
+        "VTR": {
+            "vtr_name": "Panasonic AG-1980 Rack 2",
+            "vtr_nuTag": "NUTAG",
+            "vtr_out": "Composite"
+        },
+        "TBC": {
+            "tbc_name": "Leitch DPS-575 Rack 2",
+            "vtr_nuTag": "NUTAG",
+            "vtr_out": "SDI"
+        },
+        "A/D Converter": {
+            "ad_name": "AJA HD10 AVA Rack 2",
+            "ad_nuTag": "NUTAG",
+            "ad_out": "SDI"
+        },
+        "Capture Card": {
+            "capturecard_name": "BlackMagic Decklink Studio 4k Rack 2",
+            "capturecard_nuTAG": "NUTAG",
+            "capturecard_out": "USB-C"
+        }
+    }
+}
