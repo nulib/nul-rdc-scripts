@@ -1,0 +1,85 @@
+{
+    "": [
+        {
+            "inventory metadata": {
+                "accession number/call number": "",
+                "box/folder alma number": "",
+                "barcode": "",
+                "description": "",
+                "record date": "",
+                "housing/container markings": "",
+                "condition notes": "",
+                "format": "",
+                "staff initials": "",
+                "capture date": "",
+                "coding history": [
+                    "Sony SVO-5800; 10516; JVC; SP; NTSC; Component",
+                    "Sony SVO-5800; 10516; Component",
+                    "AJA HD10AVA; K0159767",
+                    "DeckLink Studio 4K"
+                ],
+                "sound note": [
+                    ""
+                ],
+                "capture notes": ""
+            }
+        },
+        {
+            "system information": {
+                "operating system": "nt",
+                "ffmpeg version": "",
+                "transcode start time": "",
+                "transcode end time": ""
+            }
+        },
+        {
+            "preservation-file metadata": {
+                "filename": "",
+                "file size": "",
+                "duration": "",
+                "streams": 0,
+                "video streams": [],
+                "audio streams": [],
+                "data streams": [],
+                "attachments": [],
+                "md5 checksum": "",
+                "a/v streamMD5s": []
+            }
+        },
+        {
+            "access-file metadata": {
+                "filename": "",
+                "file size": "",
+                "duration": "",
+                "streams": 0,
+                "video streams": [],
+                "audio streams": [],
+                "data streams": [],
+                "attachments": [],
+                "md5 checksum": "",
+                "a/v streamMD5s": []
+            }
+        },
+        {
+            "technical metadata": [
+                {
+                    "video": {}
+                },
+                {
+                    "audio": {
+                        "audio stream count": 0,
+                        "audio bitrate": [],
+                        "audio sample rate": [],
+                        "channels": [],
+                        "audio streams": []
+                    }
+                }
+            ]
+        },
+        {
+            "QC": {
+                "inventory check": "PASS"
+            }
+        }
+    ]
+}
