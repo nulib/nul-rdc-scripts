@@ -1,29 +1,21 @@
+import progressbar
 import os
 import subprocess
-import progressbar
 from nulrdcscripts.tools.spectrogramgeneration.params import args
 
 
 def generate_spectrogram(input_path, channels, output_path, spectroname, ffmpegpath):
     """Creates a spectrogram for each audio track in the input"""
-    spectrogram_resolution = "1920x1080"  # Updated resolution
     bar = progressbar.ProgressBar(max_value=int(channels))
-    bar.start()
     for index in range(int(channels)):
+        spectrogram_resolution = "1928x1080"
         output = os.path.join(
             output_path, f"{spectroname}_spectrogram0{index + 1}_s.png"
         )
         spectrogram_args = [ffmpegpath]
         spectrogram_args += ["-loglevel", "error", "-y"]
         spectrogram_args += ["-i", input_path, "-lavfi"]
-        if int(channels) > 1:
-            spectrogram_args += [
-                f"[0:a:{index}]showspectrumpic=mode=separate:s={spectrogram_resolution}"
-            ]
-        else:
-            spectrogram_args += [
-                f"[0:a:{index}]showspectrumpic=s={spectrogram_resolution}"
-            ]
+        spectrogram_args += [f"[0:a:{index}]showspectrumpic=s={spectrogram_resolution}"]
         spectrogram_args += [output]
         subprocess.run(spectrogram_args)
         bar.update(index + 1)
@@ -77,7 +69,7 @@ def callableSpectrogram(ffprobe_path, input_path, output_path, ffmpeg_path):
 
 def main():
     """Only runs if you are running this command on its own"""
-    input_path = args.input_path
+    input_path = os.path.abspath(args.input_path)
     ffprobe_path = args.ffprobe_path
     ffmpeg_path = args.ffmpeg_path
     sox_path = args.sox_path
