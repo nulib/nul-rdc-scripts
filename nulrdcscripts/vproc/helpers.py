@@ -525,21 +525,16 @@ def import_csv(csvInventory):
                 ["box/folder alma number", "Box/Folder\nAlma number"],
                 ["barcode"],
                 ["description", "inventory_title"],
-                ["record date/time"],
-                ["housing/container markings"],
+                ["date created"],
+                ["container markings"],
                 ["condition notes"],
                 ["call number"],
                 ["format"],
-                ["capture date"],
-                ["staff initials", "Digitizer"],
-                ["VTR used"],
-                ["VTR output used"],
+                ["date digitized"],
+                ["staff initials", "digitizer"],
+                ["capture deck"],
                 ["tape brand"],
                 ["tape record mode"],
-                ["TBC used"],
-                ["TBC output used"],
-                ["ADC"],
-                ["capture card"],
                 ["sound"],
                 ["video standard", "Region"],
                 ["capture notes"],
@@ -578,27 +573,22 @@ def import_csv(csvInventory):
                     id2 = row[fieldnames["box/folder alma number"]]
                     id3 = row[fieldnames["barcode"]]
                     description = row[fieldnames["description"]]
-                    record_date = row[fieldnames["record date/time"]]
-                    container_markings = row[fieldnames["housing/container markings"]]
+                    date_created = row[fieldnames["date created"]]
+                    container_markings = row[fieldnames["container markings"]]
                     if container_markings:
                         container_markings = container_markings.split("\n")
                     condition_notes = row[fieldnames["condition notes"]]
                     format = row[fieldnames["format"]]
-                    captureDate = row[fieldnames["capture date"]]
+                    captureDate = row[fieldnames["date digitized"]]
                     # try to format date as yyyy-mm-dd if not formatted correctly
                     try:
                         captureDate = str(guess_date(captureDate))
                     except:
                         captureDate = None
-                    staff_initials = row[fieldnames["staff initials"]]
-                    vtr = row[fieldnames["VTR used"]]
-                    vtrOut = row[fieldnames["VTR output used"]]
+                    digitizer = row[fieldnames["digitizer"]]
+                    vTR = row[fieldnames["capture deck"]]
                     tapeBrand = row[fieldnames["tape brand"]]
                     recordMode = row[fieldnames["tape record mode"]]
-                    tbc = row[fieldnames["TBC used"]]
-                    tbcOut = row[fieldnames["TBC output used"]]
-                    adc = row[fieldnames["ADC"]]
-                    dio = row[fieldnames["capture card"]]
                     sound = row[fieldnames["sound"]]
                     sound = sound.split("\n")
                     videoStandard = row[fieldnames["video standard"]]
@@ -623,12 +613,12 @@ def import_csv(csvInventory):
                         "box/folder alma number": id2,
                         "barcode": id3,
                         "description": description,
-                        "record date": record_date,
-                        "housing/container markings": container_markings,
+                        "date created": date_created,
+                        "container markings": container_markings,
                         "condition notes": condition_notes,
                         "format": format,
-                        "staff initials": staff_initials,
-                        "capture date": captureDate,
+                        "digitizer": digitizer,
+                        "date digitized": captureDate,
                         "coding history": coding_history,
                         "sound note": sound,
                         "capture notes": capture_notes,
@@ -679,9 +669,6 @@ def create_json(
     jsonAbsPath,
     systemInfo,
     preservation_metadata,
-    preservation_stream_sum,
-    mkvHash,
-    access_stream_sum,
     baseFilename,
     access_metadata,
     item_csvDict,
@@ -701,14 +688,8 @@ def create_json(
     # gather pre and post transcode file metadata for json output
     preservation_file_meta = {}
     access_file_meta = {}
-    # add stream checksums to metadata
-    preservation_md5_dict = {
-        "md5 checksum": mkvHash,
-        "a/v streamMD5s": preservation_stream_sum,
-    }
-    access_md5_dict = {"md5 checksum": mkvHash, "a/v streamMD5s": access_stream_sum}
-    preservation_file_metadata = {**preservation_file_metadata, **preservation_md5_dict}
-    access_file_metadata = {**access_file_metadata, **access_md5_dict}
+    preservation_file_metadata = {**preservation_file_metadata}
+    access_file_metadata = {**access_file_metadata}
     access_file_meta = {"access metadata": access_file_metadata}
     preservation_file_meta = {"preservation metadata": preservation_file_metadata}
 

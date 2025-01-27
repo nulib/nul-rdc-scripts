@@ -207,7 +207,7 @@ def single_video(input, output):
                 qcResults,
             )
 
-            # get current date for logging when QC happned
+            # get current date for logging when QC happened
             qcDate = str(datetime.datetime.today().strftime("%Y-%m-%d"))
 
             # create the list that will go in the qc log csv file
