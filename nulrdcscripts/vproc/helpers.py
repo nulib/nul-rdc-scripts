@@ -232,40 +232,6 @@ def delete_files(list):
             print("File not found")
 
 
-def checksum_streams(input, audioStreamCounter):
-    """
-    Gets the stream md5 of a file
-    Uses both video and all audio streams if audio is present
-    """
-    stream_sum = []
-    stream_sum_command = [
-        args.ffmpeg_path,
-        "-loglevel",
-        "error",
-        "-i",
-        input,
-        "-map",
-        "0:v",
-        "-an",
-    ]
-
-    stream_sum_command.extend(("-f", "md5", "-"))
-    video_stream_sum = (
-        subprocess.check_output(stream_sum_command).decode("ascii").rstrip()
-    )
-    stream_sum.append(video_stream_sum.replace("MD5=", ""))
-    for i in range(audioStreamCounter):
-        audio_sum_command = [args.ffmpeg_path]
-        audio_sum_command += ["-loglevel", "error", "-y", "-i", input]
-        audio_sum_command += ["-vn", "-map", "0:a:%(a)s" % {"a": i}]
-        audio_sum_command += ["-c:a", "pcm_s24le", "-f", "md5", "-"]
-        audio_stream_sum = (
-            subprocess.check_output(audio_sum_command).decode("ascii").rstrip()
-        )
-        stream_sum.append(audio_stream_sum.replace("MD5=", ""))
-    return stream_sum
-
-
 fourtoThree = [
     "-filter_complex",
     "[0:a:0][0:a:1]amerge=inputs2[a]",
@@ -465,260 +431,63 @@ def guess_date(string):
     raise ValueError(string)
 
 
-def generate_coding_history(coding_history, hardware, append_list):
-    """
-    Formats hardware into BWF style coding history. Takes a piece of hardware (formatted: 'model; serial No.'), splits it at ';' and then searches the equipment dictionary for that piece of hardware. Then iterates through a list of other fields to append in the free text section. If the hardware is not found in the equipment dictionary this will just pull the info from the csv file and leave out some of the BWF formatting.
-    """
-    equipmentDict = equipment_dict.equipment_dict()
-    if hardware.split(";")[0] in equipmentDict.keys():
-        hardware_history = (
-            equipmentDict[hardware.split(";")[0]]["coding algorithm"]
-            + ","
-            + "T="
-            + hardware
-        )
-        for i in append_list:
-            if i:
-                hardware_history += "; "
-                hardware_history += i
-        if "hardware type" in equipmentDict.get(hardware.split(";")[0]):
-            hardware_history += "; "
-            hardware_history += equipmentDict[hardware.split(";")[0]]["hardware Type"]
-        coding_history.append(hardware_history)
-    # handle case where equipment is not in the equipmentDict using a more general format
-    elif hardware and not hardware.split(";")[0] in equipmentDict.keys():
-        hardware_history = hardware
-        for i in append_list:
-            if i:
-                hardware_history += "; "
-                hardware_history += i
-        coding_history.append(hardware_history)
-    else:
-        pass
-    return coding_history
-
-
-def import_csv(csvInventory):
-    csvDict = {}
+def generate_coding_history(csvDict):
+    encoding_chain = {}
+    file_path = os.path.join(os.path.dirname(__file__), "deckconfig.json")
     try:
-        with open(csvInventory, encoding="utf-8") as f:
-            # skip through annoying lines at beginning
-            while True:
-                # save spot
-                stream_index = f.tell()
-                # skip advancing line by line
-                line = f.readline()
-                if not (
-                    "Name of Person Inventorying" in line
-                    or "MEADOW Ingest fields" in line
-                ):
-                    # go back one line and break out of loop once fieldnames are found
-                    f.seek(stream_index, os.SEEK_SET)
-                    break
-            reader = csv.DictReader(f, delimiter=",")
-            # fieldnames to check for
-            # some items have multiple options
-            # 0 index is our current standard
-            video_fieldnames_list = [
-                ["filename"],
-                ["work_accession_number"],
-                ["box/folder alma number", "Box/Folder\nAlma number"],
-                ["barcode"],
-                ["description", "inventory_title"],
-                ["date created"],
-                ["container markings"],
-                ["condition notes"],
-                ["call number"],
-                ["format"],
-                ["date digitized"],
-                ["staff initials", "digitizer"],
-                ["capture deck"],
-                ["tape brand"],
-                ["tape record mode"],
-                ["sound"],
-                ["video standard", "Region"],
-                ["capture notes"],
-            ]
-            # dictionary of fieldnames found in the inventory file,
-            # keyed by our current standard fieldnames
-            # ex. for up to date inventory
-            # "video standard": "video standard"
-            # ex. if old inventory was used
-            # "video standard": "Region"
-            # this way old inventories work
-            fieldnames = {}
-            missing_fieldnames = []
+        # Read JSON data from the file
+        with open(file_path, "r") as file:
+            data = json.load(file)
 
-            # loops through each field and checks for each option
-            for field in video_fieldnames_list:
-                for field_option in field:
-                    for reader_field in reader.fieldnames:
-                        if field_option.lower() in reader_field.lower():
-                            # adds the fieldname used in the file
-                            # to a dictionary for us to use
-                            # the key is our current standard
-                            fieldnames.update({field[0]: reader_field})
-                            break
-                # keep track of any missing
-                # uses field[0] so when it tells user which ones are missin
-                # they will use our current standard
-                if not field[0] in fieldnames:
-                    missing_fieldnames.append(field[0])
+        vTR = csvDict.get("vtr")
+        # Access nested elements
+        # VTR Data
+        vtr_name = data[vTR]["VTR"]["vtr_name"]
+        vtr_nutag = data[vTR]["VTR"]["vtr_nuTag"]
+        vtr_out = data[vTR]["VTR"]["vtr_out"]
 
-            if not missing_fieldnames:
-                for row in reader:
-                    # index field using dictionary of found fieldnames
-                    name = row[fieldnames["filename"]]
-                    id1 = row[fieldnames["work_accession_number"]]
-                    id2 = row[fieldnames["box/folder alma number"]]
-                    id3 = row[fieldnames["barcode"]]
-                    description = row[fieldnames["description"]]
-                    date_created = row[fieldnames["date created"]]
-                    container_markings = row[fieldnames["container markings"]]
-                    if container_markings:
-                        container_markings = container_markings.split("\n")
-                    condition_notes = row[fieldnames["condition notes"]]
-                    format = row[fieldnames["format"]]
-                    captureDate = row[fieldnames["date digitized"]]
-                    # try to format date as yyyy-mm-dd if not formatted correctly
-                    try:
-                        captureDate = str(guess_date(captureDate))
-                    except:
-                        captureDate = None
-                    digitizer = row[fieldnames["digitizer"]]
-                    vTR = row[fieldnames["capture deck"]]
-                    tapeBrand = row[fieldnames["tape brand"]]
-                    recordMode = row[fieldnames["tape record mode"]]
-                    sound = row[fieldnames["sound"]]
-                    sound = sound.split("\n")
-                    videoStandard = row[fieldnames["video standard"]]
-                    capture_notes = row[fieldnames["capture notes"]]
-                    coding_history = []
-                    coding_history = generate_coding_history(
-                        coding_history,
-                        vtr,
-                        [tapeBrand, recordMode, videoStandard, vtrOut],
-                    )
-                    coding_history = generate_coding_history(
-                        coding_history, tbc, [tbcOut]
-                    )
-                    coding_history = generate_coding_history(
-                        coding_history, adc, [None]
-                    )
-                    coding_history = generate_coding_history(
-                        coding_history, dio, [None]
-                    )
-                    csvData = {
-                        "accession number/call number": id1,
-                        "box/folder alma number": id2,
-                        "barcode": id3,
-                        "description": description,
-                        "date created": date_created,
-                        "container markings": container_markings,
-                        "condition notes": condition_notes,
-                        "format": format,
-                        "digitizer": digitizer,
-                        "date digitized": captureDate,
-                        "coding history": coding_history,
-                        "sound note": sound,
-                        "capture notes": capture_notes,
-                    }
-                    csvDict.update({name: csvData})
-            elif not "File name" in missing_fieldnames:
-                print("WARNING: Unable to find all column names in csv file")
-                print("File name column found. Interpreting csv file as file list")
-                print("CONTINUE? (y/n)")
-                yes = {"yes", "y", "ye", ""}
-                no = {"no", "n"}
-                choice = input().lower()
-                if choice in yes:
-                    for row in reader:
-                        name = row["File name"]
-                        csvData = {}
-                        csvDict.update({name: csvData})
-                elif choice in no:
-                    quit()
-                else:
-                    sys.stdout.write("Please respond with 'yes' or 'no'")
-                    quit()
-            else:
-                print("No matching column names found in csv file")
-            # print(csvDict)
+        # TBC Data
+        tbc_name = data[vTR]["TBC"]["tbc_name"]
+        tbc_nutag = data[vTR]["TBC"]["tbc_nuTag"]
+        tbc_out = data[vTR]["TBC"]["tbc_out"]
+
+        # A/D Converter Data
+        ad_name = data[vTR]["A/D Converter"]["ad_name"]
+        ad_nutag = data[vTR]["A/D Converter"]["ad_nuTag"]
+        ad_out = data[vTR]["A/D Converter"]["ad_out"]
+
+        # Capture Card Data
+        capturecard_name = data[vTR]["Capture Card"]["capturecard_name"]
+        capturecard_nutag = data[vTR]["Capture Card"]["capturecard_nuTag"]
+        capturecard_out = data[vTR]["Capture Card"]["capturecard_out"]
+
+        encoding_chain = {
+            "vtr": {
+                "vtr name": vtr_name,
+                "vtr nu tag": vtr_nutag,
+                "vtr output": vtr_out,
+            },
+            "tbc": {
+                "tbc name": tbc_name,
+                "tbc nu tag": tbc_nutag,
+                "tbc output": tbc_out,
+            },
+            "ad": {
+                "ad name": ad_name,
+                "ad nu tag": ad_nutag,
+                "ad output": ad_out,
+            },
+            "capturecard": {
+                "cc name": capturecard_name,
+                "cc nu tag": capturecard_nutag,
+                "cc output": capturecard_out,
+            },
+        }
     except FileNotFoundError:
-        print("Issue importing csv file")
-    return csvDict
+        print(f"File not found: {file_path}")
+    return encoding_chain
 
 
 def convert_runtime(duration):
     runtime = time.strftime("%H:%M:%S", time.gmtime(float(duration)))
     return runtime
-
-
-def write_output_csv(outdir, csvHeaderList, csvWriteList, output_metadata, qcResults):
-    csv_file = os.path.join(outdir, "qc_log.csv")
-    csvOutFileExists = os.path.isfile(csv_file)
-
-    with open(csv_file, "a") as f:
-        writer = csv.writer(f, delimiter=",", lineterminator="\n")
-        if not csvOutFileExists:
-            writer.writerow(csvHeaderList)
-        writer.writerow(csvWriteList)
-
-
-def create_json(
-    jsonAbsPath,
-    systemInfo,
-    preservation_metadata,
-    baseFilename,
-    access_metadata,
-    item_csvDict,
-    qcResults,
-):
-    preservation_techMetaV = preservation_metadata.get("techMetaV")
-    preservation_techMetaA = preservation_metadata.get("techMetaA")
-    preservation_file_metadata = preservation_metadata.get("file metadata")
-    access_techMetaV = access_metadata.get("techMetaV")
-    access_techMetaA = access_metadata.get("techMetaA")
-    access_file_metadata = access_metadata.get("file metadata")
-
-    # create dictionary for json output
-    data = {}
-    data[baseFilename] = []
-
-    # gather pre and post transcode file metadata for json output
-    preservation_file_meta = {}
-    access_file_meta = {}
-    preservation_file_metadata = {**preservation_file_metadata}
-    access_file_metadata = {**access_file_metadata}
-    access_file_meta = {"access metadata": access_file_metadata}
-    preservation_file_meta = {"preservation metadata": preservation_file_metadata}
-
-    # gather technical metadata for json output
-    techdata = {}
-    preservation_video_techdata = {}
-    preservation_audio_techdata = {}
-    access_video_techdata = {}
-    access_audio_techdata = {}
-    techdata["technical metadata"] = []
-    preservation_video_techdata = {"video": preservation_techMetaV}
-    preservation_audio_techdata = {"audio": preservation_techMetaA}
-    access_video_techdata = {"video": access_techMetaV}
-    access_audio_techdata = {"audio": access_techMetaA}
-    techdata["technical metadata"].append(preservation_video_techdata)
-    techdata["technical metadata"].append(preservation_audio_techdata)
-    techdata["technical metadata"].append(access_video_techdata)
-    techdata["technical metadata"].append(access_audio_techdata)
-
-    # gather metadata from csv dictionary as capture metadata
-    csv_metadata = {"inventory metadata": item_csvDict}
-
-    system_info = {"system information": systemInfo}
-
-    data[baseFilename].append(csv_metadata)
-    data[baseFilename].append(system_info)
-    data[baseFilename].append(access_file_meta)
-    data[baseFilename].append(preservation_file_meta)
-    data[baseFilename].append(techdata)
-    data[baseFilename].append(qcResults)
-    with open(jsonAbsPath, "w", newline="\n") as outfile:
-        json.dump(data, outfile, indent=4)

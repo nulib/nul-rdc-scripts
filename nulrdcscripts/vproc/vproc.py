@@ -10,6 +10,8 @@ from nulrdcscripts.vproc.params import args
 import nulrdcscripts.vproc.helpers as helpers
 import nulrdcscripts.vproc.corefuncs as corefuncs
 import nulrdcscripts.vproc.checks as checks
+import nulrdcscripts.vproc.metadata as metadata
+import nulrdcscripts.vproc.csvfunctions as csvfunctions
 
 # TO DO: general cleanup
 
@@ -193,9 +195,10 @@ def single_video(input, output):
             # create a dictionary containing QC results
             qcResults = helpers.qc_results(inventoryCheck, mediaconchResults)
 
+            encoding_chain = helpers.generate_coding_history(csvDict)
             # create json metadata file
             # TO DO: combine checksums into a single dictionary to reduce variables needed here
-            helpers.create_json(
+            metadata.create_json(
                 jsonAbsPath,
                 systemInfo,
                 preservation_metadata,
@@ -205,6 +208,7 @@ def single_video(input, output):
                 access_metadata,
                 item_csvDict,
                 qcResults,
+                encoding_chain,
             )
 
             # get current date for logging when QC happened
@@ -228,7 +232,7 @@ def single_video(input, output):
             ]
 
             # Add QC results to QC log csv file
-            helpers.write_output_csv(
+            csvfunctions.write_output_csv(
                 output, csvHeaderList, csvWriteList, preservation_metadata, qcResults
             )
 
