@@ -43,7 +43,7 @@ def main():
     if not args.output_policy:
         mkvPolicy = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
-            "data/mediaconch_policies/AJA_NTSC_VHS-2SAS-MKV.xml",
+            "data/mediaconch_policies/MKVFFV1_policy.xml",
         )
     else:
         mkvPolicy = args.output_policy
