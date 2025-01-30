@@ -245,14 +245,6 @@ def single_video(input, output):
                     baseFilename,
                 )
 
-            # create qctools report
-            if args.runqcli:
-                print("*Creating QCTools Report*")
-                helpers.generate_qctools(preservationAbsPath)
-                print("*Generated QCTools Report")
-            else:
-                pass
-
         else:
             print("No file in output folder.  Skipping file processing")
 

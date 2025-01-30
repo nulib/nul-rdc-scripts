@@ -8,7 +8,6 @@ import json
 import csv
 import datetime
 import time
-import nulrdcscripts.vproc.equipment_dict as equipment_dict
 from nulrdcscripts.vproc.params import args
 
 
@@ -462,25 +461,25 @@ def generate_coding_history(csvDict, baseFilename):
         capturecard_out = data[vTR]["Capture Card"]["capturecard_out"]
 
         encoding_chain = {
-            "VTR": {
-                "name": vtr_name,
-                "NU tag": vtr_nutag,
-                "output": vtr_out,
+            "vtr": {
+                "vtr name": vtr_name,
+                "vtr nu tag": vtr_nutag,
+                "vtr output": vtr_out,
             },
-            "TBC": {
-                "name": tbc_name,
-                "NU tag": tbc_nutag,
-                "cable output": tbc_out,
+            "tbc": {
+                "tbc name": tbc_name,
+                "tbc nu tag": tbc_nutag,
+                "tbc output": tbc_out,
             },
-            "A/D Converter": {
-                "name": ad_name,
-                "NU tag": ad_nutag,
-                "cable out": ad_out,
+            "ad": {
+                "ad name": ad_name,
+                "ad nu tag": ad_nutag,
+                "ad output": ad_out,
             },
-            "Capture Card": {
-                "Name": capturecard_name,
-                "NU tag": capturecard_nutag,
-                "cable out": capturecard_out,
+            "capturecard": {
+                "cc name": capturecard_name,
+                "cc nu tag": capturecard_nutag,
+                "cc output": capturecard_out,
             },
         }
     except FileNotFoundError:
