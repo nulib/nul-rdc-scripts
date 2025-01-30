@@ -68,7 +68,7 @@ def main():
     csvInventory = os.path.join(indir, inventoryName)
     # TO DO: separate out csv and json related functions that are currently in supportfuncs into dedicated csv or json related py files
     global csvDict
-    csvDict = helpers.import_csv(csvInventory)
+    csvDict = csvfunctions.import_csv(csvInventory)
 
     # create the list of csv headers that will go in the qc log csv file
     global csvHeaderList
@@ -108,6 +108,13 @@ def single_video(input, output):
         # create names that will be used in the script
         # TO DO: handle transcoding legacy files (either need a flag that avoids appending pm to the output filename or the ability to read the desired output filename from the CSV file
         preservationAbsPath = os.path.join(input, preservationFilename)
+        # Check that the filename is correct for the mkv file. If not rename it
+        if preservationAbsPath.endswith("_p.mkv"):
+            pass
+        else:
+            newPresAbsPath = preservationAbsPath.replace(".mkv", "_p.mkv")
+            preservationAbsPath = os.rename(preservationAbsPath, newPresAbsPath)
+
         baseFilename = preservationFilename.replace("_p.mkv", "")
         baseOutput = os.path.join(output, baseFilename)
         preservationOutputFolder = os.path.join(baseOutput, pm_identifier)
@@ -170,13 +177,6 @@ def single_video(input, output):
 
         # If access file was succesfully created, do remaining verification and transcoding work
         if os.path.isfile(accessAbsPath):
-            # compare streamMD5s
-            preservation_stream_sum = helpers.checksum_streams(
-                preservationAbsPath, audioStreamCounter
-            )
-            access_stream_sum = helpers.checksum_streams(
-                accessAbsPath, audioStreamCounter
-            )
             mediaconchResults_dict = {
                 "MKV Implementation": helpers.mediaconch_implementation_check(
                     preservationAbsPath
@@ -195,15 +195,13 @@ def single_video(input, output):
             # create a dictionary containing QC results
             qcResults = helpers.qc_results(inventoryCheck, mediaconchResults)
 
-            encoding_chain = helpers.generate_coding_history(csvDict)
+            encoding_chain = helpers.generate_coding_history(csvDict, baseFilename)
             # create json metadata file
             # TO DO: combine checksums into a single dictionary to reduce variables needed here
             metadata.create_json(
                 jsonAbsPath,
                 systemInfo,
                 preservation_metadata,
-                preservation_stream_sum,
-                access_stream_sum,
                 baseFilename,
                 access_metadata,
                 item_csvDict,

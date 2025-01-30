@@ -1,5 +1,8 @@
 import csv
 import os
+import sys
+
+from nulrdcscripts.vproc import helpers
 
 
 def import_csv(csvInventory):
@@ -35,7 +38,7 @@ def import_csv(csvInventory):
                 ["call number"],
                 ["format"],
                 ["date digitized"],
-                ["staff initials", "digitizer"],
+                ["digitizer"],
                 ["capture deck"],
                 ["tape brand"],
                 ["tape record mode"],
@@ -86,7 +89,7 @@ def import_csv(csvInventory):
                     captureDate = row[fieldnames["date digitized"]]
                     # try to format date as yyyy-mm-dd if not formatted correctly
                     try:
-                        captureDate = str(guess_date(captureDate))
+                        captureDate = str(helpers.guess_date(captureDate))
                     except:
                         captureDate = None
                     digitizer = row[fieldnames["digitizer"]]
