@@ -122,7 +122,9 @@ def import_csv(csvInventory):
                     }
                     csvDict.update({name: csvData})
             elif not "File name" in missing_fieldnames:
-                print("WARNING: Unable to find all column names in csv file")
+                print(
+                    f"WARNING: Unable to find some required column names in CSV. Missing columns:{', '.join(column for column in missing_fieldnames)}"
+                )
                 print("File name column found. Interpreting csv file as file list")
                 print("CONTINUE? (y/n)")
                 yes = {"yes", "y", "ye", ""}
