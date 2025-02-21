@@ -22,22 +22,19 @@ def main():
 
     if ostype == "nt":
         font = "/Windows/Fonts/arial.ttf"
-        ffplayfilter = declareFfplayfilter(font)
-        command = ffplay_path + " " + "-i" + " " + input_path + " " + ffplayfilter
-        subprocess.run(command)
     else:
         font = "/Library/Fonts/Arial.ttf"  # Specify a valid font path for macOS
-        ffplayfilter = declareFfplayfilter(font)
-        command = ffplay_path + " " + "-i" + " " + input_path + " " + ffplayfilter
+
+    ffplayfilter = declareFfplayfilter(font)
+    command = ffplay_path + " " + "-i" + " " + input_path + " " + ffplayfilter
+
+    try:
         with tempfile.NamedTemporaryFile(mode="w", delete=False) as temp_file:
             temp_file.write(command)
             temp_file_path = temp_file.name
-        command = [
-            ffplay_path,
-            "--input-file",
-            temp_file_path,
-        ]  # Ensure ffplay is the command
-        subprocess.run(command, capture_output=True, text=True)
+        subprocess.run(["sh", temp_file_path], capture_output=True, text=True)
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
     print(
         "To exit the playback window, while in window use the 'esc' key. To fast-forward or rewind, use the respective arrow keys."
