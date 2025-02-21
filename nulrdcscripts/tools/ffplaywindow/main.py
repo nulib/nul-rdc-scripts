@@ -30,9 +30,13 @@ def main():
 
     try:
         with tempfile.NamedTemporaryFile(mode="w", delete=False) as temp_file:
-            temp_file.write(command)
+            temp_file.write("#!/bin/sh\n" + command)
             temp_file_path = temp_file.name
-        subprocess.run(["sh", temp_file_path], capture_output=True, text=True)
+        os.chmod(temp_file_path, 0o755)  # Make the temp file executable
+        print(f"Executing command from temp file: {temp_file_path}")
+        result = subprocess.run([temp_file_path], capture_output=True, text=True)
+        print("Command output:", result.stdout)
+        print("Command error:", result.stderr)
     except Exception as e:
         print(f"An error occurred: {e}")
 
