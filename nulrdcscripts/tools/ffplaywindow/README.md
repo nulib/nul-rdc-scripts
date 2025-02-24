@@ -18,7 +18,7 @@ To run the script. From nul-rdc-scripts
 ```
 poetry run ffplaywindow -i \path\to\input
 ```
-To change the highlight color for the BRNG filter. Use -hi or --highlight followed by color name or hexcode.
+To change the highlight color for the BRNG filter. Use -hi or --highlight followed by color name or hexcode. -- This only works on Windows for now. In order to change you will need to edit the code
 ```
 poetry run ffplaywindow -i \path\to\input -hi 'color name or hexcode'
 ```
