@@ -1,7 +1,7 @@
 # nul-rdc-scripts
 Scripts used by the RDC Digitization Team.  
 
-*Note: poetry is required for all scripts. See [Poetry Setup](#poetry-setup) to install poetry*
+*Note: poetry is required for all scripts except for iqc. See [Poetry Setup](#poetry-setup) to install poetry*
 
 ## Core Tools   
 
@@ -23,12 +23,19 @@ Scripts used by the RDC Digitization Team.
 [Inventory Creator for Image and Text Works - inventory](/nulrdcscripts/inventory/)   
 
 ### Tools:
-[Oyez MediaInfo Batch Generation](/nulrdcscripts/tools/oyez/)
+[MediaInfo Batch Generation](/nulrdcscripts/tools/oyez/)
 
 [FFPlay Playback Window with Analysis Tools](/nulrdcscripts/tools/ffplaywindow/)
 
+[Generate Metadata **TEMP**](/nulrdcscripts/tools/generatemetadataTEMP/)
+
+[Spectrogram Generation](/nulrdcscripts/tools/spectrogramgeneration/)
+
+[Video Trimmer](/nulrdcscripts/tools/videotrimmer)
+
+
 ### Text Workflow:
-[PackagingScript](/nulrdcscripts/text) - Text Packaging Script
+[PackagingScript](/nulrdcscripts/text) - Text Packaging Script (No Longer Actively Supported)
 
 
 ### Deprecated
