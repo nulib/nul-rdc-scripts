@@ -1,6 +1,7 @@
 import pandas as pd
 from nulrdcscripts.vqc import cleaners
 import xml.etree.ElementTree as etree
+import os
 
 
 def dataparsingandtabulatingaudioXML(inputPath):
@@ -78,3 +79,9 @@ def audiostatsdftocsv(audioDSDF):
 
 def rawvideodatatocsv(videodata):
     videodatacsv = videodata.to_csv("videodata.csv", index=True)
+
+
+input_path = os.path.abspath(
+    "Z:\RDC\SCRATCH\sophiatestfiles\\test_badLevels\\test\\badlevels2\\p\\badlevels2_signalstats.xml"
+)
+dataparsingandtabulatingvideoXML(input_path)
