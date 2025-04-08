@@ -1,6 +1,7 @@
 import dataparsing
+import overallStatistics
 
-inputpath = "Z:\\RDC\\SCRATCH\\sophiatestfiles\\test_badLevels\\test\\badlevels2\\a\\badlevels2_a_framebyframe.xml"
+inputpath = "Z:\\RDC\\SCRATCH\\sophiatestfiles\\test_badLevels\\badLevels\\a\\badLevels_a_framebyframe.xml"
 
 
 def runIndividualFile(inputpath):
