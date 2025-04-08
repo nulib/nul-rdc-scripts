@@ -8,11 +8,11 @@ def runIndividualFile(inputpath):
     videodata = dataparsing.dataparsingandtabulatingvideoXML(inputpath)
     audiodata = dataparsing.dataparsingandtabulatingaudioXML(inputpath)
 
-    # videodataCSV = dataparsing.videostatsdftocsv(videodata)
     # Collects the video summary data - outputs CSV and Dictionary
-    videostats = dataparsing.rawvideodatatocsv(videodata)
+    videostats = dataparsing.videodatastatistics(videodata)
 
     # videofeedtodict = dataparsing.videostatstodict(videostats)
+    videofeedtocsv = dataparsing.videostatstocsv(videostats)
 
     # Collects the audio summary data - outputs CSV and Dictionary
     # audiostats = overallstatistics.audiodatastatistics(audiodata)
