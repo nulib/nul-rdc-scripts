@@ -1,19 +1,17 @@
-import dataparsing
-import overallStatistics
-
-inputpath = "Z:\\RDC\\SCRATCH\\sophiatestfiles\\test_badLevels\\badLevels\\a\\badLevels_a_framebyframe.xml"
+from parseandclean import dataparsing
+from videoanalyses import videoanalysis, errortiers, overallstatistics
 
 
-def runIndividualFile(inputpath):
+def runIndividualFile(inputpath, videoBitDepth):
     # Parses the raw XML into individual readings by frame (determined by frametime)
-    videodata = dataparsing.dataparsingandtabulatingvideoXML(inputpath)
-    audiodata = dataparsing.dataparsingandtabulatingaudioXML(inputpath)
+    videodata = dataparsing.dataparsingandtabulatingvideo(inputpath)
+    audiodata = dataparsing.dataparsingandtabulatingaudio(inputpath)
 
     # Collects the video summary data - outputs CSV and Dictionary
-    videostats = dataparsing.videodatastatistics(videodata)
+    videostats = overallstatistics.videodatastatistics(videodata)
 
-    # videofeedtodict = dataparsing.videostatstodict(videostats)
-    videofeedtocsv = dataparsing.videostatstocsv(videostats)
+    videofeedtodict = overallstatistics.videostatstodict(videostats)
+    videofeedtocsv = overallstatistics.videostatstocsv(videostats)
 
     # Collects the audio summary data - outputs CSV and Dictionary
     # audiostats = overallstatistics.audiodatastatistics(audiodata)
@@ -26,6 +24,3 @@ def runIndividualFile(inputpath):
 
     # Assigns errors to tiers for verbose reporting
     # errortiers.errorsvideo(summaryvideoerrors)
-
-
-runIndividualFile(inputpath)
