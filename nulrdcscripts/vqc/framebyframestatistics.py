@@ -59,6 +59,10 @@ def runfbyfyuv(standardDF, videodataDF, frame):
 
 
 def runfbyfsat(standardDF, videodataDF, frame):
+    pass
+
+
+def runfbyfsat(standardDF, videodataDF, frame):
     errors = {}
     criteria = "sat"
     leveltoCheck = "max"
@@ -112,23 +116,27 @@ def runfbyfToutVrep(exStandMax, exVideoVal, criteria):
         errors[criteria] = {"Video Value": exVideoVal, "Pass/Fail": "Pass"}
     return errors
 
-def joindict (errors,errorsSat,errorsTOUTVREP):
-        errors.update(errorsSat)
-        errors.update(errorsTOUTVREP)
-        return errors
+
+def joindict(errors, errorsSat, errorsTOUTVREP):
+    errors.update(errorsSat)
+    errors.update(errorsTOUTVREP)
+    return errors
+
+
 def runfbyfanalysis(standardDF, videodataDF):
     frame = 1
     while frame <= videodataDFLen:
-        errors= runfbyfyuv(standardDF, videodataDF, frame)
-        errorsSat=runfbyfsat(standardDF, videodataDF, frame)
-        errorsTOUTVREP = runTOUTandVREPanalysis (standardDF,videodataDF,frame)
-        frameerrors[frame] = joindict(errors,errorsSat,errorsTOUTVREP)
+        errors = runfbyfyuv(standardDF, videodataDF, frame)
+        errorsSat = runfbyfsat(standardDF, videodataDF, frame)
+        errorsTOUTVREP = runTOUTandVREPanalysis(standardDF, videodataDF, frame)
+        frameerrors[frame] = joindict(errors, errorsSat, errorsTOUTVREP)
         frame += 1
     return frameerrors
 
+
 def makejson(frameerrors):
     with open("samplefbyf.json", "w") as outfile:
-        json.dump(frameerrors, outfile, indent=4,default=str)
+        json.dump(frameerrors, outfile, indent=4, default=str)
 
 
 frameerrors = runfbyfanalysis(standardDF, videodataDF)

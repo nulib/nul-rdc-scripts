@@ -2,7 +2,6 @@
 
 
 def inventory_check(item_csvDict):
-    """Checks if item is in the inventory csv provided"""
     if item_csvDict is None:
         print("unable to locate file in csv data!")
         inventoryCheck = "FAIL"
