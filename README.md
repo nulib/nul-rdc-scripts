@@ -23,9 +23,15 @@ Scripts used by the RDC Digitization Team.
 [Inventory Creator for Image and Text Works - inventory](/nulrdcscripts/inventory/)   
 
 ### Tools:
-[Oyez MediaInfo Batch Generation](/nulrdcscripts/tools/oyez/)
+[MediaInfo Batch Generation](/nulrdcscripts/tools/EmbedExtract/)
 
 [FFPlay Playback Window with Analysis Tools](/nulrdcscripts/tools/ffplaywindow/)
+
+[Generate Access File - Video](/nulrdcscripts/tools/generateaccess/)
+
+[Spectrogram Generation](/nulrdcscripts/tools/spectrogramgeneration/)
+
+[]
 
 ### Text Workflow:
 [PackagingScript](/nulrdcscripts/text) - Text Packaging Script
@@ -37,10 +43,6 @@ Scripts used by the RDC Digitization Team.
 [Meadow Image CSV Converter - text](/nulrdcscripts/text/)   
 
 
-### Current Staging Branches:  
-
-[VideoQCScript](https://github.com/nulib/nul-rdc-scripts/tree/QCScript)  
-[InventoryUpdatedWork_Restructure](https://github.com/nulib/nul-rdc-scripts/tree/InventoryUpdateWork_Restructure)  
 
 ## Poetry Setup
 
