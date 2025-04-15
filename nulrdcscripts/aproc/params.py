@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Argument parser for in-house AJA v210/mov to ffv1/mkv script  
+Argument parser for in-house AJA v210/mov to ffv1/mkv script
 """
 
 import argparse
@@ -139,6 +139,15 @@ parser.add_argument(
     action="store_true",
     dest="skip_coding_history",
     help="To skip coding history creation",
+)
+
+parser.add_argument(
+    "-n",
+    "--notif",
+    default=False,
+    action="store_true",
+    dest="notif",
+    help="Makes a beeping noise after the script concludes running",
 )
 
 args = parser.parse_args()

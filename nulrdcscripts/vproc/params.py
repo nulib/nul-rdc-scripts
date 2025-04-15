@@ -135,7 +135,16 @@ parser.add_argument(
     required=False,
     action="store_true",
     dest="batch",
-    help="For batches of video files"
+    help="For batches of video files",
+)
+
+parser.add_argument(
+    "-n",
+    "--notif",
+    required=False,
+    action="store",
+    dest="notif",
+    help="Will send notifications if added to command",
 )
 
 args = parser.parse_args()

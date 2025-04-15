@@ -7,12 +7,16 @@ import glob
 import subprocess
 import datetime
 import json
+import time
+import winsound
+from win10toast import ToastNotifier
 from nulrdcscripts.aproc.params import args
 import nulrdcscripts.aproc.helpers as helpers
 import nulrdcscripts.aproc.corefuncs as corefuncs
 
 if sys.version_info[0] < 3:
     raise Exception("Python 3 or a more recent version is required.")
+
 
 def main():
     pm_identifier = "p"
@@ -22,7 +26,7 @@ def main():
     access_extension = ".wav"
     inventoryName = "transcode_inventory.csv"
 
-    # assign mediaconch policies to use  
+    # assign mediaconch policies to use
     if not args.input_policy:
         p_wav_policy = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
@@ -38,8 +42,8 @@ def main():
     else:
         a_wav_policy = args.output_policy
     bwf_policy = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), 
-        "data/mediaconch_policies/wav-bwf.xml"
+        os.path.dirname(os.path.abspath(__file__)),
+        "data/mediaconch_policies/wav-bwf.xml",
     )
     # assign input and output
     indir = corefuncs.input_check()
@@ -76,7 +80,11 @@ def main():
     else:
         print("\n*** Checking input directory for CSV files ***")
         source_inventories = glob.glob(os.path.join(indir, "*.csv"))
-        source_inventories = [i for i in source_inventories if not ("qc_log.csv" in i or "ingest.csv" in i) ]
+        source_inventories = [
+            i
+            for i in source_inventories
+            if not ("qc_log.csv" in i or "ingest.csv" in i)
+        ]
         if not source_inventories:
             print("\n+++ WARNING: Unable to CSV inventory file +++")
             print("CONTINUE? (y/n)")
@@ -115,7 +123,9 @@ def main():
     # load bwf metadata into dictionary
     if args.write_bwf_metadata:
         # TODO check that bwf_metaedit is installed
-        bwf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data/bwf_metadata.json")
+        bwf_file = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "data/bwf_metadata.json"
+        )
         with open(bwf_file) as standard_metadata:
             bwf_dict = json.load(standard_metadata)
 
@@ -167,9 +177,7 @@ def main():
                 )
 
                 # generate ffprobe metadata from input
-                input_metadata = helpers.ffprobe_report(
-                    file, pm_file_abspath
-                )
+                input_metadata = helpers.ffprobe_report(file, pm_file_abspath)
 
                 # embed BWF metadata
                 if args.write_bwf_metadata:
@@ -305,9 +313,7 @@ def main():
 
                 # create folder for metadata if needed
                 if args.spectrogram or args.write_json:
-                    helpers.create_output_folder(
-                        meta_folder_abspath
-                    )
+                    helpers.create_output_folder(meta_folder_abspath)
 
                 # create spectrogram for pm audio channels
                 if args.spectrogram:
@@ -350,25 +356,19 @@ def main():
                     ),
                 }
                 # PASS/FAIL - check if any mediaconch results failed and append failed policies to results
-                mediaconchResults = (
-                    helpers.parse_mediaconchResults(
-                        mediaconchResults_dict
-                    )
+                mediaconchResults = helpers.parse_mediaconchResults(
+                    mediaconchResults_dict
                 )
 
                 # systemInfo = helpers.generate_system_log()
 
                 # create a dictionary containing QC results
-                qcResults = helpers.qc_results(
-                    inventory_check, mediaconchResults
-                )
+                qcResults = helpers.qc_results(inventory_check, mediaconchResults)
 
                 # TODO use bwfmetaedit --out-core and --out-tech to grab the BWF metadata, then translate csv data to dict
                 if args.write_json:
                     # TODO consider using --out-tech to get technical metadata instead of ffmpeg?
-                    bwf_meta_dict = helpers.get_bwf_metadata(
-                        pm_file_abspath
-                    )
+                    bwf_meta_dict = helpers.get_bwf_metadata(pm_file_abspath)
                     # input_metadata['file_metadata'].pop('Format')
                     file_dict = {file: {}}
                     file_dict[file].update(
@@ -411,5 +411,18 @@ def main():
                     qc_csv_file, csvHeaderList, csvWriteList, qcResults
                 )
 
+    if args.notif == "True":
+        print("Notification block entered")
+        beepcount = 0
+        while beepcount < 3:
+            print("Beep")
+            winsound.Beep(1000, 60)
+            time.sleep(0.005)
+            beepcount += 1
+        toaster = ToastNotifier()
+        toaster.show_toast("Script has finished running.", " ")
+        print("Toast notification shown")
+
+
 if __name__ == "__main__":
-	main()
+    main()
