@@ -113,7 +113,8 @@ def single_video(input, output):
             pass
         else:
             newPresAbsPath = preservationAbsPath.replace(".mkv", "_p.mkv")
-            preservationAbsPath = os.rename(preservationAbsPath, newPresAbsPath)
+            os.rename(preservationAbsPath, newPresAbsPath)
+            preservationAbsPath = newPresAbsPath
 
         baseFilename = preservationFilename.replace("_p.mkv", "")
         baseOutput = os.path.join(output, baseFilename)
