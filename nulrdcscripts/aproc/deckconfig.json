@@ -1,0 +1,16 @@
+{
+    "Yamaha C300 Rack 1": {
+        "Deck": {
+            "deck_name": "Yamaha C300 Rack 1",
+            "deck_nutag": "",
+            "deck_out": "XLR",
+            "deck_type": "Analog",
+            "deck_mode": "Stereo"
+        },
+        "A/D Converter": {
+            "AD_name": "Metric Halo",
+            "AD_nutag": "",
+            "AD_out": "USB-C"
+        }
+    }
+}
