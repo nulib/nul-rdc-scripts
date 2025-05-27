@@ -62,13 +62,15 @@ def audiodatastatistics(audiodata):
     return audiodataDSDF
 
 
-def videostatstocsv(videoDSDF):
+def videostatstocsv(videoDSDF, outputpath):
     """Takes video descriptive statistics and puts them into a csv file"""
-    summarydatavideocsv = videoDSDF.to_csv("videosummarystats.csv", index=True)
+    outputpath = outputpath + "/videosummarystats.csv"
+    summarydatavideocsv = videoDSDF.to_csv(outputpath, index=True)
     return summarydatavideocsv
 
 
-def audiostatstocsv(audioDSDF):
+def audiostatstocsv(audioDSDF, outputpath):
     """Takes audio descriptive statistics and puts them into a csv file."""
-    summarydataaudiocsv = audioDSDF.to_csv("audiosummarystats.csv", index=True)
+    outputpath = outputpath + "/audiosummarystats.csv"
+    summarydataaudiocsv = audioDSDF.to_csv(outputpath, index=True)
     return summarydataaudiocsv
