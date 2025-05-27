@@ -2,7 +2,7 @@ import os
 import progressbar
 from nulrdcscripts.vqc.params import args
 from nulrdcscripts.vqc import dataparsing
-import qcsetup
+from nulrdcscripts.vqc import qcsetup
 
 
 def main():
