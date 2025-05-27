@@ -1,0 +1,27 @@
+Folder PATH listing
+Volume serial number is 24B2-FFF0
+C:.
+³   .gitignore
+³   argparser.py
+³   cleaners.py
+³   dataparsing.py
+³   file.py
+³   folder.py
+³   folderstructure.txt
+³   LICENSE
+³   overallStatistics.py
+³   poetry.lock
+³   pyproject.toml
+³   QCScript.py
+³   README.md
+³   setup.py
+³   Video10BitValues.csv
+³   Video8BitValues.csv
+³   __init__.py
+³   
+ÀÄÄÄ__pycache__
+        argparser.cpython-312.pyc
+        QCScript.cpython-312.pyc
+        setup.cpython-312.pyc
+        __init__.cpython-312.pyc
+        
