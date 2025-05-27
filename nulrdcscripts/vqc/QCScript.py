@@ -1,8 +1,8 @@
 import os
 import progressbar
-from argparser import args
+from nulrdcscripts.vqc.params import args
 from nulrdcscripts.vqc import dataparsing
-import qcsetup as setup
+import qcsetup
 
 
 def main():
@@ -10,18 +10,18 @@ def main():
     bitDepth = args.videobitdepth
     outputPath = args.output_path
 
-    print("*****Starting Setup*****")
-    with progressbar.ProgressBar(max_value=4) as setupBar:
-        setupBar.update(0)
-        standardDF = setup.setVideoBitDepth(bitDepth)
-        setupBar.update(1)
-        setup.inputCheck(inputPath)
-        setupBar.update(2)
-        outputLocation = setup.outputCheck(inputPath, outputPath)
-        setupBar.update(3)
-        inputFileType = setup.setInputFileType(inputPath)
-        setupBar.update(4)
-    print("*****Setup Complete*****")
+    print("*****Starting qcsetup*****")
+    with progressbar.ProgressBar(max_value=4) as qcsetupBar:
+        qcsetupBar.update(0)
+        standardDF = qcsetup.setVideoBitDepth(bitDepth)
+        qcsetupBar.update(1)
+        qcsetup.inputCheck(inputPath)
+        qcsetupBar.update(2)
+        outputLocation = qcsetup.outputCheck(inputPath, outputPath)
+        qcsetupBar.update(3)
+        inputFileType = qcsetup.setInputFileType(inputPath)
+        qcsetupBar.update(4)
+    print("*****qcsetup Complete*****")
 
     print("*****Parsing File Video*****")
     parsingBar = progressbar.ProgressBar(max_value=progressbar.UnknownLength)
