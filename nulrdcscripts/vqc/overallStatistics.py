@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-error = namedtuple("Error", ["criteria", "video value", "standard value"])
+error = namedtuple("Error", ["criteria", "video_value", "standard_value"])
 
 
 def setOperatorIR(fullCriteria):

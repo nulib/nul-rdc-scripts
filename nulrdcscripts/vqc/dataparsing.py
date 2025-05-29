@@ -1,52 +1,49 @@
 import pandas as pd
 from nulrdcscripts.vqc import cleaners
-import xml.etree.ElementTree as etree
+from lxml import etree  # switched to lxml for faster XML parsing
 
 
 def dataparsingandtabulatingaudioXML(inputPath):
     """Cleans and parses the audio data from XML for analysis. Returns dataframe."""
-    audiodata = {}
-    framenumberA = 0
-    for event, elem in etree.iterparse(inputPath, events=["end"]):
-        if event == "end":
-            if elem.tag == "frame":
-                if elem.get("media_type") == "audio":
-                    framenumberA = framenumberA + 1
-                    frametime = elem.get("pkt_pts_time")
-                    audiodata[framenumberA] = {}
-                    for tag in elem.iter("tag"):
-                        criteria = tag.attrib["key"]
-                        criteria = cleaners.criteriacleaner(criteria)
-                        value = tag.attrib["value"]
-                        audiodata[framenumberA]["Frame Time"] = float(frametime)
-                        audiodata[framenumberA][criteria] = value
-                elem.clear()
-    dfAudio = pd.DataFrame.from_dict(audiodata)
-    dfAudio = dfAudio.transpose()
+    rows = []
+    for event, elem in etree.iterparse(inputPath, events=("end",)):
+        if event == "end" and elem.tag == "frame" and elem.get("media_type") == "audio":
+            row = {}
+            frametime = elem.get("pkt_pts_time")
+            row["Frame Time"] = float(frametime)
+            for tag in elem.iter("tag"):
+                criteria = tag.attrib["key"]
+                criteria = cleaners.criteriacleaner(criteria)
+                value = tag.attrib["value"]
+                try:
+                    row[criteria] = float(value)
+                except ValueError:
+                    row[criteria] = value
+            rows.append(row)
+            elem.clear()
+    dfAudio = pd.DataFrame(rows)
     return dfAudio
 
 
 def dataparsingandtabulatingvideoXML(inputPath):
     """Cleans and parses the video data from XML for analysis. Returns dataframe and generates csv."""
-    videodata = {}
-    framenumberV = 0
-
-    for event, elem in etree.iterparse(inputPath, events=["end"]):
-        if event == "end":
-            if elem.tag == "frame":
-                if elem.get("media_type") == "video":
-                    framenumberV = framenumberV + 1
-                    frametime = elem.get("pkt_pts_time")
-                    videodata[framenumberV] = {}
-                    for tag in elem.iter("tag"):
-                        criteria = tag.attrib["key"]
-                        criteria = cleaners.criteriacleaner(criteria)
-                        value = tag.attrib["value"]
-                        videodata[framenumberV]["Frame Time"] = float(frametime)
-                        videodata[framenumberV][criteria] = float(value)
-                elem.clear()
-    dfVideo = pd.DataFrame.from_dict(videodata)
-    dfVideo = dfVideo.transpose()
+    rows = []
+    for event, elem in etree.iterparse(inputPath, events=("end",)):
+        if event == "end" and elem.tag == "frame" and elem.get("media_type") == "video":
+            row = {}
+            frametime = elem.get("pkt_pts_time")
+            row["Frame Time"] = float(frametime)
+            for tag in elem.iter("tag"):
+                criteria = tag.attrib["key"]
+                criteria = cleaners.criteriacleaner(criteria)
+                value = tag.attrib["value"]
+                try:
+                    row[criteria] = float(value)
+                except ValueError:
+                    row[criteria] = value
+            rows.append(row)
+            elem.clear()
+    dfVideo = pd.DataFrame(rows)
     return dfVideo
 
 
