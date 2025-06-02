@@ -197,6 +197,7 @@ def single_video(input, output):
             qcResults = helpers.qc_results(inventoryCheck, mediaconchResults)
 
             encoding_chain = helpers.generate_coding_history(csvDict, baseFilename)
+            print(f"DEBUG: encoding_chain for {baseFilename} -> {encoding_chain}")  # DEBUG LINE
             # create json metadata file
             # TO DO: combine checksums into a single dictionary to reduce variables needed here
             metadata.create_json(
