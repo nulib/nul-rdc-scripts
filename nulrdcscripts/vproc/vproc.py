@@ -6,6 +6,7 @@ import os
 import glob
 import subprocess
 import datetime
+import concurrent.futures
 from nulrdcscripts.vproc.params import args
 import nulrdcscripts.vproc.helpers as helpers
 import nulrdcscripts.vproc.corefuncs as corefuncs
@@ -94,13 +95,24 @@ def main():
 
 
 def batch_video(input, output):
-    for item in os.listdir(input):
-        # changes item's path to absolute
-        item = os.path.join(input, item)
-        # performs single_video on item if its a folder and hasn't been transcoded yet
-        if os.path.isdir(item):
-            if not os.path.isfile(os.path.join(item, "qc_log.csv")):
-                single_video(item, item)
+    items = [
+        os.path.join(input, item)
+        for item in os.listdir(input)
+        if os.path.isdir(os.path.join(input, item))
+        and not os.path.isfile(os.path.join(input, item, "qc_log.csv"))
+    ]
+    print(f"Batch processing {len(items)} video folders in parallel...")
+
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        futures = [
+            executor.submit(single_video, item, item)
+            for item in items
+        ]
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                future.result()
+            except Exception as exc:
+                print(f"Batch item generated an exception: {exc}")
 
 
 def single_video(input, output):
