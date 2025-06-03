@@ -14,6 +14,24 @@ import nulrdcscripts.vproc.checks as checks
 import nulrdcscripts.vproc.metadata as metadata
 import nulrdcscripts.vproc.csvfunctions as csvfunctions
 
+# --- Move these globals here ---
+pm_identifier = "p"
+ac_identifier = "a"
+metadata_identifier = "meta"
+if not args.keep_filename:
+    pm_filename_identifier = "_p"
+else:
+    pm_filename_identifier = None
+inventoryName = "transcode_inventory.csv"
+if not args.output_policy:
+    mkvPolicy = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "data/mediaconch_policies/MKVFFV1_policy.xml",
+    )
+else:
+    mkvPolicy = args.output_policy
+# --- End globals ---
+
 # TO DO: general cleanup
 
 if sys.version_info[0] < 3:
