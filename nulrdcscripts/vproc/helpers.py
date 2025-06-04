@@ -265,11 +265,14 @@ twotoOne = [
 ]
 
 
-def two_pass_h264_encoding(audioStreamCounter, preservationAbsPath, accessAbsPath):
+def two_pass_h264_encoding(audioStreamCounter, preservationAbsPath, accessAbsPath, logfile=None):
     if os.name == "nt":
         nullOut = "NUL"
     else:
         nullOut = "/dev/null"
+    if logfile is None:
+        logfile = "ffmpeg2pass-0.log"  # fallback, but should always pass a unique one!
+
     pass1 = [args.ffmpeg_path]
     if not args.verbose:
         pass1 += ["-loglevel", "error"]
@@ -287,6 +290,8 @@ def two_pass_h264_encoding(audioStreamCounter, preservationAbsPath, accessAbsPat
         "yuv420p",
         "-pass",
         "1",
+        "-passlogfile",
+        logfile,
     ]
     if audioStreamCounter > 0:
         if args.mixdown == "copy":
@@ -298,6 +303,7 @@ def two_pass_h264_encoding(audioStreamCounter, preservationAbsPath, accessAbsPat
         if args.mixdown == "2to1" and audioStreamCounter == 2:
             pass1 += twotoOne
     pass1 += ["-f", "mp4", nullOut]
+
     pass2 = [args.ffmpeg_path]
     if not args.verbose:
         pass2 += ["-loglevel", "error"]
@@ -315,6 +321,8 @@ def two_pass_h264_encoding(audioStreamCounter, preservationAbsPath, accessAbsPat
         "yuv420p",
         "-pass",
         "2",
+        "-passlogfile",
+        logfile,
     ]
     if audioStreamCounter > 0:
         if args.mixdown == "copy":
@@ -329,12 +337,11 @@ def two_pass_h264_encoding(audioStreamCounter, preservationAbsPath, accessAbsPat
     subprocess.run(pass1)
     subprocess.run(pass2)
 
-    # sometimes these files are created I'm not sure why
-    current_dir = os.getcwd()
-    if os.path.isfile(os.path.join(current_dir, "ffmpeg2pass-0.log")):
-        os.remove(os.path.join(current_dir, "ffmpeg2pass-0.log"))
-    if os.path.isfile(os.path.join(current_dir, "ffmpeg2pass-0.log.mbtree")):
-        os.remove(os.path.join(current_dir, "ffmpeg2pass-0.log.mbtree"))
+    # Clean up unique log files
+    for ext in ["", ".mbtree"]:
+        log_path = logfile + ext
+        if os.path.isfile(log_path):
+            os.remove(log_path)
 
 
 def generate_spectrogram(input, channel_layout_list, outputFolder, outputName):
@@ -371,18 +378,16 @@ def generate_qctools(input):
     subprocess.run(qctools_args)
 
 
-def mediaconch_policy_check(input, policy):
-    mediaconchResults = (
-        subprocess.check_output([args.mediaconch_path, "--policy=" + policy, input])
-        .decode("ascii")
-        .rstrip()
-        .split()[0]
-    )
-    if mediaconchResults == "pass!":
-        mediaconchResults = "PASS"
+def mediaconch_policy_check(input, policy, debug=False):
+    result = subprocess.check_output([args.mediaconch_path, "--policy=" + policy, input]).decode("ascii").rstrip()
+    if debug:
+        return result  # Return the full output for debugging
+    # Default: just PASS/FAIL
+    first_word = result.split()[0] if result else ""
+    if first_word == "pass!":
+        return "PASS"
     else:
-        mediaconchResults = "FAIL"
-    return mediaconchResults
+        return f"FAIL: {result}"
 
 
 def mediaconch_implementation_check(input):
