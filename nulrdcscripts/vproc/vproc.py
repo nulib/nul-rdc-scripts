@@ -167,16 +167,30 @@ def single_video(input, output):
         if not os.path.isfile(preservationAbsPath) or os.path.getsize(preservationAbsPath) == 0:
             print(f"ERROR: {preservationAbsPath} is missing or empty. Skipping.")
             continue
-        # create names that will be used in the script
-        # TO DO: handle transcoding legacy files (either need a flag that avoids appending pm to the output filename or the ability to read the desired output filename from the CSV file
-        # Check that the filename is correct for the mkv file. If not rename it
-        if preservationAbsPath.endswith("_p.mkv"):
-            pass
-        else:
-            newPresAbsPath = preservationAbsPath.replace(".mkv", "_p.mkv")
-            os.rename(preservationAbsPath, newPresAbsPath)
-            preservationAbsPath = newPresAbsPath
 
+        baseFilename = preservationFilename.replace("_p.mkv", "").replace(".mkv", "")
+        baseOutput = os.path.join(output, baseFilename)
+        preservationOutputFolder = os.path.join(baseOutput, pm_identifier)
+        # Ensure the preservation folder exists
+        if not os.path.isdir(preservationOutputFolder):
+            os.makedirs(preservationOutputFolder, exist_ok=True)
+
+        # Determine the correct destination path for the _p.mkv file
+        preservationDestPath = os.path.join(preservationOutputFolder, baseFilename + "_p.mkv")
+
+        # If the file is not already in the correct location/name, move/rename it
+        if preservationAbsPath != preservationDestPath:
+            # If the file does not already have the _p.mkv suffix, rename it
+            if not preservationFilename.endswith("_p.mkv"):
+                newPresAbsPath = preservationAbsPath.replace(".mkv", "_p.mkv")
+                os.rename(preservationAbsPath, newPresAbsPath)
+                preservationAbsPath = newPresAbsPath
+            # Move to the preservation folder if not already there
+            if os.path.abspath(preservationAbsPath) != os.path.abspath(preservationDestPath):
+                os.rename(preservationAbsPath, preservationDestPath)
+                preservationAbsPath = preservationDestPath
+
+        # Now, preservationAbsPath points to the correct file in the p folder
         baseFilename = preservationFilename.replace("_p.mkv", "")
         baseOutput = os.path.join(output, baseFilename)
         preservationOutputFolder = os.path.join(baseOutput, pm_identifier)
