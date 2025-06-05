@@ -6,15 +6,62 @@ import os
 import glob
 import subprocess
 import datetime
+import concurrent.futures
 from nulrdcscripts.vproc.params import args
 import nulrdcscripts.vproc.helpers as helpers
 import nulrdcscripts.vproc.corefuncs as corefuncs
 import nulrdcscripts.vproc.checks as checks
+import nulrdcscripts.vproc.metadata as metadata
+import nulrdcscripts.vproc.csvfunctions as csvfunctions
+
+# --- Move these globals here ---
+pm_identifier = "p"
+ac_identifier = "a"
+metadata_identifier = "meta"
+if not args.keep_filename:
+    pm_filename_identifier = "_p"
+else:
+    pm_filename_identifier = None
+inventoryName = "transcode_inventory.csv"
+if not args.output_policy:
+    mkvPolicy = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "data/mediaconch_policies/MKVFFV1_policy.xml",
+    )
+else:
+    mkvPolicy = args.output_policy
+# ...existing imports and globals...
+
+indir = corefuncs.input_check()
+outdir = corefuncs.output_check(indir)
+helpers.check_mixdown_arg()
+if not args.skip_qcli:
+    corefuncs.qcli_check()
+corefuncs.mediaconch_check()
+corefuncs.ffprobe_check()
+ffvers = corefuncs.get_ffmpeg_version()
+corefuncs.mediaconch_policy_exists(mkvPolicy)
+csvInventory = os.path.join(indir, inventoryName)
+csvDict = csvfunctions.import_csv(csvInventory)
+csvHeaderList = [
+    "inventory check",
+    "date",
+    "file format & metadata verification",
+    "date",
+    "file inspection",
+    "date",
+    "QC notes",
+    "AC filename",
+    "PM filename",
+    "runtime",
+]
+# --- End globals ---
 
 # TO DO: general cleanup
 
 if sys.version_info[0] < 3:
     raise Exception("Python 3 or a more recent version is required.")
+
 
 def main():
     # the pm identifier is the name of the folder that the preservation file will be output to
@@ -36,114 +83,139 @@ def main():
     global inventoryName
     inventoryName = "transcode_inventory.csv"
     # assign mediaconch policies to use
-    global movPolicy
-    if not args.input_policy:
-        movPolicy = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)),
-            "data/mediaconch_policies/AJA_NTSC_VHS-2SAS-MOV.xml")
-    else:
-        movPolicy = args.input_policy
     global mkvPolicy
     if not args.output_policy:
         mkvPolicy = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
-            "data/mediaconch_policies/AJA_NTSC_VHS-2SAS-MKV.xml")
+            "data/mediaconch_policies/MKVFFV1_policy.xml",
+        )
     else:
         mkvPolicy = args.output_policy
-
-    # assign input directory and output directory
-    indir = corefuncs.input_check()
-    outdir = corefuncs.output_check(indir)
-    # check that mixdown argument is valid if provided
-    helpers.check_mixdown_arg()
-    # check that required programs are present
-    if not args.skip_qcli:
-        corefuncs.qcli_check()
-    corefuncs.mediaconch_check()
-    corefuncs.ffprobe_check()
-    global ffvers
-    ffvers = corefuncs.get_ffmpeg_version()
-
-    # verify that mediaconch policies are present
-    corefuncs.mediaconch_policy_exists(movPolicy)
-    corefuncs.mediaconch_policy_exists(mkvPolicy)
-
-    global csvInventory
-    csvInventory = os.path.join(indir, inventoryName)
-    # TO DO: separate out csv and json related functions that are currently in supportfuncs into dedicated csv or json related py files
-    global csvDict
-    csvDict = helpers.import_csv(csvInventory)
-
-    # create the list of csv headers that will go in the qc log csv file
-    global csvHeaderList
-    csvHeaderList = [
-        "shot sheet check",
-        "date",
-        "PM lossless transcoding",
-        "date",
-        "file format & metadata verification",
-        "date",
-        "file inspection",
-        "date",
-        "QC notes",
-        "AC filename",
-        "PM filename",
-        "runtime",
-    ]
+ 
 
     print("***STARTING PROCESS***")
 
-    if(args.batch):
+    if args.batch:
         batch_video(indir, outdir)
     else:
         single_video(indir, outdir)
-    
+
 
 def batch_video(input, output):
+    items_to_process = []
+    skipped_items = []
+
     for item in os.listdir(input):
-        # changes item's path to absolute
-        item = os.path.join(input, item)
-        #performs single_video on item if its a folder and hasn't been transcoded yet
-        if os.path.isdir(item):
-            if not os.path.isfile(os.path.join(item, "qc_log.csv")):
-                single_video(item, item)
+        item_path = os.path.join(input, item)
+        qc_log_path = os.path.join(item_path, "qc_log.csv")
+        if not os.path.isdir(item_path):
+            skipped_items.append((item, "not a directory"))
+            continue
+        if os.path.isfile(qc_log_path):
+            skipped_items.append((item, "qc_log.csv exists"))
+            continue
+
+        # Check for valid .mkv files
+        mkv_files = [f for f in glob.glob1(item_path, "*.mkv")]
+        valid_mkv = False
+        for mkv in mkv_files:
+            mkv_path = os.path.join(item_path, mkv)
+            baseFilename = mkv.replace("_p.mkv", "").replace(".mkv", "")
+            if not os.path.isfile(mkv_path) or os.path.getsize(mkv_path) == 0:
+                skipped_items.append((f"{item}/{mkv}", "malformed (missing or empty)"))
+                continue
+            if baseFilename not in csvDict:
+                skipped_items.append((f"{item}/{mkv}", "not in CSV inventory"))
+                continue
+            valid_mkv = True
+        if valid_mkv:
+            items_to_process.append(item_path)
+        elif not mkv_files:
+            skipped_items.append((item, "no .mkv files found"))
+
+    print("Folders to be transcoded:")
+    for item in items_to_process:
+        print(f"  {item}")
+
+    if skipped_items:
+        print("\nSkipped folders/files:")
+        for item, reason in skipped_items:
+            print(f"  {item}: {reason}")
+
+    print(f"\nBatch processing {len(items_to_process)} video folders in parallel...")
+
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        futures = [
+            executor.submit(single_video, item, item)
+            for item in items_to_process
+        ]
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                future.result()
+            except Exception as exc:
+                print(f"Batch item generated an exception: {exc}")
+
 
 def single_video(input, output):
-    for movFilename in glob.glob1(input, "*.mov"):
-        # create names that will be used in the script
-        # TO DO: handle transcoding legacy files (either need a flag that avoids appending pm to the output filename or the ability to read the desired output filename from the CSV file
-        inputAbsPath = os.path.join(input, movFilename)
-        baseFilename = movFilename.replace(".mov", "")
+    for preservationFilename in glob.glob1(input, "*.mkv"):
+        # Skip files with "qctools" in the filename
+        if "qctools" in preservationFilename.lower():
+            print(f"Skipping {preservationFilename} (contains 'qctools' in filename)")
+            continue
+
+        preservationAbsPath = os.path.join(input, preservationFilename)
+        if not os.path.isfile(preservationAbsPath) or os.path.getsize(preservationAbsPath) == 0:
+            print(f"ERROR: {preservationAbsPath} is missing or empty. Skipping.")
+            continue
+
+        baseFilename = preservationFilename.replace("_p.mkv", "").replace(".mkv", "")
         baseOutput = os.path.join(output, baseFilename)
-        pmOutputFolder = os.path.join(baseOutput, pm_identifier)
-        mkvBaseFilename = (
-            (baseFilename + pm_filename_identifier)
-            if pm_filename_identifier
-            else (baseFilename)
+        preservationOutputFolder = os.path.join(baseOutput, pm_identifier)
+        # Ensure the preservation folder exists
+        if not os.path.isdir(preservationOutputFolder):
+            os.makedirs(preservationOutputFolder, exist_ok=True)
+
+        # Determine the correct destination path for the _p.mkv file
+        preservationDestPath = os.path.join(preservationOutputFolder, baseFilename + "_p.mkv")
+
+        # If the file is not already in the correct location/name, move/rename it
+        if preservationAbsPath != preservationDestPath:
+            # If the file does not already have the _p.mkv suffix, rename it
+            if not preservationFilename.endswith("_p.mkv"):
+                newPresAbsPath = preservationAbsPath.replace(".mkv", "_p.mkv")
+                os.rename(preservationAbsPath, newPresAbsPath)
+                preservationAbsPath = newPresAbsPath
+            # Move to the preservation folder if not already there
+            if os.path.abspath(preservationAbsPath) != os.path.abspath(preservationDestPath):
+                os.rename(preservationAbsPath, preservationDestPath)
+                preservationAbsPath = preservationDestPath
+
+        # Now, preservationAbsPath points to the correct file in the p folder
+        baseFilename = preservationFilename.replace("_p.mkv", "")
+        baseOutput = os.path.join(output, baseFilename)
+        preservationOutputFolder = os.path.join(baseOutput, pm_identifier)
+        accessOutputFolder = os.path.join(baseOutput, ac_identifier)
+        accessAbsPath = os.path.join(
+            accessOutputFolder, baseFilename + "_" + ac_identifier + ".mp4"
         )
-        mkvFilename = mkvBaseFilename + ".mkv"
-        outputAbsPath = os.path.join(pmOutputFolder, mkvFilename)
-        tempMasterFile = os.path.join(pmOutputFolder, baseFilename + "_tmp.mkv")
-        framemd5File = mkvBaseFilename + ".framemd5"
-        framemd5AbsPath = os.path.join(pmOutputFolder, framemd5File)
-        acOutputFolder = os.path.join(baseOutput, ac_identifier)
-        acAbsPath = os.path.join(
-            acOutputFolder, baseFilename + "_" + ac_identifier + ".mp4"
-        )
+        accessFilename = baseFilename + "_" + ac_identifier + ".mp4"
         metaOutputFolder = os.path.join(baseOutput, metadata_identifier)
-        jsonAbsPath = os.path.join(
-            metaOutputFolder, baseFilename + "_s" + ".json"
-        )
-        pmMD5AbsPath = os.path.join(pmOutputFolder, mkvBaseFilename + ".md5")
+        jsonAbsPath = os.path.join(metaOutputFolder, baseFilename + "_s" + ".json")
 
         # generate ffprobe metadata from input
-        input_metadata = helpers.ffprobe_report(movFilename, inputAbsPath)
+        preservation_metadata = helpers.ffprobe_report(
+            preservationFilename, preservationAbsPath
+        )
 
         # create a list of needed output folders and make them
         if not args.skip_ac:
-            outFolders = [pmOutputFolder, acOutputFolder, metaOutputFolder]
+            outFolders = [
+                preservationOutputFolder,
+                accessOutputFolder,
+                metaOutputFolder,
+            ]
         else:
-            outFolders = [pmOutputFolder, metaOutputFolder]
+            outFolders = [preservationOutputFolder, metaOutputFolder]
         helpers.create_transcode_output_folders(baseOutput, outFolders)
 
         # get information about item from csv inventory
@@ -152,129 +224,72 @@ def single_video(input, output):
         # PASS/FAIL - was the file found in the inventory
         inventoryCheck = checks.inventory_check(item_csvDict)
 
-        print("*losslessly transcoding", baseFilename + "*")
-
         # log transcode start time
         tstime = datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S")
 
         # losslessly transcode with ffmpeg
         transcode_nameDict = {
-            "inputAbsPath": inputAbsPath,
-            "tempMasterFile": tempMasterFile,
-            "framemd5AbsPath": framemd5AbsPath,
-            "outputAbsPath": outputAbsPath,
-            "framemd5File": framemd5File,
+            "inputAbsPath": preservationAbsPath,
+            "outputAbsPath": accessAbsPath,
         }
-        audioStreamCounter = input_metadata["techMetaA"]["audio stream count"]
-        helpers.ffv1_lossless_transcode(
-            input_metadata, transcode_nameDict, audioStreamCounter
-        )
-
+        audioStreamCounter = preservation_metadata["techMetaA"]["audio stream count"]
         # log transcode finish time
         tftime = datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S")
 
-        # If ffv1 file was succesfully created, do remaining verification and transcoding work
-        if os.path.isfile(outputAbsPath):
-            # create checksum sidecar file for preservation master
-            print("*creating checksum*")
-            mkvHash = corefuncs.hashlib_md5(outputAbsPath)
-            with open(pmMD5AbsPath, "w", newline="\n") as f:
-                print(mkvHash, "*" + mkvFilename, file=f)
+        if not args.skip_ac:
+            # create access copy
+            print("*transcoding access copy*")
+            logfile = accessAbsPath + ".log"
+            helpers.two_pass_h264_encoding(
+                audioStreamCounter, preservationAbsPath, accessAbsPath, logfile=accessAbsPath + ".log"
+            )
+            print("*successfully transcoded access copy*")
 
-            # compare streamMD5s
-            print("*verifying losslessness*")
-            mov_stream_sum = helpers.checksum_streams(
-                inputAbsPath, audioStreamCounter
-            )
-            mkv_stream_sum = helpers.checksum_streams(
-                outputAbsPath, audioStreamCounter
-            )
-            # PASS/FAIL - check if input stream md5s match output stream md5s
-            streamMD5status = checks.stream_md5_status(
-                mov_stream_sum, mkv_stream_sum
-            )
+        # log access copy filename if access copy was created
+        # TO DO: verify that access copy runtime matches pm runtime?
+        if os.path.isfile(accessAbsPath):
+            acFilename = baseFilename + "_" + ac_identifier + ".mp4"
+        else:
+            acFilename = "No access copy found"
 
-            # create a dictionary with the mediaconch results from the MOV and MKV files
+        # If access file was succesfully created, do remaining verification and transcoding work
+        if os.path.isfile(accessAbsPath):
             mediaconchResults_dict = {
-                "MOV Mediaconch Policy": helpers.mediaconch_policy_check(
-                    inputAbsPath, movPolicy
-                ),
                 "MKV Implementation": helpers.mediaconch_implementation_check(
-                    outputAbsPath
+                    preservationAbsPath
                 ),
                 "MKV Mediaconch Policy": helpers.mediaconch_policy_check(
-                    outputAbsPath, mkvPolicy
+                    preservationAbsPath, mkvPolicy
                 ),
             }
+            # TEMP DEBUG: Print MKV policy check result
+            mediaconch_policy_output = helpers.mediaconch_policy_check(preservationAbsPath, mkvPolicy, debug=True)
+            print(f"DEBUG: MKV Mediaconch Policy check output for {preservationAbsPath}:\n{mediaconch_policy_output}")
             # PASS/FAIL - check if any mediaconch results failed and append failed policies to results
-            mediaconchResults = checks.parse_mediaconchResults(
-                mediaconchResults_dict
-            )
+            mediaconchResults = checks.parse_mediaconchResults(mediaconchResults_dict)
 
             # run ffprobe on the output file
-            output_metadata = helpers.ffprobe_report(
-                mkvFilename, outputAbsPath
-            )
+            access_metadata = helpers.ffprobe_report(accessFilename, accessAbsPath)
             # log system info
-            systemInfo = helpers.generate_system_log(
-                ffvers, tstime, tftime
-            )
-
-            # PASS/FAIL - are files lossless
-            losslessCheck = checks.lossless_check(
-                input_metadata, output_metadata, streamMD5status
-            )
-
+            systemInfo = helpers.generate_system_log(ffvers, tstime, tftime)
             # create a dictionary containing QC results
-            qcResults = helpers.qc_results(
-                inventoryCheck, losslessCheck, mediaconchResults
-            )
+            qcResults = helpers.qc_results(inventoryCheck, mediaconchResults)
 
+            encoding_chain = helpers.generate_coding_history(csvDict, baseFilename)
             # create json metadata file
             # TO DO: combine checksums into a single dictionary to reduce variables needed here
-            helpers.create_json(
+            metadata.create_json(
                 jsonAbsPath,
                 systemInfo,
-                input_metadata,
-                mov_stream_sum,
-                mkvHash,
-                mkv_stream_sum,
+                preservation_metadata,
                 baseFilename,
-                output_metadata,
+                access_metadata,
                 item_csvDict,
                 qcResults,
+                encoding_chain,
             )
 
-            if not args.skip_ac:
-                # create access copy
-                print("*transcoding access copy*")
-                helpers.two_pass_h264_encoding(
-                    audioStreamCounter, outputAbsPath, acAbsPath
-                )
-
-                # create checksum sidecar file for access copy
-                acHash = corefuncs.hashlib_md5(acAbsPath)
-                with open(
-                    os.path.join(
-                        acOutputFolder, baseFilename + "_" + ac_identifier + ".md5"
-                    ),
-                    "w",
-                    newline="\n",
-                ) as f:
-                    print(
-                        acHash,
-                        "*" + baseFilename + "_" + ac_identifier + ".mp4",
-                        file=f,
-                    )
-
-            # log access copy filename if access copy was created
-            # TO DO: verify that access copy runtime matches pm runtime?
-            if os.path.isfile(acAbsPath):
-                acFilename = baseFilename + "_" + ac_identifier + ".mp4"
-            else:
-                acFilename = "No access copy found"
-
-            # get current date for logging when QC happned
+            # get current date for logging when QC happened
             qcDate = str(datetime.datetime.today().strftime("%Y-%m-%d"))
 
             # create the list that will go in the qc log csv file
@@ -282,37 +297,33 @@ def single_video(input, output):
             csvWriteList = [
                 qcResults["QC"]["inventory check"],
                 qcDate,
-                qcResults["QC"]["lossless check"],
-                qcDate,
                 qcResults["QC"]["mediaconch results"],
                 qcDate,
                 None,
                 None,
                 None,
-                acFilename,
-                mkvFilename,
+                accessFilename,
+                preservationFilename,
                 helpers.convert_runtime(
-                    output_metadata["file metadata"]["duration"]
+                    preservation_metadata["file metadata"]["duration"]
                 ),
             ]
 
             # Add QC results to QC log csv file
-            helpers.write_output_csv(
-                output, csvHeaderList, csvWriteList, output_metadata, qcResults
+            csvfunctions.write_output_csv(
+                output, csvHeaderList, csvWriteList, preservation_metadata, qcResults
             )
 
             # create spectrogram for pm audio channels
             if audioStreamCounter > 0 and not args.skip_spectrogram:
                 print("*generating QC spectrograms*")
-                channel_layout_list = input_metadata["techMetaA"]["channels"]
+                channel_layout_list = preservation_metadata["techMetaA"]["channels"]
                 helpers.generate_spectrogram(
-                    outputAbsPath, channel_layout_list, metaOutputFolder, baseFilename
+                    preservationAbsPath,
+                    channel_layout_list,
+                    metaOutputFolder,
+                    baseFilename,
                 )
-
-            # create qctools report
-            if not args.skip_qcli:
-                print("*creating qctools report*")
-                helpers.generate_qctools(outputAbsPath)
 
         else:
             print("No file in output folder.  Skipping file processing")
