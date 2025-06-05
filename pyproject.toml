@@ -16,7 +16,7 @@ readme = "README.md"
 python = "^3.10"
 progressbar2 = "^4.5.0"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 
 [tool.poetry.scripts]
 aproc = 'nulrdcscripts.aproc.aproc:main'
