@@ -1,0 +1,9 @@
+Filename: {filename}
+Overall Score: {passfail_video}
+Identified Video Bit Depth: {videobitdepth}
+
+
+
+{criteria}: {passfail}
+    Standard Value: {standard_value}
+    Video Value: {video_value}

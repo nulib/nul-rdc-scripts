@@ -2,8 +2,8 @@ import os
 import pandas as pd
 import pathlib
 
-path8Bit = "Video8BitValues.csv"
-path10Bit = "Video10BitValues.csv"
+path8Bit = "nulrdcscripts\\vqc\\data\\Video8BitValues.csv"
+path10Bit = "nulrdcscripts\\vqc\\data\\Video10BitValues.csv"
 
 csv8Bit = os.path.join(os.path.dirname(os.path.abspath(__file__)), path8Bit)
 csv10Bit = os.path.join(os.path.dirname(os.path.abspath(__file__)), path10Bit)
