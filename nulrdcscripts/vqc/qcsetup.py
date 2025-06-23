@@ -2,8 +2,8 @@ import os
 import pandas as pd
 import pathlib
 
-path8Bit = "nulrdcscripts\\vqc\\data\\Video8BitValues.csv"
-path10Bit = "nulrdcscripts\\vqc\\data\\Video10BitValues.csv"
+path8Bit = "data\\Video8BitValues.csv"
+path10Bit = "data\\Video10BitValues.csv"
 
 csv8Bit = os.path.join(os.path.dirname(os.path.abspath(__file__)), path8Bit)
 csv10Bit = os.path.join(os.path.dirname(os.path.abspath(__file__)), path10Bit)
@@ -32,12 +32,11 @@ def outputCheck(inputPath, outputPath):
 
 def setVideoBitDepth(videobitdepth):
     """Sets and assigns the values for bit depth for data comparison"""
-    if videobitdepth in ["8bit", "8", "8Bit"]:
+    videobitdepth = int(videobitdepth)
+    if videobitdepth == 8:
         standardsDF = pd.read_csv(csv8Bit, sep=",", index_col="criteria")
-    elif videobitdepth in ["10bit", "10", "10Bit"]:
+    elif videobitdepth == 10:
         standardsDF = pd.read_csv(csv10Bit, sep=",", index_col="criteria")
-    else:
-        raise ValueError("Unsupported video bit depth. Choose '8bit' or '10bit'.")
     return standardsDF
 
 

@@ -51,7 +51,9 @@ def dataparsingandtabulatingaudioXML(inputPath):
     return dfAudio
 
 
-def dataparsingandtabulatingvideoXML(inputPath, parallel_threshold_mb=500, batch_size=10000):
+def dataparsingandtabulatingvideoXML(
+    inputPath, parallel_threshold_mb=500, batch_size=10000
+):
     """
     Chooses single-threaded or parallel parsing based on file size.
     parallel_threshold_mb: file size in MB above which to use parallel parsing.
@@ -63,13 +65,17 @@ def dataparsingandtabulatingvideoXML(inputPath, parallel_threshold_mb=500, batch
         print("Using single-threaded parsing.")
         rows = []
         for event, elem in etree.iterparse(inputPath, events=("end",)):
-            if event == "end" and elem.tag == "frame" and elem.get("media_type") == "video":
+            if (
+                event == "end"
+                and elem.tag == "frame"
+                and elem.get("media_type") == "video"
+            ):
                 row = {}
                 frametime = elem.get("pkt_pts_time")
                 row["Frame Time"] = float(frametime)
                 for tag in elem.iter("tag"):
                     criteria = tag.attrib["key"]
-                    criteria = cleaners.criteriaccleaner(criteria)
+                    criteria = cleaners.criteriacleaner(criteria)
                     value = tag.attrib["value"]
                     try:
                         row[criteria] = float(value)
@@ -83,6 +89,7 @@ def dataparsingandtabulatingvideoXML(inputPath, parallel_threshold_mb=500, batch
         print("Using parallel batched parsing.")
         from concurrent.futures import ProcessPoolExecutor
         import progressbar
+
         rows = []
         frame_xmls = []
         max_workers = get_cpu_count()
@@ -90,7 +97,11 @@ def dataparsingandtabulatingvideoXML(inputPath, parallel_threshold_mb=500, batch
         total_frames = 0
         # First, scan the file to count frames (optional, for accurate progress)
         for event, elem in etree.iterparse(inputPath, events=("end",)):
-            if event == "end" and elem.tag == "frame" and elem.get("media_type") == "video":
+            if (
+                event == "end"
+                and elem.tag == "frame"
+                and elem.get("media_type") == "video"
+            ):
                 total_frames += 1
             elem.clear()
 
@@ -99,7 +110,11 @@ def dataparsingandtabulatingvideoXML(inputPath, parallel_threshold_mb=500, batch
             processed = 0
             with ProcessPoolExecutor(max_workers=max_workers) as executor:
                 for event, elem in context:
-                    if event == "end" and elem.tag == "frame" and elem.get("media_type") == "video":
+                    if (
+                        event == "end"
+                        and elem.tag == "frame"
+                        and elem.get("media_type") == "video"
+                    ):
                         frame_xmls.append(etree.tostring(elem))
                         elem.clear()
                         if len(frame_xmls) >= batch_size:
@@ -121,14 +136,14 @@ def dataparsingandtabulatingvideoXML(inputPath, parallel_threshold_mb=500, batch
 
 def videodatastatistics(videodata):
     """Generates descriptive video statistics for the entire video in a dataframe"""
-    numeric = videodata.select_dtypes(include='number')
+    numeric = videodata.select_dtypes(include="number")
     videostatsDSDF = numeric.describe()
     return videostatsDSDF
 
 
 def audiodatastatistics(audiodata):
     """Generates descriptive audio statistics for the entire video in a dataframe"""
-    numeric = audiodata.select_dtypes(include='number')
+    numeric = audiodata.select_dtypes(include="number")
     audiodataDSDF = numeric.describe()
     return audiodataDSDF
 

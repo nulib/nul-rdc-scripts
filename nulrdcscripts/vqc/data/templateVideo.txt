@@ -1,9 +1,10 @@
-Filename: {filename}
-Overall Score: {passfail_video}
-Identified Video Bit Depth: {videobitdepth}
+==== Video QC Report ====
 
+File: {filename}
+Bit Depth: {videobitdepth}
+Result: {passfail_video}
 
-
-{criteria}: {passfail}
-    Standard Value: {standard_value}
-    Video Value: {video_value}
+-------------------------
+Errors and Warnings:
+-------------------------
+{ERRORS}
