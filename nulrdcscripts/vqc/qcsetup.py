@@ -2,11 +2,13 @@ import os
 import pandas as pd
 import pathlib
 
-path8Bit = "data\\Video8BitValues.csv"
-path10Bit = "data\\Video10BitValues.csv"
 
-csv8Bit = os.path.join(os.path.dirname(os.path.abspath(__file__)), path8Bit)
-csv10Bit = os.path.join(os.path.dirname(os.path.abspath(__file__)), path10Bit)
+csv8Bit = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "data", "Video8BitValues.csv"
+)
+csv10Bit = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "data", "Video10BitValues.csv"
+)
 
 
 def inputCheck(inputPath):
