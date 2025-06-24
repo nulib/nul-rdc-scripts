@@ -114,3 +114,30 @@ def runstatsvideo(videoDSDF, standardsDF):
         errors.extend(errorsSat)
 
     return errors
+
+
+def get_passing_stats(all_criteria, errors, videoDSDF, standardDF):
+    error_criteria = set()
+    for err in errors:
+        if not isinstance(err, str):
+            error_criteria.add(err.criteria)
+    passing = [c for c in all_criteria if c not in error_criteria]
+
+    passing_lines = []
+    for crit in passing:
+        # Determine which row to use
+        stat_row = "min" if "low" in crit else "max"
+        try:
+            video_value = videoDSDF.at[stat_row, crit]
+        except Exception:
+            video_value = "N/A"
+        try:
+            standard_value = standardDF.at[crit, "brngout"]
+        except Exception:
+            standard_value = "N/A"
+        passing_lines.append(
+            f"Criteria: {crit}\n"
+            f"  Video Value: {video_value}\n"
+            f"  Standard Value: {standard_value}\n"
+        )
+    return "\n".join(passing_lines) if passing_lines else "None"

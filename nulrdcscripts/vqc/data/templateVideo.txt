@@ -8,3 +8,8 @@ Result: {passfail_video}
 Errors and Warnings:
 -------------------------
 {ERRORS}
+
+-------------------------
+Passing Video Stats:
+-------------------------
+{PASSING_STATS}

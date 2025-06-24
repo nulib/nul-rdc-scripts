@@ -5,7 +5,13 @@ from nulrdcscripts.vqc.params import args
 from nulrdcscripts.vqc import dataparsing
 from nulrdcscripts.vqc import qcsetup
 from nulrdcscripts.vqc import overallStatistics
-from nulrdcscripts.vqc import outputdata
+from nulrdcscripts.vqc import output
+
+template_path = os.path.join(os.path.dirname(__file__), "data", "templateVideo.txt")
+
+if not os.path.exists(template_path):
+    print(f"Template not found at: {template_path}")
+    # Optionally, raise an error or exit
 
 
 def main():
@@ -69,12 +75,27 @@ def main():
     print("*****Analysing Full Video Descriptive Statistics*****")
     errors = overallStatistics.runstatsvideo(videoDSDF, standardDF)
 
-    outputdata.write_video_stats_to_txt(
+    # Determine pass/fail status
+    passfail_video = "PASS" if not errors else "FAIL"
+
+    all_criteria = [
+        "ylow",
+        "yhigh",
+        "ulow",
+        "uhigh",
+        "vlow",
+        "vhigh",
+    ]  # or however you define all checks
+    output.write_video_stats_to_txt(
         errors,
-        os.path.join(os.path.dirname(__file__), "data//templateVideo.txt"),
-        os.path.join(outputDir, "video_report.txt"),
+        template_path,  # use the variable above
+        outputDir + "/video_stats.txt",
         videobitdepth,
         os.path.basename(inputPath),
+        passfail_video,
+        all_criteria,
+        videoDSDF,
+        standardDF,
     )
 
 
