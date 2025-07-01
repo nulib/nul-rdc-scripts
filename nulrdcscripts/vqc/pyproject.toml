@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "qcscript"
-version = "0.0.1"
+name = "vidsleuth"
+version = "0.1.0"
 description = "Script to automate the video QC process"
 authors = ["Northwestern University Libraries <repository@northwestern.edu>", "Sophia Francis"]
 license = "MIT"
