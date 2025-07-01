@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "vidsleuth"
+name = "medusight"
 version = "0.1.0"
 description = "Script to automate the video QC process"
 authors = ["Northwestern University Libraries <repository@northwestern.edu>", "Sophia Francis"]
