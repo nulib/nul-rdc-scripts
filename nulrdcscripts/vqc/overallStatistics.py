@@ -141,3 +141,19 @@ def get_passing_stats(all_criteria, errors, videoDSDF, standardDF):
             f"  Standard Value: {standard_value}\n"
         )
     return "\n".join(passing_lines) if passing_lines else "None"
+
+
+def get_threshold(crit, col, standardDF):
+    # If crit is 'satmax', use 'sat' thresholds
+    if crit == "satmax":
+        crit = "sat"
+    try:
+        return standardDF.at[crit, col]
+    except Exception:
+        return None
+
+    if crit in ("sat", "satmax"):
+        brng = get_threshold(crit, "brnglimit", standardDF)
+        clipping = get_threshold(crit, "clippinglimit", standardDF)
+        illegal = get_threshold(crit, "illegal", standardDF)
+        # ...rest of your logic...

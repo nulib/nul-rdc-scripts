@@ -14,6 +14,30 @@ def safe_bitdepth(bitdepth):
         return "UNKNOWN"
 
 
+def get_fail_percentages(errors, videodata, standardDF):
+    """
+    Returns a dict: {criteria: percentage_failed}
+    """
+    fail_percentages = {}
+    try:
+        total_frames = len(videodata)
+    except Exception:
+        total_frames = 0
+
+    for err in errors:
+        if not hasattr(err, "criteria"):
+            continue
+        crit = err.criteria
+        if crit not in videodata.columns:
+            continue
+
+        # Fallback: count NaNs as fails
+        fail_count = videodata[crit].isna().sum()
+        percent = (fail_count / total_frames) * 100 if total_frames else 0
+        fail_percentages[crit] = percent
+    return fail_percentages
+
+
 def get_passing_stats(all_criteria, errors, videoDSDF, standardDF):
     error_criteria = set()
     for err in errors:
@@ -50,44 +74,75 @@ def write_video_stats_to_txt(
     all_criteria,
     videoDSDF,
     standardDF,
+    videodata,
+    fail_counts=None,
+    total_frames=None,
 ):
-    # Sanitize inputs
-    safe_filename = sanitize_filename(filename)
-    safe_videobitdepth = safe_bitdepth(videobitdepth)
-
-    # Read the template
-    with open(template_path, "r", encoding="utf-8") as f:
-        template = f.read()
-
-    # Format the errors as multi-line blocks (Option 3)
     error_lines = []
     for err in errors:
         if not isinstance(err, str):
-            error_lines.append(
-                f"Criteria: {err.criteria}\n"
-                f"    Status: {err.status}\n"
-                f"    Video Value: {err.video_value}\n"
-                f"    Standard Value: {err.standard_value}\n"
-            )
+            # Special handling for sat and satmax
+            if err.criteria in ("sat", "satmax"):
+                # Only report the most severe level that has failures
+                levels = [
+                    ("illegal", "Illegal"),
+                    ("clipping", "Clipping"),
+                    ("brng", "Broadcast Range"),
+                ]
+                for label, label_pretty in levels:
+                    key = f"{err.criteria}_{label}"
+                    count = fail_counts.get(key, 0) if fail_counts else 0
+                    percent = (count / total_frames) * 100 if total_frames else 0
+                    if count > 0:
+                        error_lines.append(
+                            f"Criteria: {err.criteria} ({label_pretty})\n"
+                            f"  Status: {err.status}\n"
+                            f"  Failed Frames: {count} ({percent:.2f}%)\n"
+                        )
+                        break  # Only report the most severe level
+                else:
+                    # If no failures at any level, still report 0 for brng
+                    count = fail_counts.get(f"{err.criteria}_brng", 0)
+                    percent = (count / total_frames) * 100 if total_frames else 0
+                    error_lines.append(
+                        f"Criteria: {err.criteria} (Broadcast Range)\n"
+                        f"  Status: {err.status}\n"
+                        f"  Failed Frames: {count} ({percent:.2f}%)\n"
+                    )
+            else:
+                count = fail_counts.get(err.criteria, 0) if fail_counts else 0
+                percent = (count / total_frames) * 100 if total_frames else 0
+                error_lines.append(
+                    f"Criteria: {err.criteria}\n"
+                    f"  Status: {err.status}\n"
+                    f"  Video Value: {err.video_value}\n"
+                    f"  Standard Value: {err.standard_value}\n"
+                    f"  Failed Frames: {count} ({percent:.2f}%)\n"
+                )
         else:
             error_lines.append(err.replace("\n", " ").replace("\r", " "))
     error_text = "\n".join(error_lines)
 
-    # Format passing stats with values
+    with open(template_path, "r") as template_file:
+        template = template_file.read()
+
     passing_stats_text = get_passing_stats(all_criteria, errors, videoDSDF, standardDF)
 
-    # Fill in the template
-    output = template.format(
-        filename=safe_filename,
-        videobitdepth=safe_videobitdepth,
-        passfail_video=passfail_video,
-        ERRORS=error_text,
-        PASSING_STATS=passing_stats_text,
+    output_text = template.format(
+        error_details=error_text,  # <-- match {error_details} in template
+        videobitdepth=videobitdepth,  # <-- match {videobitdepth}
+        filename=filename,  # <-- match {filename}
+        passfail_video=passfail_video,  # <-- match {passfail_video}
+        all_criteria=", ".join(
+            all_criteria
+        ),  # only if your template uses {all_criteria}
+        passing_stats=passing_stats_text,  # <-- match {passing_stats}
     )
 
-    # Write to output file
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(output)
+    with open(output_path, "w") as output_file:
+        output_file.write(output_text)
+
+    print(f"Video statistics written to: {output_path}")
 
 
 # Example usage after running your stats:

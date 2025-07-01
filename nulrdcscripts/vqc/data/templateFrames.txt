@@ -4,12 +4,10 @@ File: {filename}
 Bit Depth: {videobitdepth}
 Result: {passfail_video}
 
--------------------------
-Errors and Warnings:
--------------------------
-{error_details}
 
 -------------------------
-Passing Video Stats:
+Failing Frames by Criteria:
 -------------------------
-{passing_stats}
+==== Failing Frames by Criteria Report ====
+
+{FAILING_FRAMES}
