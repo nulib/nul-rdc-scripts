@@ -1,4 +1,4 @@
-Version Date: 10/30/2023
+Version Date: 7-1-25
 
 Document Owner: Sophia Francis <br>
 
@@ -7,7 +7,7 @@ Software Used: Terminal or Command Prompt, VSCode (optional), QCTools (requires 
 Packages required (also see .toml file): pandas, lxml, beautifulsoup4, tabulate, json, os, 
 
 Description:<br>
-This document provides information about running the QC Script and what information is required in order to do so.
+This document provides information about running VidSleuth and what information is required in order to do so.
 
 ## Important information:
 
@@ -16,13 +16,6 @@ If you are planning on running this in batch form (one folder with multiple xml 
 ### Changing Value ranges:
 If you want to edit the value ranges that are used, then you can edit the CSVs Video8BitValues and Video10BitValues. However, caution must be used as these are used in equations throughout the script. I _do not_ recommend this.
 
-### _Regarding the YAvg reporting_:
-
-There are no ranges that are supplied for YAvg in the QCTools documentation. I have tried my best to modify the values that are from UAvg and Vavg, if there is a more correct range, please contact me (Sophia) at repository@northwestern.edu.
-
-### _Regarding Summarization Stats from QCTools:_
-
-Due to the nature of the summarization stats from the QCTools worksheet, these have been adapted so that they are less likely to incur skewing due to framecount (this concept has been communicated a developer of QCTools.) That being said, in order to see the documentation about how these numbers came to be see [this](docs/summarizationStats.md) document. If you have any better values for these statistics, please contact me (Sophia) at repository@northwestern.edu
 
 ## Running with Parser (still in development - not functional):
 
@@ -36,59 +29,10 @@ For this example I will be using:
 ### 3. Type --input or -i (they do the same thing) followed by your file or folder path
 
 ```
-run.py --input example.xml
+poetry run vids --input example.xml
 ```
 ```
-run.py -i /files/example.xml
-```
-### 4. Depending on whether or not you are running a black and white video or a color video, different processes should be run. To select:
-- Use ```--blackwhite```  or ```-bw``` for black and white video
-- Use ```--color``` or ```-c``` for color video
-
-Adding to the first example in step 3, these options would look like this:
-
-#### Black and white video
-
-```
-run.py --input example.xml --blackandwhite
-```
-```
-run.py --input example.xml -bw
-```
-
-#### Color video
-
-```
-run.py --input example.xml --color
-```
-```
-run.py --input example.xml -c
-```
-
-### 5. Depending on what bitdepth you are utilizing, different values need to be used. To select:
-
-- Use ```--10bit``` or ```-10``` for 10 Bit video
-
-- Use ```--8bit``` or ```-8``` for 8 Bit Video
-
-Adding to the example above, for a color video this would look like:
-
-#### 10 Bit Video
-
-```
-run.py --input example.xml --color --10bit
-```
-```
-run.py --input example.xml --color -10
-```
-
-#### 8 Bit Video
-
-```
-run.py --input example.xml --color --8bit
-```
-```
-run.py --input example.xml --color -8
+poetry run vids -i /files/example.xml
 ```
 
 
