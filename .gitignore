@@ -141,6 +141,7 @@ Image/Inventory/ExtraNonsenseToKeepForNow/inventory.csv
 *.vscode/
 
 # ffmpeg stuff
+0.log
 .log.mbtree
 *.1ffmpeg2pass-0.log.mbtree
 
