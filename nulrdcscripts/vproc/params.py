@@ -67,9 +67,13 @@ parser.add_argument(
     "--mixdown",
     action="store",
     dest="mixdown",
-    default="copy",
+    default=None,  # <-- allow None so you can default to swap12 in your logic
     type=str,
-    help="How the audio streams will be mapped for the access copy. If excluded, this will default to copying the stream configuration of the input. Inputs include: copy, 4to3, and 4to2. 4to3 takes 4 mono tracks and mixes tracks 1&2 to stereo while leaving tracks 3&4 mono. 4to2 takes 4 mono tracks and mixes tracks 1&2 and 3&4 to stereo.",
+    help=(
+        "How the audio streams will be mapped for the access copy. "
+        "If excluded, this will default to swapping channels 1 and 2. "
+        "Inputs include: copy, 4to3, 4to2, 2to1, swap12 (swap channels 1&2), swap34 (swap channels 3&4)."
+    ),
 )
 parser.add_argument(
     "--slices",
@@ -135,7 +139,7 @@ parser.add_argument(
     required=False,
     action="store_true",
     dest="batch",
-    help="For batches of video files"
+    help="For batches of video files",
 )
 
 args = parser.parse_args()

@@ -34,11 +34,12 @@ def create_transcode_output_folders(baseOutput, outputFolderList):
 
 
 def check_mixdown_arg():
-    mixdown_list = ["copy", "4to3", "4to2", "2to1"]
-    # TO DO add swap as an option to allow switching tracks 3&4 with tracks 1&2
-    if not args.mixdown in mixdown_list:
+    mixdown_list = ["copy", "4to3", "4to2", "2to1", "swap12", "swap34"]
+    if not hasattr(args, "mixdown") or args.mixdown is None:
+        args.mixdown = "swap12"
+    if args.mixdown not in mixdown_list:
         print("The selected audio mixdown is not a valid value")
-        print("please use one of: copy, 4to3, 4to2, 2to1")
+        print("please use one of: copy, 4to3, 4to2, 2to1, swap12, swap34")
         quit()
 
 
@@ -264,8 +265,30 @@ twotoOne = [
     "[a]",
 ]
 
+# Swap channels 1 and 2 (default for "swap")
+swap12 = [
+    "-filter_complex",
+    "[0:a:1][0:a:0]amerge=inputs=2[a]",
+    "-map",
+    "0:v",
+    "-map",
+    "[a]",
+]
 
-def two_pass_h264_encoding(audioStreamCounter, preservationAbsPath, accessAbsPath, logfile=None):
+# Swap channels 3 and 4
+swap34 = [
+    "-filter_complex",
+    "[0:a:2][0:a:3]amerge=inputs=2[a]",
+    "-map",
+    "0:v",
+    "-map",
+    "[a]",
+]
+
+
+def two_pass_h264_encoding(
+    audioStreamCounter, preservationAbsPath, accessAbsPath, logfile=None
+):
     if os.name == "nt":
         nullOut = "NUL"
     else:
@@ -302,6 +325,10 @@ def two_pass_h264_encoding(audioStreamCounter, preservationAbsPath, accessAbsPat
             pass1 += fourtoTwo
         if args.mixdown == "2to1" and audioStreamCounter == 2:
             pass1 += twotoOne
+        if args.mixdown == "swap":
+            pass1 += swap12
+        if args.mixdown == "swap34" and audioStreamCounter >= 4:
+            pass1 += swap34
     pass1 += ["-f", "mp4", nullOut]
 
     pass2 = [args.ffmpeg_path]
@@ -379,7 +406,11 @@ def generate_qctools(input):
 
 
 def mediaconch_policy_check(input, policy, debug=False):
-    result = subprocess.check_output([args.mediaconch_path, "--policy=" + policy, input]).decode("ascii").rstrip()
+    result = (
+        subprocess.check_output([args.mediaconch_path, "--policy=" + policy, input])
+        .decode("ascii")
+        .rstrip()
+    )
     if debug:
         return result  # Return the full output for debugging
     # Default: just PASS/FAIL
