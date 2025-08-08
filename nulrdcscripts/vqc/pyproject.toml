@@ -2,7 +2,7 @@
 name = "medusight"
 version = "0.2.0"
 description = "This is a script that will do the initial round of QC for videos for archival purposes."
-authors = [{name = "Northwestern University Libraries", email = "repository@northwestern.edu"}, {name = "Sophia Francis"}]
+authors = [{name = "Northwestern University Libraries", email = "repository@northwestern.edu"}, {name = "Sophia Francis", email = "repository@northwestern.edu"}]
 
 readme = "README.md"
 license = {text = "MIT"}

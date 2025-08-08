@@ -1,9 +1,9 @@
 import os
 import progressbar
 import pandas as pd
-from .params import args
-from .. import dataparsing
-from . import overallStatistics, output, framestatistics, qcsetup
+from params import args
+import dataparsing, overallStatistics
+import overallStatistics, output, framestatistics, qcsetup
 
 template_path = os.path.join(os.path.dirname(__file__), "data", "templateVideo.txt")
 
