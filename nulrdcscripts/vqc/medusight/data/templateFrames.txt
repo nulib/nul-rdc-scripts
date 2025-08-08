@@ -1,0 +1,13 @@
+==== Video QC Report ====
+
+File: {filename}
+Bit Depth: {videobitdepth}
+Result: {passfail_video}
+
+
+-------------------------
+Failing Frames by Criteria:
+-------------------------
+==== Failing Frames by Criteria Report ====
+
+{FAILING_FRAMES}

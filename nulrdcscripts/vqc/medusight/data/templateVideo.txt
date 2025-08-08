@@ -1,0 +1,15 @@
+==== Video QC Report ====
+
+File: {filename}
+Bit Depth: {videobitdepth}
+Result: {passfail_video}
+
+-------------------------
+Errors and Warnings:
+-------------------------
+{error_details}
+
+-------------------------
+Passing Video Stats:
+-------------------------
+{passing_stats}
