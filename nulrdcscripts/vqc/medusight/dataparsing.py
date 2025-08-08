@@ -1,5 +1,5 @@
 import pandas as pd
-from nulrdcscripts.vqc import cleaners
+from . import cleaners
 from lxml import etree  # switched to lxml for faster XML parsing
 from concurrent.futures import ProcessPoolExecutor
 import os

@@ -1,12 +1,9 @@
 import os
 import progressbar
 import pandas as pd
-from nulrdcscripts.vqc.params import args
-from nulrdcscripts.vqc import dataparsing
-from nulrdcscripts.vqc import qcsetup
-from nulrdcscripts.vqc import overallStatistics
-from nulrdcscripts.vqc import output
-from nulrdcscripts.vqc import framestatistics
+from .params import args
+from .. import dataparsing
+from . import overallStatistics, output, framestatistics, qcsetup
 
 template_path = os.path.join(os.path.dirname(__file__), "data", "templateVideo.txt")
 
