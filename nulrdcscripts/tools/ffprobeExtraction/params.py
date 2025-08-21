@@ -15,7 +15,7 @@ parser.add_argument(
     "-of",
     "--outputformat",
     action="store",
-    dest="outputformat",
+    dest="output_format",  # <-- change here
     default="json",
     type=str,
     help="format that you want the ffprobe report to be in. JSON is the default and the other accepted value is XML",
