@@ -33,28 +33,14 @@ def run_ffprobe(command):
     result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding="utf-8")
     return result.stdout
 
-def merge_json_outputs(signalstats_data, metadata_data):
-    signalstats_json = json.loads(signalstats_data)
-    metadata_json = json.loads(metadata_data)
-    merged = {
-        "signalstats": signalstats_json,
-        "metadata": metadata_json
-    }
-    return json.dumps(merged, indent=2)
-
-def merge_xml_outputs(signalstats_data, metadata_data):
-    signalstats_xml = ET.fromstring(signalstats_data)
-    metadata_xml = ET.fromstring(metadata_data)
-    root = ET.Element("ffprobe")
-    root.append(signalstats_xml)
-    root.append(metadata_xml)
-    return ET.tostring(root, encoding="unicode")
-
 def process_file(file_path, output_format):
     input_path = os.path.abspath(file_path)
     input_path_resolved = resolve_path(input_path)
     input_path_ffmpeg = input_path_resolved.replace("\\", "/")
-    output_path = os.path.splitext(input_path)[0] + "_merged." + output_format
+
+    base_name = os.path.splitext(input_path)[0]
+    signalstats_output_path = f"{base_name}_signalstats.{output_format}"
+    metadata_output_path = f"{base_name}_metadata.{output_format}"
 
     command_signalstats = [
         "ffprobe",
@@ -75,15 +61,13 @@ def process_file(file_path, output_format):
     signalstats_output = run_ffprobe(command_signalstats)
     metadata_output = run_ffprobe(command_metadata)
 
-    if output_format == "json":
-        merged_output = merge_json_outputs(signalstats_output, metadata_output)
-    else:
-        merged_output = merge_xml_outputs(signalstats_output, metadata_output)
+    with open(signalstats_output_path, "w", encoding="utf-8") as sig_file:
+        sig_file.write(signalstats_output)
 
-    with open(output_path, "w", encoding="utf-8") as outfile:
-        outfile.write(merged_output)
+    with open(metadata_output_path, "w", encoding="utf-8") as meta_file:
+        meta_file.write(metadata_output)
 
-    return output_path
+    return signalstats_output_path, metadata_output_path
 
 def main():
     input_path = args.input_path
@@ -109,10 +93,14 @@ def main():
     with ProcessPoolExecutor() as executor:
         futures = {executor.submit(process_file, file_path, output_format): file_path for file_path in files_to_process}
         for future in as_completed(futures):
-            result_path = future.result()
+            try:
+                signalstats_path, metadata_path = future.result()
+                print(f"Signalstats: {signalstats_path}")
+                print(f"Metadata: {metadata_path}")
+            except Exception as e:
+                print(f"Error processing {futures[future]}: {e}")
             completed += 1
             bar.update(completed)
-            print(f"Processed: {result_path}")
 
 if __name__ == "__main__":
     main()
