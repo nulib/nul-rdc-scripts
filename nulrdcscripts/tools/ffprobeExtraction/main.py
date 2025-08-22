@@ -1,8 +1,6 @@
 import os
 import subprocess
 import ctypes
-import json
-import xml.etree.ElementTree as ET
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import progressbar
 from nulrdcscripts.tools.ffprobeExtraction.params import args
@@ -39,10 +37,11 @@ def process_file(file_path, output_format):
     input_path_ffmpeg = input_path_resolved.replace("\\", "/")
 
     base_name = os.path.splitext(input_path)[0]
-    signalstats_output_path = f"{base_name}_signalstats.{output_format}"
-    metadata_output_path = f"{base_name}_metadata.{output_format}"
+    video_stats_output_path = f"{base_name}_video_signalstats.{output_format}"
+    audio_stats_output_path = f"{base_name}_audio_astats.{output_format}"
 
-    command_signalstats = [
+    # Video signalstats
+    command_video = [
         "ffprobe",
         "-f", "lavfi",
         "-i", f"movie='{input_path_ffmpeg}',signalstats",
@@ -50,24 +49,25 @@ def process_file(file_path, output_format):
         "-of", output_format
     ]
 
-    command_metadata = [
+    # Audio astats
+    command_audio = [
         "ffprobe",
-        "-i", input_path_ffmpeg,
-        "-show_streams",
-        "-show_format",
+        "-f", "lavfi",
+        "-i", f"amovie='{input_path_ffmpeg}',astats=metadata=1:reset=1",
+        "-show_frames",
         "-of", output_format
     ]
 
-    signalstats_output = run_ffprobe(command_signalstats)
-    metadata_output = run_ffprobe(command_metadata)
+    video_output = run_ffprobe(command_video)
+    audio_output = run_ffprobe(command_audio)
 
-    with open(signalstats_output_path, "w", encoding="utf-8") as sig_file:
-        sig_file.write(signalstats_output)
+    with open(video_stats_output_path, "w", encoding="utf-8") as vfile:
+        vfile.write(video_output)
 
-    with open(metadata_output_path, "w", encoding="utf-8") as meta_file:
-        meta_file.write(metadata_output)
+    with open(audio_stats_output_path, "w", encoding="utf-8") as afile:
+        afile.write(audio_output)
 
-    return signalstats_output_path, metadata_output_path
+    return video_stats_output_path, audio_stats_output_path
 
 def main():
     input_path = args.input_path
@@ -94,9 +94,9 @@ def main():
         futures = {executor.submit(process_file, file_path, output_format): file_path for file_path in files_to_process}
         for future in as_completed(futures):
             try:
-                signalstats_path, metadata_path = future.result()
-                print(f"Signalstats: {signalstats_path}")
-                print(f"Metadata: {metadata_path}")
+                video_path, audio_path = future.result()
+                print(f"Video stats: {video_path}")
+                print(f"Audio stats: {audio_path}")
             except Exception as e:
                 print(f"Error processing {futures[future]}: {e}")
             completed += 1
