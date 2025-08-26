@@ -11,7 +11,7 @@ if not os.path.exists(template_path):
     # Optionally, raise an error or exit
 
 
-def main(inputPath, outputPath):
+def processfile(inputPath, outputPath):
     bitDepth = args.videobitdepth
 
     print("*****Starting qcsetup*****")
