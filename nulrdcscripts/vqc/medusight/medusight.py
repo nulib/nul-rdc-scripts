@@ -1,9 +1,8 @@
 import os
 import progressbar
 import pandas as pd
-from params import args
-import dataparsing, overallStatistics
-import overallStatistics, output, framestatistics, qcsetup
+from .params import args
+from . import dataparsing, output, framestatistics, qcsetup
 
 template_path = os.path.join(os.path.dirname(__file__), "data", "templateVideo.txt")
 
@@ -12,10 +11,8 @@ if not os.path.exists(template_path):
     # Optionally, raise an error or exit
 
 
-def main():
-    inputPath = os.path.normpath(args.input_path)
+def main(inputPath, outputPath):
     bitDepth = args.videobitdepth
-    outputPath = args.output_path
 
     print("*****Starting qcsetup*****")
     with progressbar.ProgressBar(max_value=4) as qcsetupBar:
@@ -41,16 +38,11 @@ def main():
 
     print("*****Generating Full Video Descriptive Statistics*****")
     videoDSDF = dataparsing.videodatastatistics(videodata)
-    # audioDSDF = dataparsing.audiodatastatistics(audiodata)
 
     def test_bitdepth_medians(videoDSDF):
-
-        # Extract the median values
         y = videoDSDF.loc["50%", "ybitdepth"]
         u = videoDSDF.loc["50%", "ubitdepth"]
         v = videoDSDF.loc["50%", "vbitdepth"]
-
-        # Check if all are 8 or all are 10
         assert (y == u == v == 8) or (
             y == u == v == 10
         ), f"Median bit depths are not all 8 or all 10: y={y}, u={u}, v={v}"
@@ -60,31 +52,21 @@ def main():
     videobitdepth = videoDSDF["ybitdepth"].mode()[0]
     standardDF = qcsetup.setVideoBitDepth(videobitdepth)
 
-    # Determine output directory
     if outputPath == "input":
         outputDir = os.path.dirname(inputPath)
     else:
         outputDir = outputPath
 
     sumVideoStatsCSV = dataparsing.videostatstocsv(videoDSDF, outputDir)
-    # sumAudioStatsCSV = dataparsing.audiostatstocsv(audioDSDF, outputDir)
     print("*****Generated Full Video Descriptive Statistics*****")
 
     print("*****Analysing Full Video Descriptive Statistics*****")
     errors = overallStatistics.runstatsvideo(videoDSDF, standardDF)
-
-    # Determine pass/fail status
     passfail_video = "PASS" if not errors else "FAIL"
 
     all_criteria = [
-        "ylow",
-        "yhigh",
-        "ulow",
-        "uhigh",
-        "vlow",
-        "vhigh",
-    ]  # or however you define all checks
-    # Get the failing frame times and fail counts BEFORE writing the stats file
+        "ylow", "yhigh", "ulow", "uhigh", "vlow", "vhigh",
+    ]
     failing_frames_text, fail_counts = framestatistics.get_failing_frametimes(
         errors, videodata, standardDF
     )
@@ -107,37 +89,47 @@ def main():
 
     print("*****Analysed Full Video Descriptive Statistics*****")
     print("*****Analyzing frame statistics*****")
-    # Get the failing frame times as a string
     failing_frames_text, fail_counts = framestatistics.get_failing_frametimes(
         errors, videodata, standardDF
     )
     total_frames = len(videodata)
 
-    # Load the template
     template_frames_path = os.path.join(
         os.path.dirname(__file__), "data", "templateFrames.txt"
     )
     if not os.path.exists(template_frames_path):
         print(f"Template not found at: {template_frames_path}")
-        # Optionally, raise an error or exit
 
     with open(template_frames_path, "r", encoding="utf-8") as f:
         frames_template = f.read()
 
-    # Fill the template
     frames_report = frames_template.format(
         FAILING_FRAMES=failing_frames_text,
         filename=os.path.basename(inputPath),
         videobitdepth=videobitdepth,
         passfail_video=passfail_video,
-        # add more as needed
     )
 
-    # Write to a new text file
     with open(
         os.path.join(outputDir, "failing_frames_by_criteria.txt"), "w", encoding="utf-8"
     ) as f:
         f.write(frames_report)
+
+
+def main():
+    inputPath = os.path.normpath(args.input_path)
+    outputPath = args.output_path
+
+    if os.path.isdir(inputPath):
+        print(f"Batch processing directory: {inputPath}")
+        supported_exts = (".xml", ".json")  # Add more extensions if needed
+        for fname in os.listdir(inputPath):
+            fpath = os.path.join(inputPath, fname)
+            if os.path.isfile(fpath) and fname.lower().endswith(supported_exts):
+                print(f"\nProcessing file: {fpath}")
+                process_file(fpath, outputPath)
+    else:
+        process_file(inputPath, outputPath)
 
 
 def write_video_stats_to_txt(

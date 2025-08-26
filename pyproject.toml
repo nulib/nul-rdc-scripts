@@ -15,6 +15,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 progressbar2 = "^4.5.0"
+pandas = "^2.3.2"
 
 [tool.poetry.group.dev.dependencies]
 
@@ -29,6 +30,7 @@ md5 = 'nulrdcscripts.tools.md5generation.main:main'
 trim = 'nulrdcscripts.tools.videotrimmer.main:main'
 micro = 'nulrdcscripts.ingestMicro.ingest:main'
 meta = 'nulrdcscripts.tools.generatemetadataTEMP.main:main'
+medu = 'nulrdcscripts.vqc.medusight.medusight:main'
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
