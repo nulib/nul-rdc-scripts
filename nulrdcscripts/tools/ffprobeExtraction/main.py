@@ -50,24 +50,27 @@ def process_file(file_path, output_format):
     video_stats_output_path = f"{base_name}_video_signalstats.{output_format}"
     audio_stats_output_path = f"{base_name}_audio_astats.{output_format}"
 
-    # Fix XML format to avoid non-compliant output
-    xml_format = "xml=x=1:noprivate" if output_format == "xml" else output_format
+    xml_format = "xml=x=1" if output_format == "xml" else output_format
 
     command_video = [
         "ffprobe",
         "-f", "lavfi",
         "-i", f"movie='{input_path_ffmpeg}',signalstats",
         "-show_frames",
+        "-noprivate" if output_format == "xml" else "",
         "-of", xml_format
     ]
+    command_video = [arg for arg in command_video if arg]  # Remove empty strings
 
     command_audio = [
         "ffprobe",
         "-f", "lavfi",
         "-i", f"amovie='{input_path_ffmpeg}',astats=metadata=1:reset=1",
         "-show_frames",
+        "-noprivate" if output_format == "xml" else "",
         "-of", xml_format
     ]
+    command_audio = [arg for arg in command_audio if arg]
 
     try:
         video_output = run_ffprobe(command_video)
@@ -87,7 +90,7 @@ def process_file(file_path, output_format):
         print(f"Failed to write audio stats for {file_path}: {e}")
         traceback.print_exc()
 
-    # Optional: write raw output to debug file
+    # Optional debug output
     with open(f"{base_name}_debug_ffprobe_video.txt", "w", encoding="utf-8") as debug_v:
         debug_v.write(video_output)
     with open(f"{base_name}_debug_ffprobe_audio.txt", "w", encoding="utf-8") as debug_a:
@@ -138,4 +141,3 @@ def main():
             bar.update(completed)
 
 if __name__ == "__main__":
-    main()
