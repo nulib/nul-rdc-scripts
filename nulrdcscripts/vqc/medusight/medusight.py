@@ -2,7 +2,7 @@ import os
 import progressbar
 import pandas as pd
 from .params import args
-from . import dataparsing, output, framestatistics, qcsetup
+from . import dataparsing, output, framestatistics, qcsetup, overallStatistics
 
 template_path = os.path.join(os.path.dirname(__file__), "data", "templateVideo.txt")
 
@@ -127,9 +127,9 @@ def main():
             fpath = os.path.join(inputPath, fname)
             if os.path.isfile(fpath) and fname.lower().endswith(supported_exts):
                 print(f"\nProcessing file: {fpath}")
-                process_file(fpath, outputPath)
+                processfile(fpath, outputPath)
     else:
-        process_file(inputPath, outputPath)
+        processfile(inputPath, outputPath)
 
 
 def write_video_stats_to_txt(
