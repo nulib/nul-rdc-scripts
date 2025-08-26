@@ -40,32 +40,39 @@ def process_file(file_path, output_format):
     video_stats_output_path = f"{base_name}_video_signalstats.{output_format}"
     audio_stats_output_path = f"{base_name}_audio_astats.{output_format}"
 
-    # Video signalstats
+    # Use proper XML formatting
+    xml_format = "xml=x=1" if output_format == "xml" else output_format
+
     command_video = [
         "ffprobe",
         "-f", "lavfi",
         "-i", f"movie='{input_path_ffmpeg}',signalstats",
         "-show_frames",
-        "-of", output_format
+        "-of", xml_format
     ]
 
-    # Audio astats
     command_audio = [
         "ffprobe",
         "-f", "lavfi",
         "-i", f"amovie='{input_path_ffmpeg}',astats=metadata=1:reset=1",
         "-show_frames",
-        "-of", output_format
+        "-of", xml_format
     ]
 
     video_output = run_ffprobe(command_video)
     audio_output = run_ffprobe(command_audio)
 
-    with open(video_stats_output_path, "w", encoding="utf-8") as vfile:
-        vfile.write(video_output)
+    try:
+        with open(video_stats_output_path, "w", encoding="utf-8") as vfile:
+            vfile.write(video_output)
+    except Exception as e:
+        print(f"Failed to write video stats for {file_path}: {e}")
 
-    with open(audio_stats_output_path, "w", encoding="utf-8") as afile:
-        afile.write(audio_output)
+    try:
+        with open(audio_stats_output_path, "w", encoding="utf-8") as afile:
+            afile.write(audio_output)
+    except Exception as e:
+        print(f"Failed to write audio stats for {file_path}: {e}")
 
     return video_stats_output_path, audio_stats_output_path
 
