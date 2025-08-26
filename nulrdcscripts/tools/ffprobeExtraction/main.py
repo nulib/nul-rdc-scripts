@@ -50,7 +50,8 @@ def process_file(file_path, output_format):
     video_stats_output_path = f"{base_name}_video_signalstats.{output_format}"
     audio_stats_output_path = f"{base_name}_audio_astats.{output_format}"
 
-    xml_format = "xml=x=1" if output_format == "xml" else output_format
+    # Fix XML format to avoid non-compliant output
+    xml_format = "xml=x=1:noprivate" if output_format == "xml" else output_format
 
     command_video = [
         "ffprobe",
@@ -85,6 +86,12 @@ def process_file(file_path, output_format):
     except Exception as e:
         print(f"Failed to write audio stats for {file_path}: {e}")
         traceback.print_exc()
+
+    # Optional: write raw output to debug file
+    with open(f"{base_name}_debug_ffprobe_video.txt", "w", encoding="utf-8") as debug_v:
+        debug_v.write(video_output)
+    with open(f"{base_name}_debug_ffprobe_audio.txt", "w", encoding="utf-8") as debug_a:
+        debug_a.write(audio_output)
 
     return video_stats_output_path, audio_stats_output_path
 
