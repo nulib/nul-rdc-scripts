@@ -184,16 +184,7 @@ def parse_ffmpeg_stats(log_path):
     return stats
 
 # Example usage after process_file:
-video_stats_path = process_file(file_path, output_format)
-if video_stats_path:
-    stats = parse_ffmpeg_stats(video_stats_path)
-    print("Signalstats:", stats["signalstats"][:3])  # Show first 3 entries
-    print("Cropdetect:", stats["cropdetect"][:3])
-    print("IDET:", stats["idet"][:3])
-    print("PSNR:", stats["psnr"][:3])
-    print("SSIM:", stats["ssim"][:3])
-    print("EBUR128:", stats["ebur128"][:3])
-    print("ASTATS:", stats["astats"][:3])
+# (Removed because file_path and output_format are not defined here)
 
 def main():
     print(f"Input path from args: {args.input_path}")
