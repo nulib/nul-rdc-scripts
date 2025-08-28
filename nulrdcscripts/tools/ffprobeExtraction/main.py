@@ -51,18 +51,51 @@ def process_file(file_path, output_format):
 
     xml_format = "xml=x=1" if output_format == "xml" else output_format
 
+    filter_str = (
+        f"movie='{input_path_ffmpeg}',"
+        "signalstats=stat=tout+vrep+brng,"
+        "cropdetect=reset=1:round=1,"
+        "idet=half_life=1,"
+        "deflicker=bypass=1,"
+        "split[a][b];"
+        "[a]field=top[a1];"
+        "[b]field=bottom,"
+        "split[b1][b2];"
+        "[a1][b1]psnr[c1];"
+        "[c1][b2]ssim[out0];"
+        "[in1]ebur128=metadata=1,"
+        "aformat=sample_fmts=flt|fltp:channel_layouts=stereo,"
+        "astats=metadata=1:reset=1:length=0.4[out1]"
+    )
+
     command_video = [
         "ffprobe",
         "-f", "lavfi",
-        "-i", f"movie='{input_path_ffmpeg}',signalstats=stat=tout+vrep+brng, cropdetect=reset=1:round=1,idet=half_life=1,deflicker=bypass=1,split[a][b]; [a] field=top[a1];[b]field=bottom, split [b1][b2];[a1][b1]psnr[c1];[c1][b2]ssim[out0];[in1]ebur128=metadata=1,aformat=sample_fmts=flt|fltp:channel_layouts=stereo,astats=metadata=1:reset=1: length=0.4[out1]"
-        "-show_frames" "-show_versions"
-        "-noprivate" if output_format == "xml" else "",
+        "-i", filter_str,
+        "-show_frames",
+        "-show_versions",
         "-of", xml_format
     ]
-    command_video = [arg for arg in command_video if arg]  # Remove empty strings
 
+    # Always add -noprivate for XML output
+    if output_format == "xml":
+        command_video.append("-noprivate")
 
-    return video_stats_output_path, 
+    print(f"Running ffprobe command: {' '.join(command_video)}")
+    try:
+        result = subprocess.run(
+            command_video,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            encoding="utf-8"
+        )
+        with open(video_stats_output_path, "w", encoding="utf-8") as f:
+            f.write(result.stdout)
+        print(f"Saved ffprobe output to {video_stats_output_path}")
+        return video_stats_output_path
+    except Exception as e:
+        print(f"Error running ffprobe for {file_path}: {e}")
+        return None
 
 def main():
     print(f"Input path from args: {args.input_path}")
