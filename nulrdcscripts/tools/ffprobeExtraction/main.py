@@ -49,7 +49,7 @@ def process_file(file_path, output_format):
     base_name = os.path.splitext(input_path)[0]
     video_stats_output_path = f"{base_name}_video_signalstats.{output_format}"
 
-    xml_format = "xml=x=1" if output_format == "xml" else output_format
+    xml_format = "xml" if output_format == "xml" else "json"
 
     filter_str = (
         f"movie='{input_path_ffmpeg}',"
@@ -69,14 +69,34 @@ def process_file(file_path, output_format):
     )
 
     command_video = [
-        "ffprobe",
+        "ffmpeg",
+        "-hide_banner",
+        "-nostats",
+        "-loglevel", "error",
         "-f", "lavfi",
         "-i", filter_str,
-        "-show_frames",
-        "-show_versions",
-        "-of", xml_format
+        "-map", "0",
+        "-an",
+        "-f", xml_format,
+        video_stats_output_path
     ]
 
+    print(f"Running ffmpeg command: {' '.join(command_video)}")
+    try:
+        result = subprocess.run(
+            command_video,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="utf-8"
+        )
+        if result.returncode != 0:
+            print(f"ffmpeg error: {result.stderr}")
+            return None
+        print(f"Saved ffmpeg output to {video_stats_output_path}")
+        return video_stats_output_path
+    except Exception as e:
+        print(f"Error running ffmpeg for {file_path}: {e}")
+        return None
     # Always add -noprivate for XML output
     if output_format == "xml":
         command_video.append("-noprivate")
