@@ -52,18 +52,18 @@ def process_file(file_path, output_format):
     video_stats_output_path = f"{base_name}_video_signalstats.txt"
 
     filter_complex = (
-        "signalstats=stat=tout+vrep+brng,"
-        "cropdetect=reset=1:round=1,"
-        "idet=half_life=1,"
+        "signalstats=stat=tout+vrep+brng:print_stats=1,"
+        "cropdetect=reset=1:round=1:print=1,"
+        "idet=half_life=1:print=1,"
         "deflicker=bypass=1,"
         "split[a][b];"
         "[a]field=top[a1];"
         "[b]field=bottom,split[b1][b2];"
         "[a1][b1]psnr[c1];"
         "[c1][b2]ssim[out0];"
-        "[0:a]ebur128=metadata=1,"
+        "[0:a]ebur128=metadata=1:print_format=summary,"
         "aformat=sample_fmts=flt|fltp:channel_layouts=stereo,"
-        "astats=metadata=1:reset=1:length=0.4[out1]"
+        "astats=metadata=1:reset=1:length=0.4:print_stats=1[out1]"
     )
 
     command_video = [
