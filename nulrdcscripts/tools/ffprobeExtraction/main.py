@@ -47,11 +47,9 @@ def process_file(file_path, output_format):
     input_path_ffmpeg = input_path_resolved.replace("\\", "/")
 
     base_name = os.path.splitext(input_path)[0]
-    video_stats_output_path = f"{base_name}_video_signalstats.{output_format}"
+    video_stats_output_path = f"{base_name}_video_signalstats.csv"
 
-    xml_format = "xml" if output_format == "xml" else "json"
-
-    # QCTools-style filtergraph for direct input (not movie/amovie)
+    # QCTools-style filtergraph for direct input
     filter_complex = (
         "signalstats=stat=tout+vrep+brng,"
         "cropdetect=reset=1:round=1,"
@@ -67,7 +65,6 @@ def process_file(file_path, output_format):
         "astats=metadata=1:reset=1:length=0.4[out1]"
     )
 
-    # Build ffmpeg command
     command_video = [
         "ffmpeg",
         "-hide_banner",
@@ -78,7 +75,7 @@ def process_file(file_path, output_format):
         "-filter_complex", filter_complex,
         "-map", "[out0]",
         "-map", "[out1]",
-        "-f", xml_format,
+        "-f", "csv",
         video_stats_output_path
     ]
 
@@ -97,25 +94,6 @@ def process_file(file_path, output_format):
         return video_stats_output_path
     except Exception as e:
         print(f"Error running ffmpeg for {file_path}: {e}")
-        return None
-    # Always add -noprivate for XML output
-    if output_format == "xml":
-        command_video.append("-noprivate")
-
-    print(f"Running ffprobe command: {' '.join(command_video)}")
-    try:
-        result = subprocess.run(
-            command_video,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            encoding="utf-8"
-        )
-        with open(video_stats_output_path, "w", encoding="utf-8") as f:
-            f.write(result.stdout)
-        print(f"Saved ffprobe output to {video_stats_output_path}")
-        return video_stats_output_path
-    except Exception as e:
-        print(f"Error running ffprobe for {file_path}: {e}")
         return None
 
 def main():
