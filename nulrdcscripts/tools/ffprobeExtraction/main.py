@@ -53,7 +53,7 @@ def process_file(file_path, output_format):
 
     # Filter string: no spaces around semicolons/commas, double quotes for Windows
     filter_str = (
-        f'movie="{input_path_ffmpeg}",signalstats=stat=tout+vrep+brng,'
+        f'movie={input_path_ffmpeg},signalstats=stat=tout+vrep+brng,'
         'cropdetect=reset=1:round=1,idet=half_life=1,deflicker=bypass=1,'
         'split[a][b];'
         '[a]field=top[a1];'
