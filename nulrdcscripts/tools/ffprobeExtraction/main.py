@@ -47,9 +47,8 @@ def process_file(file_path, output_format):
     input_path_ffmpeg = input_path_resolved.replace("\\", "/")
 
     base_name = os.path.splitext(input_path)[0]
-    video_stats_output_path = f"{base_name}_video_signalstats.csv"
+    video_stats_output_path = f"{base_name}_video_signalstats.txt"
 
-    # QCTools-style filtergraph for direct input
     filter_complex = (
         "signalstats=stat=tout+vrep+brng,"
         "cropdetect=reset=1:round=1,"
@@ -69,14 +68,14 @@ def process_file(file_path, output_format):
         "ffmpeg",
         "-hide_banner",
         "-nostats",
-        "-loglevel", "error",
+        "-loglevel", "info",  # Use "info" to get filter logs in stdout
         "-y",
         "-i", input_path_ffmpeg,
         "-filter_complex", filter_complex,
         "-map", "[out0]",
         "-map", "[out1]",
-        "-f", "csv",
-        video_stats_output_path
+        "-f", "null",  # Null muxer, output goes nowhere
+        "-"
     ]
 
     print(f"Running ffmpeg command: {' '.join(command_video)}")
@@ -87,10 +86,10 @@ def process_file(file_path, output_format):
             stderr=subprocess.PIPE,
             encoding="utf-8"
         )
-        if result.returncode != 0:
-            print(f"ffmpeg error: {result.stderr}")
-            return None
-        print(f"Saved ffmpeg output to {video_stats_output_path}")
+        # Save filter log output to file
+        with open(video_stats_output_path, "w", encoding="utf-8") as f:
+            f.write(result.stderr)
+        print(f"Saved ffmpeg filter log to {video_stats_output_path}")
         return video_stats_output_path
     except Exception as e:
         print(f"Error running ffmpeg for {file_path}: {e}")
