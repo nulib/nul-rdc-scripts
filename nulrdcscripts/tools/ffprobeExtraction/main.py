@@ -51,27 +51,33 @@ def process_file(file_path, output_format):
 
     xml_format = "xml" if output_format == "xml" else "json"
 
-    # Filter string: no spaces around semicolons/commas, double quotes for Windows
-    filter_str = (
-        f'movie={input_path_ffmpeg},signalstats=stat=tout+vrep+brng,'
-        'cropdetect=reset=1:round=1,idet=half_life=1,deflicker=bypass=1,'
-        'split[a][b];'
-        '[a]field=top[a1];'
-        '[b]field=bottom,split[b1][b2];'
-        '[a1][b1]psnr[c1];'
-        '[c1][b2]ssim[out0];'
-        '[in1]ebur128=metadata=1,aformat=sample_fmts=flt|fltp:channel_layouts=stereo,'
-        'astats=metadata=1:reset=1:length=0.4[out1]'
+    # QCTools-style filtergraph for direct input (not movie/amovie)
+    filter_complex = (
+        "signalstats=stat=tout+vrep+brng,"
+        "cropdetect=reset=1:round=1,"
+        "idet=half_life=1,"
+        "deflicker=bypass=1,"
+        "split[a][b];"
+        "[a]field=top[a1];"
+        "[b]field=bottom,split[b1][b2];"
+        "[a1][b1]psnr[c1];"
+        "[c1][b2]ssim[out0];"
+        "[0:a]ebur128=metadata=1,"
+        "aformat=sample_fmts=flt|fltp:channel_layouts=stereo,"
+        "astats=metadata=1:reset=1:length=0.4[out1]"
     )
 
+    # Build ffmpeg command
     command_video = [
         "ffmpeg",
         "-hide_banner",
         "-nostats",
         "-loglevel", "error",
-        "-y",  # Overwrite output file if exists
-        "-f", "lavfi",
-        "-i", filter_str,
+        "-y",
+        "-i", input_path_ffmpeg,
+        "-filter_complex", filter_complex,
+        "-map", "[out0]",
+        "-map", "[out1]",
         "-f", xml_format,
         video_stats_output_path
     ]
