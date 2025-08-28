@@ -51,7 +51,7 @@ def process_file(file_path, output_format):
 
     xml_format = "xml" if output_format == "xml" else "json"
 
-    # Remove spaces around semicolons and commas, use double quotes for Windows
+    # Filter string: no spaces around semicolons/commas, double quotes for Windows
     filter_str = (
         f'movie="{input_path_ffmpeg}",signalstats=stat=tout+vrep+brng,'
         'cropdetect=reset=1:round=1,idet=half_life=1,deflicker=bypass=1,'
@@ -69,10 +69,9 @@ def process_file(file_path, output_format):
         "-hide_banner",
         "-nostats",
         "-loglevel", "error",
+        "-y",  # Overwrite output file if exists
         "-f", "lavfi",
         "-i", filter_str,
-        "-map", "0",
-        "-an",
         "-f", xml_format,
         video_stats_output_path
     ]
