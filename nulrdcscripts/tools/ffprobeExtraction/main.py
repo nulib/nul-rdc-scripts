@@ -51,21 +51,17 @@ def process_file(file_path, output_format):
 
     xml_format = "xml" if output_format == "xml" else "json"
 
+    # Remove spaces around semicolons and commas, use double quotes for Windows
     filter_str = (
-        f"movie='{input_path_ffmpeg}',"
-        "signalstats=stat=tout+vrep+brng,"
-        "cropdetect=reset=1:round=1,"
-        "idet=half_life=1,"
-        "deflicker=bypass=1,"
-        "split[a][b];"
-        "[a]field=top[a1];"
-        "[b]field=bottom,"
-        "split[b1][b2];"
-        "[a1][b1]psnr[c1];"
-        "[c1][b2]ssim[out0];"
-        "[in1]ebur128=metadata=1,"
-        "aformat=sample_fmts=flt|fltp:channel_layouts=stereo,"
-        "astats=metadata=1:reset=1:length=0.4[out1]"
+        f'movie="{input_path_ffmpeg}",signalstats=stat=tout+vrep+brng,'
+        'cropdetect=reset=1:round=1,idet=half_life=1,deflicker=bypass=1,'
+        'split[a][b];'
+        '[a]field=top[a1];'
+        '[b]field=bottom,split[b1][b2];'
+        '[a1][b1]psnr[c1];'
+        '[c1][b2]ssim[out0];'
+        '[in1]ebur128=metadata=1,aformat=sample_fmts=flt|fltp:channel_layouts=stereo,'
+        'astats=metadata=1:reset=1:length=0.4[out1]'
     )
 
     command_video = [
