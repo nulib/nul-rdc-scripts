@@ -48,55 +48,21 @@ def process_file(file_path, output_format):
 
     base_name = os.path.splitext(input_path)[0]
     video_stats_output_path = f"{base_name}_video_signalstats.{output_format}"
-    audio_stats_output_path = f"{base_name}_audio_astats.{output_format}"
 
     xml_format = "xml=x=1" if output_format == "xml" else output_format
 
     command_video = [
         "ffprobe",
         "-f", "lavfi",
-        "-i", f"movie='{input_path_ffmpeg}',signalstats",
-        "-show_frames",
+        "-i", f"movie='{input_path_ffmpeg}',signalstats=stat=tout+vrep+brng, cropdetect=reset=1:round=1,idet=half_life=1,deflicker=bypass=1,split[a][b]; [a] field=top[a1];[b]field=bottom, split [b1][b2];[a1][b1]psnr[c1];[c1][b2]ssim[out0];[in1]ebur128=metadata=1,aformat=sample_fmts=flt|fltp:channel_layouts=stereo,astats=metadata=1:reset=1: length=0.4[out1]"
+        "-show_frames" "-show_versions"
         "-noprivate" if output_format == "xml" else "",
         "-of", xml_format
     ]
     command_video = [arg for arg in command_video if arg]  # Remove empty strings
 
-    command_audio = [
-        "ffprobe",
-        "-f", "lavfi",
-        "-i", f"amovie='{input_path_ffmpeg}',astats=metadata=1:reset=1",
-        "-show_frames",
-        "-noprivate" if output_format == "xml" else "",
-        "-of", xml_format
-    ]
-    command_audio = [arg for arg in command_audio if arg]
 
-    try:
-        video_output = run_ffprobe(command_video)
-        with open(video_stats_output_path, "w", encoding="utf-8") as vfile:
-            vfile.write(video_output)
-        print(f"Video stats written to: {video_stats_output_path}")
-    except Exception as e:
-        print(f"Failed to write video stats for {file_path}: {e}")
-        traceback.print_exc()
-
-    try:
-        audio_output = run_ffprobe(command_audio)
-        with open(audio_stats_output_path, "w", encoding="utf-8") as afile:
-            afile.write(audio_output)
-        print(f"Audio stats written to: {audio_stats_output_path}")
-    except Exception as e:
-        print(f"Failed to write audio stats for {file_path}: {e}")
-        traceback.print_exc()
-
-    # Optional debug output
-    with open(f"{base_name}_debug_ffprobe_video.txt", "w", encoding="utf-8") as debug_v:
-        debug_v.write(video_output)
-    with open(f"{base_name}_debug_ffprobe_audio.txt", "w", encoding="utf-8") as debug_a:
-        debug_a.write(audio_output)
-
-    return video_stats_output_path, audio_stats_output_path
+    return video_stats_output_path, 
 
 def main():
     print(f"Input path from args: {args.input_path}")
@@ -131,9 +97,8 @@ def main():
         futures = {executor.submit(process_file, file_path, output_format): file_path for file_path in files_to_process}
         for future in as_completed(futures):
             try:
-                video_path, audio_path = future.result()
+                video_path = future.result()
                 print(f"Video stats: {video_path}")
-                print(f"Audio stats: {audio_path}")
             except Exception as e:
                 print(f"Error processing {futures[future]}: {e}")
                 traceback.print_exc()
