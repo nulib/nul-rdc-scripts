@@ -5,6 +5,8 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 import progressbar
 from nulrdcscripts.tools.ffprobeExtraction.params import args
 import traceback
+import re
+import json
 
 def get_unc_path(drive_letter):
     if not drive_letter.endswith(':'):
@@ -95,6 +97,104 @@ def process_file(file_path, output_format):
         print(f"Error running ffmpeg for {file_path}: {e}")
         return None
 
+def parse_ffmpeg_stats(log_path):
+    stats = {
+        "signalstats": [],
+        "cropdetect": [],
+        "idet": [],
+        "psnr": [],
+        "ssim": [],
+        "ebur128": [],
+        "astats": []
+    }
+    with open(log_path, "r", encoding="utf-8") as f:
+        for line in f:
+            # signalstats
+            if "Parsed_signalstats" in line:
+                match = re.search(r'YAVG:(\d+\.?\d*) YMIN:(\d+) YMAX:(\d+) UAVG:(\d+\.?\d*) UMIN:(\d+) UMAX:(\d+) VAVG:(\d+\.?\d*) VMIN:(\d+) VMAX:(\d+)', line)
+                if match:
+                    stats["signalstats"].append({
+                        "YAVG": float(match.group(1)),
+                        "YMIN": int(match.group(2)),
+                        "YMAX": int(match.group(3)),
+                        "UAVG": float(match.group(4)),
+                        "UMIN": int(match.group(5)),
+                        "UMAX": int(match.group(6)),
+                        "VAVG": float(match.group(7)),
+                        "VMIN": int(match.group(8)),
+                        "VMAX": int(match.group(9)),
+                    })
+            # cropdetect
+            elif "Parsed_cropdetect" in line:
+                match = re.search(r'crop=(\d+):(\d+):(\d+):(\d+)', line)
+                if match:
+                    stats["cropdetect"].append({
+                        "width": int(match.group(1)),
+                        "height": int(match.group(2)),
+                        "x": int(match.group(3)),
+                        "y": int(match.group(4)),
+                    })
+            # idet
+            elif "Parsed_idet" in line:
+                match = re.search(r'TFF:(\d+) BFF:(\d+) Progressive:(\d+) Undetermined:(\d+)', line)
+                if match:
+                    stats["idet"].append({
+                        "TFF": int(match.group(1)),
+                        "BFF": int(match.group(2)),
+                        "Progressive": int(match.group(3)),
+                        "Undetermined": int(match.group(4)),
+                    })
+            # psnr
+            elif "Parsed_psnr" in line:
+                match = re.search(r'y:(\d+\.\d+) u:(\d+\.\d+) v:(\d+\.\d+) avg:(\d+\.\d+) min:(\d+\.\d+) max:(\d+\.\d+)', line)
+                if match:
+                    stats["psnr"].append({
+                        "y": float(match.group(1)),
+                        "u": float(match.group(2)),
+                        "v": float(match.group(3)),
+                        "avg": float(match.group(4)),
+                        "min": float(match.group(5)),
+                        "max": float(match.group(6)),
+                    })
+            # ssim
+            elif "Parsed_ssim" in line:
+                match = re.search(r'All:(\d+\.\d+) Y:(\d+\.\d+) U:(\d+\.\d+) V:(\d+\.\d+)', line)
+                if match:
+                    stats["ssim"].append({
+                        "All": float(match.group(1)),
+                        "Y": float(match.group(2)),
+                        "U": float(match.group(3)),
+                        "V": float(match.group(4)),
+                    })
+            # ebur128
+            elif "Parsed_ebur128" in line:
+                match = re.search(r'M:'  # Momentary loudness
+                                  r'(-?\d+\.\d+)', line)
+                if match:
+                    stats["ebur128"].append({
+                        "Momentary": float(match.group(1)),
+                    })
+            # astats
+            elif "Parsed_astats" in line:
+                match = re.search(r'Peak_level_dB: (-?\d+\.\d+)', line)
+                if match:
+                    stats["astats"].append({
+                        "Peak_level_dB": float(match.group(1)),
+                    })
+    return stats
+
+# Example usage after process_file:
+video_stats_path = process_file(file_path, output_format)
+if video_stats_path:
+    stats = parse_ffmpeg_stats(video_stats_path)
+    print("Signalstats:", stats["signalstats"][:3])  # Show first 3 entries
+    print("Cropdetect:", stats["cropdetect"][:3])
+    print("IDET:", stats["idet"][:3])
+    print("PSNR:", stats["psnr"][:3])
+    print("SSIM:", stats["ssim"][:3])
+    print("EBUR128:", stats["ebur128"][:3])
+    print("ASTATS:", stats["astats"][:3])
+
 def main():
     print(f"Input path from args: {args.input_path}")
     output_format = args.output_format.lower()
@@ -130,6 +230,13 @@ def main():
             try:
                 video_path = future.result()
                 print(f"Video stats: {video_path}")
+                if video_path:
+                    stats = parse_ffmpeg_stats(video_path)
+                    # Save stats as JSON
+                    json_path = video_path.replace('.txt', '.json')
+                    with open(json_path, "w", encoding="utf-8") as jf:
+                        json.dump(stats, jf, indent=2)
+                    print(f"Saved parsed stats to {json_path}")
             except Exception as e:
                 print(f"Error processing {futures[future]}: {e}")
                 traceback.print_exc()
