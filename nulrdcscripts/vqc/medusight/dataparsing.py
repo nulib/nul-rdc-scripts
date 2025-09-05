@@ -1,5 +1,5 @@
 import pandas as pd
-from . import cleaners
+import cleaners
 from lxml import etree  # switched to lxml for faster XML parsing
 from concurrent.futures import ProcessPoolExecutor
 import os
@@ -16,7 +16,12 @@ def parse_frame_xml(frame_xml):
     """Parse a single <frame> element XML string into a dict."""
     elem = etree.fromstring(frame_xml)
     row = {}
-    frametime = elem.get("pkt_pts_time")
+    frametime=elem.get('pkts_pts_time')
+    try:
+        float(frametime)
+    except:
+        frametime = elem.get('pts_time')
+
     row["Frame Time"] = float(frametime)
     for tag in elem.iter("tag"):
         criteria = tag.attrib["key"]
