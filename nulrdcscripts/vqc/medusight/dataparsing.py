@@ -77,7 +77,14 @@ def dataparsingandtabulatingvideoXML(
             ):
                 row = {}
                 frametime = elem.get("pkt_pts_time")
-                row["Frame Time"] = float(frametime)
+                try:
+                    row["Frame Time"] = float(frametime)
+                except:
+                    try:
+                        frametime = elem.get('pts_time')
+                    except:
+                        raise ValueError
+                    row["Frame Time"] = float(frametime)
                 for tag in elem.iter("tag"):
                     criteria = tag.attrib["key"]
                     criteria = cleaners.criteriacleaner(criteria)
