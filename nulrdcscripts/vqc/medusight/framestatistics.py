@@ -1,3 +1,13 @@
+import datetime
+
+
+def format_seconds_to_hms(seconds):
+    try:
+        return str(datetime.timedelta(seconds=int(seconds)))
+    except Exception:
+        return str(seconds)
+
+
 def get_failing_frametimes(errors, videodata, standardDF):
     """
     Returns:
@@ -48,10 +58,12 @@ def get_failing_frametimes(errors, videodata, standardDF):
                     if "Frame Time" in failing.columns
                     else failing.index.tolist()
                 )
+                # Format frametimes to 00:00:00
+                frametimes_hms = [format_seconds_to_hms(ft) for ft in frametimes]
                 lines.append(
                     f"Criteria: {crit} ({label})\n"
                     f"  Failed Frames: {len(frametimes)}\n"
-                    f"  Failing Frame Times: {frametimes}\n"
+                    f"  Failing Frame Times: {frametimes_hms}\n"
                 )
                 fail_counts[f"{crit}_{label}"] = len(frametimes)
             continue  # skip the rest of the loop for sat/satmax
@@ -87,11 +99,13 @@ def get_failing_frametimes(errors, videodata, standardDF):
             if "Frame Time" in failing.columns
             else failing.index.tolist()
         )
+        # Format frametimes to 00:00:00
+        frametimes_hms = [format_seconds_to_hms(ft) for ft in frametimes]
         fail_counts[crit] = len(frametimes)
         if frametimes:
             lines.append(
                 f"Criteria: {crit} ({err.status})\n"
-                f"  Failing Frame Times: {frametimes}\n"
+                f"  Failing Frame Times: {frametimes_hms}\n"
             )
     return ("\n".join(lines) if lines else "None"), fail_counts
 

@@ -125,7 +125,7 @@ def processfile(inputPath, outputPath):
     )
 
     with open(
-        os.path.join(outputDir, "failing_frames_by_criteria.txt"), "w", encoding="utf-8"
+        os.path.join(outputDir, base_filename,"failing_frames_by_criteria.txt"), "w", encoding="utf-8"
     ) as f:
         f.write(frames_report)
 
