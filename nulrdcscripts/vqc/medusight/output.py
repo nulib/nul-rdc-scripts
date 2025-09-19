@@ -97,7 +97,7 @@ def write_video_stats_to_txt(
                         error_lines.append(
                             f"Criteria: {err.criteria} ({label_pretty})\n"
                             f"  Status: {err.status}\n"
-                            f"  Failed Frames: {count} ({percent:.2f}%)\n"
+                            f"  Failed Frames: {count} ({percent:.2f}% of {total_frames})\n"
                         )
                         break  # Only report the most severe level
                 else:
@@ -107,7 +107,7 @@ def write_video_stats_to_txt(
                     error_lines.append(
                         f"Criteria: {err.criteria} (Broadcast Range)\n"
                         f"  Status: {err.status}\n"
-                        f"  Failed Frames: {count} ({percent:.2f}%)\n"
+                        f"  Failed Frames: {count} ({percent:.2f}% of {total_frames})\n"
                     )
             else:
                 count = fail_counts.get(err.criteria, 0) if fail_counts else 0
@@ -117,7 +117,7 @@ def write_video_stats_to_txt(
                     f"  Status: {err.status}\n"
                     f"  Video Value: {err.video_value}\n"
                     f"  Standard Value: {err.standard_value}\n"
-                    f"  Failed Frames: {count} ({percent:.2f}%)\n"
+                    f"  Failed Frames: {count} ({percent:.2f}% of {total_frames})\n"
                 )
         else:
             error_lines.append(err.replace("\n", " ").replace("\r", " "))
@@ -129,14 +129,12 @@ def write_video_stats_to_txt(
     passing_stats_text = get_passing_stats(all_criteria, errors, videoDSDF, standardDF)
 
     output_text = template.format(
-        error_details=error_text,  # <-- match {error_details} in template
-        videobitdepth=videobitdepth,  # <-- match {videobitdepth}
-        filename=filename,  # <-- match {filename}
-        passfail_video=passfail_video,  # <-- match {passfail_video}
-        all_criteria=", ".join(
-            all_criteria
-        ),  # only if your template uses {all_criteria}
-        passing_stats=passing_stats_text,  # <-- match {passing_stats}
+        error_details=error_text,
+        videobitdepth=videobitdepth,
+        filename=filename,
+        passfail_video=passfail_video,
+        passing_stats=passing_stats_text,
+        total_frames=total_frames,  # <-- Add this line
     )
 
     with open(output_path, "w") as output_file:
@@ -164,3 +162,4 @@ template_path = os.path.join(os.path.dirname(__file__), "data", "templateVideo.t
 if not os.path.exists(template_path):
     print(f"Template not found at: {template_path}")
     # Optionally, raise an error or exit
+

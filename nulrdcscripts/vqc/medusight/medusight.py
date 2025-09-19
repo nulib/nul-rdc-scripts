@@ -1,8 +1,18 @@
+import sys
 import os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
 import progressbar
 import pandas as pd
-from params import args
-import dataparsing, output, framestatistics, qcsetup, overallStatistics
+from nulrdcscripts.vqc.medusight.params import args
+from nulrdcscripts.vqc.medusight import dataparsing, output, framestatistics, qcsetup, overallStatistics
+import uuid
+import datetime
+import concurrent.futures
+import os
+import warnings
+
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 template_path = os.path.join(os.path.dirname(__file__), "data", "templateVideo.txt")
 
@@ -14,7 +24,7 @@ if not os.path.exists(template_path):
 def processfile(inputPath, outputPath):
     bitDepth = args.videobitdepth
 
-    print("*****Starting qcsetup*****")
+    # Removed print statements about processing mode
     with progressbar.ProgressBar(max_value=4) as qcsetupBar:
         qcsetupBar.update(0)
         qcsetup.inputCheck(inputPath)
@@ -23,16 +33,16 @@ def processfile(inputPath, outputPath):
         qcsetupBar.update(2)
         inputFileType = qcsetup.setInputFileType(inputPath)
         qcsetupBar.update(3)
-    print("*****qcsetup Complete*****")
+    print("*****Setup Complete*****")
 
     print("*****Parsing File Video*****")
     if inputFileType == "JSON":
-        print("Parsing video JSON...")
         videodata = dataparsing.dataparsingandtabulatingvideoJSON(inputPath)
     else:
-        print("Parsing video XML...")
         videodata = dataparsing.dataparsingandtabulatingvideoXML(inputPath)
-        outputdata = outputLocation + "/video_data.csv"
+        base_filename = os.path.splitext(os.path.basename(inputPath))[0]
+        base_filename = base_filename.replace('.mkv.qctools', '')
+        outputdata = f"{outputLocation}/{base_filename}_raw_video_data.csv"
         videodata.to_csv(outputdata, index=False)
     print("*****Parsing complete*****")
 
@@ -53,11 +63,14 @@ def processfile(inputPath, outputPath):
     standardDF = qcsetup.setVideoBitDepth(videobitdepth)
 
     if outputPath == "input":
-        outputDir = os.path.dirname(inputPath)
+        if os.path.isdir(inputPath):
+            outputDir = inputPath
+        else:
+            outputDir = os.path.dirname(inputPath)
     else:
         outputDir = outputPath
 
-    sumVideoStatsCSV = dataparsing.videostatstocsv(videoDSDF, outputDir)
+    sumVideoStatsCSV = dataparsing.videostatstocsv(videoDSDF, outputDir,base_filename)
     print("*****Generated Full Video Descriptive Statistics*****")
 
     print("*****Analysing Full Video Descriptive Statistics*****")
@@ -75,7 +88,7 @@ def processfile(inputPath, outputPath):
     output.write_video_stats_to_txt(
         errors,
         template_path,
-        outputDir + "/video_stats.txt",
+        f"{outputDir}/{base_filename}_video_level_report.txt",
         videobitdepth,
         os.path.basename(inputPath),
         passfail_video,
@@ -88,7 +101,7 @@ def processfile(inputPath, outputPath):
     )
 
     print("*****Analysed Full Video Descriptive Statistics*****")
-    print("*****Analyzing frame statistics*****")
+    print("*****Analyzing Frame statistics*****")
     failing_frames_text, fail_counts = framestatistics.get_failing_frametimes(
         errors, videodata, standardDF
     )
@@ -108,6 +121,7 @@ def processfile(inputPath, outputPath):
         filename=os.path.basename(inputPath),
         videobitdepth=videobitdepth,
         passfail_video=passfail_video,
+        total_frames=total_frames,  # <-- Add this line
     )
 
     with open(
@@ -123,11 +137,21 @@ def main():
     if os.path.isdir(inputPath):
         print(f"Batch processing directory: {inputPath}")
         supported_exts = (".xml", ".json")  # Add more extensions if needed
-        for fname in os.listdir(inputPath):
-            fpath = os.path.join(inputPath, fname)
-            if os.path.isfile(fpath) and fname.lower().endswith(supported_exts):
-                print(f"\nProcessing file: {fpath}")
-                processfile(fpath, outputPath)
+        files_to_process = [
+            os.path.join(inputPath, fname)
+            for fname in os.listdir(inputPath)
+            if os.path.isfile(os.path.join(inputPath, fname)) and fname.lower().endswith(supported_exts)
+        ]
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            futures = [
+                executor.submit(processfile, fpath, outputPath)
+                for fpath in files_to_process
+            ]
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    future.result()
+                except Exception as exc:
+                    print(f"File processing generated an exception: {exc}")
     else:
         processfile(inputPath, outputPath)
 
@@ -158,7 +182,7 @@ def write_video_stats_to_txt(
                     error_lines.append(
                         f"Criteria: {err.criteria} ({label})\n"
                         f"  Status: {err.status}\n"
-                        f"  Failed Frames: {count} ({percent:.2f}%)\n"
+                        f"  Failed Frames: {count} ({percent:.2f}% of {total_frames})\n"
                     )
             else:
                 count = fail_counts.get(err.criteria, 0) if fail_counts else 0
@@ -168,7 +192,7 @@ def write_video_stats_to_txt(
                     f"  Status: {err.status}\n"
                     f"  Video Value: {err.video_value}\n"
                     f"  Standard Value: {err.standard_value}\n"
-                    f"  Failed Frames: {count} ({percent:.2f}%)\n"
+                    f"  Failed Frames: {count} ({percent:.2f}% of {total_frames})\n"
                 )
         else:
             error_lines.append(err.replace("\n", " ").replace("\r", " "))
@@ -189,10 +213,36 @@ def write_video_stats_to_txt(
         passing_stats=passing_stats_text,
     )
 
+    # Insert total frame count below the video status before the error report
+    # Find the video status line and insert total frames after it
+    total_frames_line = f"Total Frames: {total_frames}\n" if total_frames is not None else ""
+    # Try to insert after the first occurrence of passfail_video
+    passfail_str = f"{passfail_video}"
+    if passfail_str in output_text:
+        idx = output_text.find(passfail_str) + len(passfail_str)
+        output_text = output_text[:idx] + "\n" + total_frames_line + output_text[idx:]
+    else:
+        # Fallback: prepend at the top
+        output_text = total_frames_line + output_text
+
     with open(output_path, "w") as output_file:
         output_file.write(output_text)
 
     print(f"Video statistics written to: {output_path}")
+
+
+def create_new_item(original_filepath, unique_part):
+    base_filename = os.path.splitext(os.path.basename(original_filepath))[0]
+    new_filename = f"{base_filename}_{unique_part}"
+    return new_filename
+
+
+def seconds_to_hms(seconds):
+    return str(datetime.timedelta(seconds=int(seconds)))
+
+
+# Example usage in your stats output
+# hms_time = seconds_to_hms(time_in_seconds)
 
 
 if __name__ == "__main__":

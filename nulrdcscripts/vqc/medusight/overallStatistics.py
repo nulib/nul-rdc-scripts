@@ -13,7 +13,7 @@ def setOperatorIR(fullCriteria):
 
 def setOperatorCL(fullCriteria):
     """Sets operator to use to assess clipping"""
-    if fullCriteria.endswith("low"):
+    if fullCriteria.endswith("min"):
         return "<="
     else:
         return ">="

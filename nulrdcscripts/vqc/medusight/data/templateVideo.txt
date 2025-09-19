@@ -3,7 +3,7 @@
 File: {filename}
 Bit Depth: {videobitdepth}
 Result: {passfail_video}
-
+Total Frames = {total_frames}
 -------------------------
 Errors and Warnings:
 -------------------------

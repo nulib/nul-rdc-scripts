@@ -1,5 +1,5 @@
 import pandas as pd
-import cleaners
+from nulrdcscripts.vqc.medusight import cleaners
 from lxml import etree  # switched to lxml for faster XML parsing
 from concurrent.futures import ProcessPoolExecutor
 import os
@@ -67,7 +67,6 @@ def dataparsingandtabulatingvideoXML(
     file_size_mb = os.path.getsize(inputPath) / (1024 * 1024)
     print(f"Video XML file size: {file_size_mb:.1f} MB")
     if file_size_mb < parallel_threshold_mb:
-        print("Using single-threaded parsing.")
         rows = []
         for event, elem in etree.iterparse(inputPath, events=("end",)):
             if (
@@ -148,7 +147,7 @@ def dataparsingandtabulatingvideoXML(
 
 def videodatastatistics(videodata):
     """Generates descriptive video statistics for the entire video in a dataframe"""
-    numeric = videodata.select_dtypes(include="number")
+    numeric = videodata.select_dtypes(include="number").fillna(0)  # or .dropna()
     videostatsDSDF = numeric.describe()
     return videostatsDSDF
 
@@ -160,15 +159,15 @@ def audiodatastatistics(audiodata):
     return audiodataDSDF
 
 
-def videostatstocsv(videoDSDF, outputpath):
+def videostatstocsv(videoDSDF, outputpath,basefilename):
     """Takes video descriptive statistics and puts them into a csv file"""
-    outputpath = outputpath + "/videosummarystats.csv"
+    outputpath = outputpath + "/" + basefilename + "_videosummarystats.csv"
     summarydatavideocsv = videoDSDF.to_csv(outputpath, index=True)
     return summarydatavideocsv
 
 
-def audiostatstocsv(audioDSDF, outputpath):
+def audiostatstocsv(audioDSDF, outputpath,basefilename):
     """Takes audio descriptive statistics and puts them into a csv file."""
-    outputpath = outputpath + "/audiosummarystats.csv"
+    outputpath = outputpath + "/" + basefilename + "_audiosummarystats.csv"
     summarydataaudiocsv = audioDSDF.to_csv(outputpath, index=True)
     return summarydataaudiocsv
