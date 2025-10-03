@@ -171,32 +171,39 @@ def write_video_stats_to_txt(
     total_frames=None,
 ):
     error_lines = []
-    for err in errors:
-        if not isinstance(err, str):
-            # Special handling for sat and satmax
-            if err.criteria in ("sat", "satmax"):
-                for label in ("illegal", "clipping", "brng"):
-                    key = f"{err.criteria}_{label}"
-                    count = fail_counts.get(key, 0) if fail_counts else 0
+    # If there are no errors, set status to PASS and skip error details
+    if not errors:
+        passfail_video = "PASS"
+        error_text = "No errors detected.\n"
+    else:
+        for err in errors:
+            if not isinstance(err, str):
+                # Special handling for sat and satmax
+                if err.criteria in ("sat", "satmax"):
+                    for label in ("illegal", "clipping", "brng"):
+                        key = f"{err.criteria}_{label}"
+                        count = fail_counts.get(key, 0) if fail_counts else 0
+                        percent = (count / total_frames) * 100 if total_frames else 0
+                        if count > 0:
+                            error_lines.append(
+                                f"Criteria: {err.criteria} ({label})\n"
+                                f"  Status: {err.status}\n"
+                                f"  Failed Frames: {count} ({percent:.2f}% of {total_frames})\n"
+                            )
+                else:
+                    count = fail_counts.get(err.criteria, 0) if fail_counts else 0
                     percent = (count / total_frames) * 100 if total_frames else 0
-                    error_lines.append(
-                        f"Criteria: {err.criteria} ({label})\n"
-                        f"  Status: {err.status}\n"
-                        f"  Failed Frames: {count} ({percent:.2f}% of {total_frames})\n"
-                    )
+                    if count > 0:
+                        error_lines.append(
+                            f"Criteria: {err.criteria}\n"
+                            f"  Status: {err.status}\n"
+                            f"  Video Value: {err.video_value}\n"
+                            f"  Standard Value: {err.standard_value}\n"
+                            f"  Failed Frames: {count} ({percent:.2f}% of {total_frames})\n"
+                        )
             else:
-                count = fail_counts.get(err.criteria, 0) if fail_counts else 0
-                percent = (count / total_frames) * 100 if total_frames else 0
-                error_lines.append(
-                    f"Criteria: {err.criteria}\n"
-                    f"  Status: {err.status}\n"
-                    f"  Video Value: {err.video_value}\n"
-                    f"  Standard Value: {err.standard_value}\n"
-                    f"  Failed Frames: {count} ({percent:.2f}% of {total_frames})\n"
-                )
-        else:
-            error_lines.append(err.replace("\n", " ").replace("\r", " "))
-    error_text = "\n".join(error_lines)
+                error_lines.append(err.replace("\n", " ").replace("\r", " "))
+        error_text = "\n".join(error_lines)
 
     with open(template_path, "r") as template_file:
         template = template_file.read()
@@ -213,16 +220,12 @@ def write_video_stats_to_txt(
         passing_stats=passing_stats_text,
     )
 
-    # Insert total frame count below the video status before the error report
-    # Find the video status line and insert total frames after it
     total_frames_line = f"Total Frames: {total_frames}\n" if total_frames is not None else ""
-    # Try to insert after the first occurrence of passfail_video
     passfail_str = f"{passfail_video}"
     if passfail_str in output_text:
         idx = output_text.find(passfail_str) + len(passfail_str)
         output_text = output_text[:idx] + "\n" + total_frames_line + output_text[idx:]
     else:
-        # Fallback: prepend at the top
         output_text = total_frames_line + output_text
 
     with open(output_path, "w") as output_file:
