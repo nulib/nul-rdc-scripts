@@ -56,93 +56,36 @@ def dataparsingandtabulatingaudioXML(inputPath):
     return dfAudio
 
 
-def dataparsingandtabulatingvideoXML(
-    inputPath, parallel_threshold_mb=500, batch_size=10000
-):
+def dataparsingandtabulatingvideoXML(inputPath):
     """
-    Chooses single-threaded or parallel parsing based on file size.
-    parallel_threshold_mb: file size in MB above which to use parallel parsing.
-    batch_size: number of frames per batch for parallel parsing.
+    Cleans and parses the video data from XML for analysis. Returns dataframe.
+    Parallel processing removed; always uses single-threaded parsing.
     """
     file_size_mb = os.path.getsize(inputPath) / (1024 * 1024)
     print(f"Video XML file size: {file_size_mb:.1f} MB")
-    if file_size_mb < parallel_threshold_mb:
-        rows = []
-        for event, elem in etree.iterparse(inputPath, events=("end",)):
-            if (
-                event == "end"
-                and elem.tag == "frame"
-                and elem.get("media_type") == "video"
-            ):
-                row = {}
-                frametime = elem.get("pkt_pts_time")
+    print("Using single-threaded parsing.")
+    rows = []
+    for event, elem in etree.iterparse(inputPath, events=("end",)):
+        if (
+            event == "end"
+            and elem.tag == "frame"
+            and elem.get("media_type") == "video"
+        ):
+            row = {}
+            frametime = elem.get("pkt_pts_time")
+            row["Frame Time"] = float(frametime)
+            for tag in elem.iter("tag"):
+                criteria = tag.attrib["key"]
+                criteria = cleaners.criteriacleaner(criteria)
+                value = tag.attrib["value"]
                 try:
-                    row["Frame Time"] = float(frametime)
-                except:
-                    try:
-                        frametime = elem.get('pts_time')
-                    except:
-                        raise ValueError
-                    row["Frame Time"] = float(frametime)
-                for tag in elem.iter("tag"):
-                    criteria = tag.attrib["key"]
-                    criteria = cleaners.criteriacleaner(criteria)
-                    value = tag.attrib["value"]
-                    try:
-                        row[criteria] = float(value)
-                    except ValueError:
-                        row[criteria] = value
-                rows.append(row)
-                elem.clear()
-        dfVideo = pd.DataFrame(rows)
-        return dfVideo
-    else:
-        print("Using parallel batched parsing.")
-        from concurrent.futures import ProcessPoolExecutor
-        import progressbar
-
-        rows = []
-        frame_xmls = []
-        max_workers = get_cpu_count()
-        context = etree.iterparse(inputPath, events=("end",))
-        total_frames = 0
-        # First, scan the file to count frames (optional, for accurate progress)
-        for event, elem in etree.iterparse(inputPath, events=("end",)):
-            if (
-                event == "end"
-                and elem.tag == "frame"
-                and elem.get("media_type") == "video"
-            ):
-                total_frames += 1
+                    row[criteria] = float(value)
+                except ValueError:
+                    row[criteria] = value
+            rows.append(row)
             elem.clear()
-
-        # Now parse in batches with progress bar
-        with progressbar.ProgressBar(max_value=total_frames) as bar:
-            processed = 0
-            with ProcessPoolExecutor(max_workers=max_workers) as executor:
-                for event, elem in context:
-                    if (
-                        event == "end"
-                        and elem.tag == "frame"
-                        and elem.get("media_type") == "video"
-                    ):
-                        frame_xmls.append(etree.tostring(elem))
-                        elem.clear()
-                        if len(frame_xmls) >= batch_size:
-                            batch_rows = list(executor.map(parse_frame_xml, frame_xmls))
-                            rows.extend(batch_rows)
-                            processed += len(frame_xmls)
-                            print(f"Processed {processed} frames so far...")
-                            bar.update(processed)
-                            frame_xmls = []
-                if frame_xmls:
-                    batch_rows = list(executor.map(parse_frame_xml, frame_xmls))
-                    rows.extend(batch_rows)
-                    processed += len(frame_xmls)
-                    print(f"Processed {processed} frames so far...")
-                    bar.update(processed)
-        dfVideo = pd.DataFrame(rows)
-        return dfVideo
+    dfVideo = pd.DataFrame(rows)
+    return dfVideo
 
 
 def videodatastatistics(videodata):
