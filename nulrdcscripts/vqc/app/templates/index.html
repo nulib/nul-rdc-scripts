@@ -1,0 +1,1787 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeduSight - Video Quality Control</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a0b2e 0%, #16213e 50%, #0f3443 100%);
+            min-height: 100vh;
+            color: #ffffff;
+            padding: 20px;
+            transition: background 0.3s ease, color 0.3s ease;
+            font-size: 16px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            z-index: 0;
+            pointer-events: none;
+            background-image:
+                repeating-linear-gradient(60deg,
+                    transparent,
+                    transparent 15px,
+                    rgba(168, 85, 247, 0.2) 15px,
+                    rgba(168, 85, 247, 0.2) 16px),
+                repeating-linear-gradient(120deg,
+                    transparent,
+                    transparent 15px,
+                    rgba(20, 184, 166, 0.2) 15px,
+                    rgba(20, 184, 166, 0.2) 16px);
+            background-size: 40px 40px;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.06;
+            z-index: 0;
+            pointer-events: none;
+            background-image:
+                radial-gradient(circle at 20% 30%,
+                    rgba(168, 85, 247, 0.3) 0%,
+                    transparent 50%),
+                radial-gradient(circle at 80% 70%,
+                    rgba(20, 184, 166, 0.3) 0%,
+                    transparent 50%),
+                radial-gradient(ellipse 300px 120px at 50% 50%,
+                    rgba(168, 85, 247, 0.15) 0%,
+                    transparent 100%);
+        }
+
+        body.high-contrast {
+            background: #000000;
+            color: #ffffff;
+        }
+
+        body.high-contrast::before,
+        body.high-contrast::after {
+            display: none;
+        }
+
+        body.high-contrast .card {
+            background: #1a1a1a;
+            border: 2px solid #ffffff;
+        }
+
+        body.high-contrast h1 {
+            background: none;
+            -webkit-text-fill-color: #ffffff;
+            color: #ffffff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        body.high-contrast h1::after {
+            background: #ffffff;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+
+        body.high-contrast .upload-area {
+            border: 3px solid #ffffff;
+            background: #000000;
+        }
+
+        body.high-contrast .upload-area:hover {
+            border-color: #00ffff;
+            background: #1a1a1a;
+        }
+
+        body.high-contrast .file-item {
+            background: #000000;
+            border: 2px solid #ffffff;
+        }
+
+        body.high-contrast .file-name,
+        body.high-contrast .processing-text,
+        body.high-contrast .results h2 {
+            color: #00ffff;
+        }
+
+        body.high-contrast .btn {
+            background: #ffffff;
+            color: #000000;
+            border: 2px solid #ffffff;
+        }
+
+        body.high-contrast .btn:hover {
+            background: #00ffff;
+            color: #000000;
+            box-shadow: 0 6px 20px rgba(0, 255, 255, 0.6);
+        }
+
+        body.high-contrast .mode-btn {
+            border: 2px solid #ffffff;
+            background: #000000;
+            color: #ffffff;
+        }
+
+        body.high-contrast .mode-btn.active {
+            background: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+        }
+
+        body.high-contrast .modal {
+            background: #000000;
+            border: 3px solid #ffffff;
+        }
+
+        body.high-contrast .modal h2,
+        body.high-contrast .modal h3 {
+            color: #00ffff;
+        }
+
+        body.high-contrast .license-badge {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        body.high-contrast .modal-close {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        body.high-contrast .license-btn,
+        body.high-contrast .contrast-btn,
+        body.high-contrast .colorblind-btn,
+        body.high-contrast .standards-btn {
+            background: #000000;
+            border: 2px solid #ffffff;
+            color: #ffffff;
+        }
+
+        body.high-contrast .license-btn:hover,
+        body.high-contrast .contrast-btn:hover,
+        body.high-contrast .colorblind-btn:hover,
+        body.high-contrast .standards-btn:hover {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        /* Colorblind mode */
+        body.colorblind-mode {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        body.colorblind-mode::before {
+            background-image:
+                repeating-linear-gradient(60deg,
+                    transparent,
+                    transparent 15px,
+                    rgba(251, 191, 36, 0.2) 15px,
+                    rgba(251, 191, 36, 0.2) 16px),
+                repeating-linear-gradient(120deg,
+                    transparent,
+                    transparent 15px,
+                    rgba(59, 130, 246, 0.2) 15px,
+                    rgba(59, 130, 246, 0.2) 16px);
+        }
+
+        body.colorblind-mode::after {
+            background-image: radial-gradient(circle at 20% 30%,
+                    rgba(251, 191, 36, 0.3) 0%,
+                    transparent 50%),
+                radial-gradient(circle at 80% 70%,
+                    rgba(59, 130, 246, 0.3) 0%,
+                    transparent 50%);
+        }
+
+        body.colorblind-mode h1 {
+            background: linear-gradient(135deg, #fbbf24 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        body.colorblind-mode h1::after {
+            background: linear-gradient(90deg,
+                    transparent 0%,
+                    #fbbf24 20%,
+                    #3b82f6 80%,
+                    transparent 100%);
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        }
+
+        body.colorblind-mode .card {
+            background: rgba(30, 30, 50, 0.8);
+            border: 2px solid #fbbf24;
+        }
+
+        body.colorblind-mode .upload-area {
+            border: 2px dashed #fbbf24;
+            background: rgba(251, 191, 36, 0.05);
+        }
+
+        body.colorblind-mode .upload-area:hover {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        body.colorblind-mode .file-item {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid #fbbf24;
+        }
+
+        body.colorblind-mode .file-name {
+            color: #fbbf24;
+        }
+
+        body.colorblind-mode .btn {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #000000;
+            font-weight: 700;
+        }
+
+        body.colorblind-mode .btn:hover {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+            box-shadow: 0 6px 20px rgba(251, 191, 36, 0.6),
+                0 0 30px rgba(251, 191, 36, 0.4);
+        }
+
+        body.colorblind-mode .mode-btn {
+            border: 2px solid #fbbf24;
+            background: rgba(251, 191, 36, 0.05);
+        }
+
+        body.colorblind-mode .mode-btn:hover {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        body.colorblind-mode .mode-btn.active {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+
+        body.colorblind-mode .processing-text,
+        body.colorblind-mode .results h2 {
+            color: #fbbf24;
+        }
+
+        body.colorblind-mode .modal {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 2px solid #fbbf24;
+        }
+
+        body.colorblind-mode .modal h2 {
+            color: #fbbf24;
+        }
+
+        body.colorblind-mode .modal h3 {
+            color: #3b82f6;
+        }
+
+        body.colorblind-mode .license-badge {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #000000;
+        }
+
+        body.colorblind-mode .license-btn,
+        body.colorblind-mode .contrast-btn,
+        body.colorblind-mode .colorblind-btn,
+        body.colorblind-mode .standards-btn {
+            background: rgba(251, 191, 36, 0.2);
+            border: 1px solid #fbbf24;
+            color: #fbbf24;
+        }
+
+        body.colorblind-mode .license-btn:hover,
+        body.colorblind-mode .contrast-btn:hover,
+        body.colorblind-mode .colorblind-btn:hover,
+        body.colorblind-mode .standards-btn:hover {
+            background: rgba(251, 191, 36, 0.3);
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        body.colorblind-mode .btn:focus,
+        body.colorblind-mode .mode-btn:focus,
+        body.colorblind-mode .license-btn:focus,
+        body.colorblind-mode .contrast-btn:focus,
+        body.colorblind-mode .colorblind-btn:focus,
+        body.colorblind-mode .standards-btn:focus,
+        body.colorblind-mode .modal-close:focus,
+        body.colorblind-mode .remove-btn:focus {
+            outline: 3px solid #3b82f6;
+            outline-offset: 2px;
+        }
+
+        .colorblind-btn {
+            position: fixed;
+            bottom: 70px;
+            left: 20px;
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            color: #a855f7;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .colorblind-btn:hover {
+            background: rgba(168, 85, 247, 0.3);
+            border-color: #14b8a6;
+            color: #14b8a6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 0;
+        }
+
+        .logo-image {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 20px;
+            display: block;
+            filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.4));
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+
+        .logo-image:hover {
+            transform: scale(1.05);
+            filter: drop-shadow(0 0 30px rgba(168, 85, 247, 0.6));
+        }
+
+        h1 {
+            font-size: 48px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a855f7 0%, #14b8a6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            position: relative;
+            display: inline-block;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg,
+                    transparent 0%,
+                    #a855f7 20%,
+                    #14b8a6 80%,
+                    transparent 100%);
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+        }
+
+        .subtitle {
+            color: #ffffff;
+            font-size: 16px;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: rgba(30, 20, 50, 0.4);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(168, 85, 247, 0.4);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: rgba(168, 85, 247, 0.05);
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .upload-area:hover {
+            border-color: #14b8a6;
+            background: rgba(20, 184, 166, 0.1);
+            box-shadow: 0 0 20px rgba(20, 184, 166, 0.2),
+                0 0 40px rgba(20, 184, 166, 0.1);
+        }
+
+        .upload-area.dragover {
+            border-color: #14b8a6;
+            background: rgba(20, 184, 166, 0.15);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.7;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-list {
+            margin-top: 20px;
+        }
+
+        .file-item {
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-item::before {
+            content: '🐍';
+            position: absolute;
+            left: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            opacity: 0;
+            animation: slither 2s ease-in-out forwards;
+        }
+
+        @keyframes slither {
+            0% {
+                left: -30px;
+                opacity: 0;
+                transform: translateY(-50%) rotate(0deg);
+            }
+
+            50% {
+                opacity: 1;
+                transform: translateY(-50%) rotate(10deg);
+            }
+
+            100% {
+                left: calc(100% + 30px);
+                opacity: 0;
+                transform: translateY(-50%) rotate(0deg);
+            }
+        }
+
+        .file-name {
+            color: #14b8a6;
+            font-weight: 500;
+        }
+
+        .file-size {
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        .remove-btn {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .remove-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #a855f7 0%, #14b8a6 100%);
+            border: none;
+            color: white;
+            padding: 15px 40px;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+            width: 100%;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6),
+                0 0 30px rgba(168, 85, 247, 0.4),
+                0 0 60px rgba(168, 85, 247, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn:focus,
+        .mode-btn:focus,
+        .license-btn:focus,
+        .contrast-btn:focus,
+        .colorblind-btn:focus,
+        .standards-btn:focus,
+        .modal-close:focus,
+        .remove-btn:focus {
+            outline: 3px solid #14b8a6;
+            outline-offset: 2px;
+        }
+
+        body.high-contrast .btn:focus,
+        body.high-contrast .mode-btn:focus,
+        body.high-contrast .license-btn:focus,
+        body.high-contrast .contrast-btn:focus,
+        body.high-contrast .colorblind-btn:focus,
+        body.high-contrast .standards-btn:focus,
+        body.high-contrast .modal-close:focus,
+        body.high-contrast .remove-btn:focus {
+            outline: 4px solid #00ffff;
+            outline-offset: 3px;
+        }
+
+        .upload-area:focus-within {
+            border-color: #14b8a6;
+            background: rgba(20, 184, 166, 0.1);
+        }
+
+        .processing {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(168, 85, 247, 0.2);
+            border-top: 4px solid #a855f7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .processing-text {
+            color: #14b8a6;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .processing-subtext {
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        .results {
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .results h2 {
+            color: #14b8a6;
+            margin-bottom: 15px;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #14b8a6 0%, #06b6d4 100%);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 40px;
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .info-text {
+            color: #ffffff;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: #14b8a6;
+            color: #000000;
+            padding: 8px 16px;
+            text-decoration: none;
+            font-weight: bold;
+            z-index: 100000;
+            border-radius: 0 0 8px 0;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid rgba(168, 85, 247, 0.3);
+            background: rgba(168, 85, 247, 0.05);
+            border-radius: 10px;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+        }
+
+        .mode-btn:hover {
+            border-color: #14b8a6;
+            background: rgba(20, 184, 166, 0.1);
+            box-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
+        }
+
+        .mode-btn.active {
+            border-color: #14b8a6;
+            background: rgba(20, 184, 166, 0.2);
+            color: #14b8a6;
+            box-shadow: 0 0 20px rgba(20, 184, 166, 0.4),
+                0 0 40px rgba(20, 184, 166, 0.2);
+        }
+
+        .license-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            color: #a855f7;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .license-btn:hover {
+            background: rgba(168, 85, 247, 0.3);
+            border-color: #14b8a6;
+            color: #14b8a6;
+        }
+
+        .standards-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 200px;
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            color: #a855f7;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .standards-btn:hover {
+            background: rgba(168, 85, 247, 0.3);
+            border-color: #14b8a6;
+            color: #14b8a6;
+        }
+
+        .contrast-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            color: #a855f7;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .contrast-btn:hover {
+            background: rgba(168, 85, 247, 0.3);
+            border-color: #14b8a6;
+            color: #14b8a6;
+        }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+            padding: 20px;
+        }
+
+        .modal {
+            background: rgba(26, 11, 46, 0.85);
+            border: 2px solid rgba(168, 85, 247, 0.4);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 70vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+            position: relative;
+            z-index: 10000;
+            backdrop-filter: blur(20px);
+        }
+
+        .modal h2 {
+            color: #14b8a6;
+            margin-bottom: 20px;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ef4444;
+            border: none;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 10001;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+
+        .modal-close:active {
+            transform: scale(0.95);
+        }
+
+        .license-content {
+            color: #ffffff;
+            line-height: 1.8;
+        }
+
+        .license-content h3 {
+            color: #a855f7;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .license-content p {
+            margin-bottom: 15px;
+        }
+
+        .license-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #a855f7 0%, #14b8a6 100%);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+
+        .copyright {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(168, 85, 247, 0.3);
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        .upload-menu {
+            position: absolute;
+            background: rgba(30, 20, 50, 0.95);
+            border: 2px solid rgba(168, 85, 247, 0.4);
+            border-radius: 12px;
+            padding: 10px;
+            display: none;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .upload-menu button {
+            display: block;
+            width: 100%;
+            padding: 12px 20px;
+            margin: 5px 0;
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            color: #ffffff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .upload-menu button:hover {
+            background: rgba(168, 85, 247, 0.2);
+            border-color: #14b8a6;
+        }
+
+        .upload-menu button:focus {
+            outline: 2px solid #14b8a6;
+            outline-offset: 2px;
+        }
+
+        body.high-contrast .upload-menu {
+            background: #000000;
+            border: 3px solid #ffffff;
+        }
+
+        body.high-contrast .upload-menu button {
+            background: #1a1a1a;
+            border: 2px solid #ffffff;
+        }
+
+        body.high-contrast .upload-menu button:hover {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        body.colorblind-mode .upload-menu {
+            background: rgba(26, 26, 46, 0.95);
+            border: 2px solid #fbbf24;
+        }
+
+        body.colorblind-mode .upload-menu button {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid #fbbf24;
+        }
+
+        body.colorblind-mode .upload-menu button:hover {
+            background: rgba(251, 191, 36, 0.2);
+            border-color: #3b82f6;
+        }
+
+        .standards-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(168, 85, 247, 0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .standards-table th,
+        .standards-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+        }
+
+        .standards-table th {
+            background: rgba(168, 85, 247, 0.2);
+            color: #14b8a6;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        .standards-table tr:hover {
+            background: rgba(168, 85, 247, 0.1);
+        }
+
+        .standards-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        body.high-contrast .standards-table th {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        body.high-contrast .standards-table td {
+            border-bottom: 1px solid #ffffff;
+        }
+
+        body.colorblind-mode .standards-table th {
+            background: rgba(251, 191, 36, 0.3);
+            color: #fbbf24;
+        }
+
+        body.colorblind-mode .standards-table td {
+            border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        body.colorblind-mode .standards-table tr:hover {
+            background: rgba(251, 191, 36, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Screen reader status announcements -->
+    <div role="status" aria-live="polite" aria-atomic="true" class="sr-only" id="statusAnnounce"></div>
+
+    <div class="container">
+        <header>
+            <img src="medusight_logo.png" class="logo-image"
+                alt="Medusa with snake hair arranged in a circular pattern surrounding a play button symbol. The background is dark with glowing accents, creating a sense of wisdom and dynamic energy. Text in the image reads MeduSight Video Quality Control."
+                id="meduLogo">
+            <h1>MeduSight</h1>
+            <p class="subtitle">Video Quality Control & Analysis</p>
+        </header>
+
+        <main id="main-content">
+            <div class="card" role="region" aria-label="File upload and processing">
+                <div class="mode-selector" role="group" aria-label="Input file type selection">
+                    <button class="mode-btn active" data-mode="video" tabindex="0">
+                        📹 Video Files (MKV/MP4)
+                    </button>
+                    <button class="mode-btn" data-mode="xml" tabindex="0">
+                        📄 XML Files
+                    </button>
+                </div>
+
+                <div id="uploadSection">
+                    <div class="upload-area" id="uploadArea" tabindex="0" role="button"
+                        aria-label="Upload files or folder. Click, press Enter, or drop here">
+                        <div class="upload-icon" aria-hidden="true">📁</div>
+                        <h3 id="uploadTitle">Drop files/folder here or click to browse</h3>
+                        <p class="info-text" id="uploadInfo">Supports: MKV, MP4 (multiple files supported)</p>
+                        <p class="info-text" id="folderInfo" style="margin-top: 5px; font-style: italic;">You can select
+                            individual files or entire folders</p>
+                        <input type="file" id="fileInput" multiple accept=".mkv,.mp4" tabindex="-1"
+                            aria-label="File input" style="display: none;">
+                        <input type="file" id="folderInput" webkitdirectory directory multiple tabindex="-1"
+                            aria-label="Folder input" style="display: none;">
+
+                        <!-- Upload menu -->
+                        <div class="upload-menu" id="uploadMenu" role="menu">
+                            <button role="menuitem" id="menuSelectFiles" tabindex="0">
+                                <span aria-hidden="true">📄</span> Select Files
+                            </button>
+                            <button role="menuitem" id="menuSelectFolder" tabindex="0">
+                                <span aria-hidden="true">📁</span> Select Folder
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="file-list hidden" id="fileList" role="list" aria-label="Selected files"></div>
+
+                    <button class="btn" id="processBtn" disabled tabindex="0" aria-disabled="true">
+                        <span aria-hidden="true">🔍</span> Process Files
+                    </button>
+                </div>
+
+                <div id="processingSection" class="hidden" role="status" aria-live="polite">
+                    <div class="processing">
+                        <div class="spinner" aria-hidden="true"></div>
+                        <div class="processing-text">Processing your files...</div>
+                        <div class="processing-subtext">This may take several minutes depending on video length</div>
+                    </div>
+                </div>
+
+                <div id="resultsSection" class="hidden" role="status" aria-live="polite">
+                    <div class="results">
+                        <div class="success-icon" aria-hidden="true">✅</div>
+                        <h2>Processing Complete!</h2>
+                        <p class="info-text">Your analysis is ready. Download includes extracted XML data, CSV files,
+                            and text reports.</p>
+                        <button class="btn download-btn" tabindex="0">
+                            <span aria-hidden="true">📥</span> Download Results
+                        </button>
+                        <button class="btn" id="newAnalysisBtn" tabindex="0"
+                            style="background: rgba(168, 85, 247, 0.2); margin-top: 10px;">
+                            <span aria-hidden="true">🔄</span> New Analysis
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <button class="contrast-btn" id="contrastBtn" tabindex="0" aria-label="Toggle high contrast mode"
+            aria-pressed="false">
+            <span id="contrastIcon" aria-hidden="true">◐</span>
+            <span id="contrastText">High Contrast</span>
+        </button>
+
+        <button class="colorblind-btn" id="colorblindBtn" tabindex="0" aria-label="Toggle colorblind friendly mode"
+            aria-pressed="false">
+            <span id="colorblindIcon" aria-hidden="true">👁️</span>
+            <span id="colorblindText">Colorblind Mode</span>
+        </button>
+
+        <button class="standards-btn" onclick="openStandardsModal()" tabindex="0"
+            aria-label="View 10-bit video standards">
+            <span aria-hidden="true">📊</span>
+            <span>Standards</span>
+        </button>
+
+        <button class="license-btn" onclick="openLicenseModal()" tabindex="0" aria-label="View license information">
+            <span aria-hidden="true">ℹ️</span> License Information
+        </button>
+
+        <div id="licenseModal" class="modal-overlay" style="display: none;"
+            onclick="if(event.target.id==='licenseModal') { closeLicenseModal(); }" role="dialog" aria-modal="true"
+            aria-labelledby="modalTitle">
+            <div class="modal" onclick="event.stopPropagation()">
+                <button class="modal-close" onclick="closeLicenseModal();" tabindex="0"
+                    aria-label="Close license information dialog">×</button>
+                <h2 id="modalTitle">📜 MeduSight License</h2>
+
+                <div class="license-content">
+                    <div class="license-badge">Non-Commercial Use Only</div>
+
+                    <h3>About MeduSight</h3>
+                    <p>
+                        <strong>Developed by Sophia Francis</strong><br>
+                        Northwestern University
+                    </p>
+
+                    <h3>License Terms</h3>
+                    <p>
+                        MeduSight is available for <strong>open use for non-commercial purposes</strong>.
+                        This software may be freely used, modified, and distributed for educational,
+                        research, and personal projects.
+                    </p>
+
+                    <h3>Restrictions</h3>
+                    <p>
+                        <strong>Commercial use is prohibited</strong> without explicit written permission
+                        from Northwestern University. Commercial use includes, but is not limited to:
+                    </p>
+                    <ul style="margin-left: 20px; margin-bottom: 15px;">
+                        <li>Using the software in a commercial product or service</li>
+                        <li>Using the software to generate revenue</li>
+                        <li>Incorporating the software into proprietary systems</li>
+                    </ul>
+
+                    <h3>Attribution</h3>
+                    <p>
+                        Users must retain all copyright notices and provide appropriate attribution
+                        when using or redistributing this software. Please cite as:
+                    </p>
+                    <p
+                        style="background: rgba(168, 85, 247, 0.1); padding: 15px; border-radius: 8px; font-family: monospace; font-size: 13px; border-left: 3px solid #a855f7;">
+                        MeduSight - Video Quality Control Software<br>
+                        Developed by Sophia Francis<br>
+                        Northwestern University<br>
+                        2025
+                    </p>
+
+                    <h3>Disclaimer</h3>
+                    <p style="font-size: 13px; color: #ffffff;">
+                        This software is provided "as is" without warranty of any kind, express or
+                        implied. Northwestern University shall not be liable for any damages arising
+                        from the use of this software.
+                    </p>
+
+                    <div class="copyright">
+                        <strong>Developed by Sophia Francis</strong><br>
+                        <strong>© 2025 Northwestern University</strong><br>
+                        All Rights Reserved
+                    </div>
+
+                    <button class="btn" onclick="closeLicenseModal();" tabindex="0"
+                        style="margin-top: 20px; background: #ef4444; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">
+                        <span aria-hidden="true">✕</span> Close License
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="standardsModal" class="modal-overlay" style="display: none;"
+            onclick="if(event.target.id==='standardsModal') { closeStandardsModal(); }" role="dialog" aria-modal="true"
+            aria-labelledby="standardsModalTitle">
+            <div class="modal" onclick="event.stopPropagation()">
+                <button class="modal-close" onclick="closeStandardsModal();" tabindex="0"
+                    aria-label="Close standards dialog">×</button>
+                <h2 id="standardsModalTitle">📊 10-Bit Video Standards</h2>
+
+                <div class="license-content">
+                    <h3>Bit Depth Specifications</h3>
+                    <table class="standards-table">
+                        <thead>
+                            <tr>
+                                <th>Standard</th>
+                                <th>Bit Depth</th>
+                                <th>Color Range</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>8-bit</strong></td>
+                                <td>256 levels</td>
+                                <td>0-255</td>
+                                <td>Standard definition, consumer video</td>
+                            </tr>
+                            <tr>
+                                <td><strong>10-bit</strong></td>
+                                <td>1,024 levels</td>
+                                <td>0-1023</td>
+                                <td>Professional broadcast, reduced banding</td>
+                            </tr>
+                            <tr>
+                                <td><strong>12-bit</strong></td>
+                                <td>4,096 levels</td>
+                                <td>0-4095</td>
+                                <td>Cinema production, maximum color fidelity</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>10-Bit Video Formats</h3>
+                    <table class="standards-table">
+                        <thead>
+                            <tr>
+                                <th>Format</th>
+                                <th>Codec</th>
+                                <th>Common Use</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>ProRes 422 HQ</strong></td>
+                                <td>Apple ProRes</td>
+                                <td>Professional editing, broadcast</td>
+                            </tr>
+                            <tr>
+                                <td><strong>ProRes 4444</strong></td>
+                                <td>Apple ProRes</td>
+                                <td>VFX, alpha channel support</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DNxHR HQX</strong></td>
+                                <td>Avid DNxHR</td>
+                                <td>High-quality archival, editing</td>
+                            </tr>
+                            <tr>
+                                <td><strong>H.265/HEVC</strong></td>
+                                <td>HEVC Main 10</td>
+                                <td>Streaming, distribution, 4K/HDR</td>
+                            </tr>
+                            <tr>
+                                <td><strong>VP9 Profile 2</strong></td>
+                                <td>VP9</td>
+                                <td>Web video, YouTube, HDR</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Color Space Standards</h3>
+                    <table class="standards-table">
+                        <thead>
+                            <tr>
+                                <th>Color Space</th>
+                                <th>Application</th>
+                                <th>Range</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Rec. 709</strong></td>
+                                <td>HD broadcast standard</td>
+                                <td>Limited (16-235)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Rec. 2020</strong></td>
+                                <td>4K/UHD, HDR, wide color gamut</td>
+                                <td>Limited or Full</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DCI-P3</strong></td>
+                                <td>Digital cinema projection</td>
+                                <td>Full (0-1023)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>sRGB</strong></td>
+                                <td>Web, computer displays</td>
+                                <td>Full (0-255 @ 8-bit)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Quality Benefits of 10-Bit</h3>
+                    <ul style="margin-left: 20px; margin-top: 15px; line-height: 1.8;">
+                        <li><strong>Reduced banding:</strong> Smoother gradients in skies, shadows</li>
+                        <li><strong>Better color grading:</strong> More latitude for post-production</li>
+                        <li><strong>HDR support:</strong> Required for HDR10, Dolby Vision</li>
+                        <li><strong>Professional standard:</strong> Broadcast and cinema requirement</li>
+                        <li><strong>Future-proofing:</strong> Better archival quality</li>
+                    </ul>
+
+                    <button class="btn" onclick="closeStandardsModal();" tabindex="0"
+                        style="margin-top: 20px; background: rgba(20, 184, 166, 0.3); box-shadow: 0 4px 15px rgba(20, 184, 166, 0.4);">
+                        <span aria-hidden="true">✓</span> Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let lastFocusedElement = null;
+
+        function openLicenseModal() {
+            lastFocusedElement = document.activeElement;
+            document.getElementById('licenseModal').style.display = 'flex';
+            trapFocus();
+            announceStatus('License dialog opened');
+        }
+
+        function closeLicenseModal() {
+            document.getElementById('licenseModal').style.display = 'none';
+            if (lastFocusedElement) {
+                lastFocusedElement.focus();
+            }
+            announceStatus('License dialog closed');
+        }
+
+        function openStandardsModal() {
+            lastFocusedElement = document.activeElement;
+            document.getElementById('standardsModal').style.display = 'flex';
+            trapFocus();
+            announceStatus('Standards reference opened');
+        }
+
+        function closeStandardsModal() {
+            document.getElementById('standardsModal').style.display = 'none';
+            if (lastFocusedElement) {
+                lastFocusedElement.focus();
+            }
+            announceStatus('Standards dialog closed');
+        }
+
+        function trapFocus() {
+            const modal = document.querySelector('.modal');
+            const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+
+            if (firstElement) {
+                firstElement.focus();
+            }
+        }
+
+        function announceStatus(message) {
+            const statusAnnounce = document.getElementById('statusAnnounce');
+            if (statusAnnounce) {
+                statusAnnounce.textContent = message;
+                setTimeout(() => {
+                    statusAnnounce.textContent = '';
+                }, 1000);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Convert uploaded image to data URL for logo
+            const logoImg = document.getElementById('meduLogo');
+            // Since we can't directly access uploaded files in artifacts, 
+            // you'll need to replace the src with your actual logo URL or data URL
+            // For now, using a placeholder - you can update this with your hosted image
+
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const folderInput = document.getElementById('folderInput');
+            const uploadMenu = document.getElementById('uploadMenu');
+            const menuSelectFiles = document.getElementById('menuSelectFiles');
+            const menuSelectFolder = document.getElementById('menuSelectFolder');
+            const fileList = document.getElementById('fileList');
+            const processBtn = document.getElementById('processBtn');
+            const uploadSection = document.getElementById('uploadSection');
+            const processingSection = document.getElementById('processingSection');
+            const resultsSection = document.getElementById('resultsSection');
+            const newAnalysisBtn = document.getElementById('newAnalysisBtn');
+            const modeBtns = document.querySelectorAll('.mode-btn');
+            const uploadInfo = document.getElementById('uploadInfo');
+
+            let selectedFiles = [];
+            let currentMode = 'video';
+
+            // Mode switching
+            modeBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    modeBtns.forEach(b => {
+                        b.classList.remove('active');
+                        b.setAttribute('aria-pressed', 'false');
+                    });
+                    btn.classList.add('active');
+                    btn.setAttribute('aria-pressed', 'true');
+                    currentMode = btn.dataset.mode;
+
+                    if (currentMode === 'video') {
+                        fileInput.accept = '.mkv,.mp4';
+                        uploadInfo.textContent = 'Supports: MKV, MP4 (multiple files supported)';
+                        announceStatus('Switched to video file mode');
+                    } else {
+                        fileInput.accept = '.xml';
+                        folderInput.accept = '.xml';
+                        uploadInfo.textContent = 'Supports: XML (ffmpeg schema - multiple files supported)';
+                        announceStatus('Switched to XML file mode. You can upload folders of XML files.');
+                    }
+
+                    selectedFiles = [];
+                    updateFileList();
+                });
+            });
+
+            // Drag and drop
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+
+                const items = e.dataTransfer.items;
+                if (items) {
+                    handleDataTransferItems(items);
+                } else {
+                    handleFiles(e.dataTransfer.files);
+                }
+            });
+
+            async function handleDataTransferItems(items) {
+                const files = [];
+
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    if (item.kind === 'file') {
+                        const entry = item.webkitGetAsEntry();
+                        if (entry) {
+                            await scanEntry(entry, files);
+                        }
+                    }
+                }
+
+                if (files.length > 0) {
+                    handleFiles(files);
+                }
+            }
+
+            async function scanEntry(entry, files) {
+                if (entry.isFile) {
+                    const file = await new Promise((resolve) => entry.file(resolve));
+                    files.push(file);
+                } else if (entry.isDirectory) {
+                    const reader = entry.createReader();
+                    const entries = await new Promise((resolve) => reader.readEntries(resolve));
+                    for (const childEntry of entries) {
+                        await scanEntry(childEntry, files);
+                    }
+                }
+            }
+
+            // Upload menu handling
+            uploadArea.addEventListener('click', (e) => {
+                if (e.target.closest('.upload-menu')) return;
+
+                uploadMenu.style.display = 'block';
+                uploadMenu.style.left = '50%';
+                uploadMenu.style.top = '50%';
+                uploadMenu.style.transform = 'translate(-50%, -50%)';
+                menuSelectFiles.focus();
+                announceStatus('Upload menu opened. Choose files or folder.');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!uploadArea.contains(e.target)) {
+                    uploadMenu.style.display = 'none';
+                }
+            });
+
+            menuSelectFiles.addEventListener('click', (e) => {
+                e.stopPropagation();
+                uploadMenu.style.display = 'none';
+                fileInput.click();
+            });
+
+            menuSelectFolder.addEventListener('click', (e) => {
+                e.stopPropagation();
+                uploadMenu.style.display = 'none';
+                folderInput.click();
+            });
+
+            menuSelectFiles.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    menuSelectFolder.focus();
+                } else if (e.key === 'Escape') {
+                    uploadMenu.style.display = 'none';
+                    uploadArea.focus();
+                }
+            });
+
+            menuSelectFolder.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    menuSelectFiles.focus();
+                } else if (e.key === 'Escape') {
+                    uploadMenu.style.display = 'none';
+                    uploadArea.focus();
+                }
+            });
+
+            uploadArea.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    uploadMenu.style.display = 'block';
+                    uploadMenu.style.left = '50%';
+                    uploadMenu.style.top = '50%';
+                    uploadMenu.style.transform = 'translate(-50%, -50%)';
+                    menuSelectFiles.focus();
+                    announceStatus('Upload menu opened. Choose files or folder.');
+                }
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+            });
+
+            folderInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+            });
+
+            function handleFiles(files) {
+                const validExtensions = currentMode === 'video' ? ['.mkv', '.mp4'] : ['.xml'];
+                let addedCount = 0;
+                let skippedCount = 0;
+
+                Array.from(files).forEach(file => {
+                    const ext = '.' + file.name.split('.').pop().toLowerCase();
+                    if (validExtensions.includes(ext)) {
+                        if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                            selectedFiles.push(file);
+                            addedCount++;
+                        } else {
+                            skippedCount++;
+                        }
+                    }
+                });
+
+                if (addedCount > 0) {
+                    let message = `${addedCount} file${addedCount > 1 ? 's' : ''} added`;
+                    if (skippedCount > 0) {
+                        message += `, ${skippedCount} duplicate${skippedCount > 1 ? 's' : ''} skipped`;
+                    }
+                    announceStatus(message);
+                } else if (skippedCount > 0) {
+                    announceStatus(`${skippedCount} duplicate file${skippedCount > 1 ? 's' : ''} skipped`);
+                }
+
+                updateFileList();
+            }
+
+            function updateFileList() {
+                if (selectedFiles.length === 0) {
+                    fileList.classList.add('hidden');
+                    processBtn.disabled = true;
+                    processBtn.setAttribute('aria-disabled', 'true');
+                    return;
+                }
+
+                fileList.classList.remove('hidden');
+                processBtn.disabled = false;
+                processBtn.removeAttribute('aria-disabled');
+
+                fileList.innerHTML = selectedFiles.map((file, index) => `
+                    <div class="file-item" role="listitem">
+                        <div>
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-size">${formatFileSize(file.size)}</div>
+                        </div>
+                        <button class="remove-btn" onclick="removeFile(${index})" aria-label="Remove ${file.name}">Remove</button>
+                    </div>
+                `).join('');
+            }
+
+            window.removeFile = function (index) {
+                const fileName = selectedFiles[index].name;
+                selectedFiles.splice(index, 1);
+                announceStatus(`${fileName} removed`);
+                updateFileList();
+            };
+
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+            }
+
+            processBtn.addEventListener('click', () => {
+                uploadSection.classList.add('hidden');
+                processingSection.classList.remove('hidden');
+                announceStatus('Processing files. Please wait.');
+
+                // Simulate processing (in real implementation, this would call your backend)
+                setTimeout(() => {
+                    processingSection.classList.add('hidden');
+                    resultsSection.classList.remove('hidden');
+                    announceStatus('Processing complete. Results ready for download.');
+                }, 3000);
+            });
+
+            newAnalysisBtn.addEventListener('click', () => {
+                selectedFiles = [];
+                fileInput.value = '';
+                resultsSection.classList.add('hidden');
+                uploadSection.classList.remove('hidden');
+                announceStatus('Ready for new analysis');
+                updateFileList();
+            });
+
+            // High contrast mode
+            const contrastBtn = document.getElementById('contrastBtn');
+            const contrastIcon = document.getElementById('contrastIcon');
+            const contrastText = document.getElementById('contrastText');
+            let isHighContrast = false;
+
+            if (localStorage) {
+                try {
+                    const savedContrast = localStorage.getItem('medusight-high-contrast');
+                    if (savedContrast === 'true') {
+                        document.body.classList.add('high-contrast');
+                        isHighContrast = true;
+                        contrastIcon.textContent = '◑';
+                        contrastText.textContent = 'Normal Mode';
+                        contrastBtn.setAttribute('aria-pressed', 'true');
+                    }
+                } catch (e) { }
+            }
+
+            contrastBtn.addEventListener('click', () => {
+                isHighContrast = !isHighContrast;
+
+                if (isHighContrast) {
+                    document.body.classList.add('high-contrast');
+                    contrastIcon.textContent = '◑';
+                    contrastText.textContent = 'Normal Mode';
+                    contrastBtn.setAttribute('aria-pressed', 'true');
+                    announceStatus('High contrast mode enabled');
+                } else {
+                    document.body.classList.remove('high-contrast');
+                    contrastIcon.textContent = '◐';
+                    contrastText.textContent = 'High Contrast';
+                    contrastBtn.setAttribute('aria-pressed', 'false');
+                    announceStatus('Normal mode enabled');
+                }
+
+                if (localStorage) {
+                    try {
+                        localStorage.setItem('medusight-high-contrast', isHighContrast);
+                    } catch (e) { }
+                }
+            });
+
+            contrastBtn.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    contrastBtn.click();
+                }
+            });
+
+            // Colorblind mode
+            const colorblindBtn = document.getElementById('colorblindBtn');
+            const colorblindIcon = document.getElementById('colorblindIcon');
+            const colorblindText = document.getElementById('colorblindText');
+            let isColorblindMode = false;
+
+            if (localStorage) {
+                try {
+                    const savedColorblind = localStorage.getItem('medusight-colorblind-mode');
+                    if (savedColorblind === 'true') {
+                        document.body.classList.add('colorblind-mode');
+                        isColorblindMode = true;
+                        colorblindIcon.textContent = '✓';
+                        colorblindText.textContent = 'Normal Colors';
+                        colorblindBtn.setAttribute('aria-pressed', 'true');
+                    }
+                } catch (e) { }
+            }
+
+            colorblindBtn.addEventListener('click', () => {
+                isColorblindMode = !isColorblindMode;
+
+                if (isColorblindMode) {
+                    document.body.classList.add('colorblind-mode');
+                    colorblindIcon.textContent = '✓';
+                    colorblindText.textContent = 'Normal Colors';
+                    colorblindBtn.setAttribute('aria-pressed', 'true');
+                    announceStatus('Colorblind friendly mode enabled');
+                } else {
+                    document.body.classList.remove('colorblind-mode');
+                    colorblindIcon.textContent = '👁️';
+                    colorblindText.textContent = 'Colorblind Mode';
+                    colorblindBtn.setAttribute('aria-pressed', 'false');
+                    announceStatus('Normal colors enabled');
+                }
+
+                if (localStorage) {
+                    try {
+                        localStorage.setItem('medusight-colorblind-mode', isColorblindMode);
+                    } catch (e) { }
+                }
+            });
+
+            colorblindBtn.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    colorblindBtn.click();
+                }
+            });
+
+            // ESC key to close modal
+            document.addEventListener('keydown', (e) => {
+                const licenseModal = document.getElementById('licenseModal');
+                const standardsModal = document.getElementById('standardsModal');
+
+                if (e.key === 'Escape') {
+                    if (licenseModal.style.display === 'flex') {
+                        closeLicenseModal();
+                    } else if (standardsModal.style.display === 'flex') {
+                        closeStandardsModal();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
