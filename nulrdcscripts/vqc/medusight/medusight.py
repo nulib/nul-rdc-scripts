@@ -4,8 +4,8 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 import progressbar
 import pandas as pd
-from nulrdcscripts.vqc.medusight.params import args
-from nulrdcscripts.vqc.medusight import dataparsing, output, framestatistics, qcsetup, overallStatistics
+from medusight.params import args
+from medusight import dataparsing, output, framestatistics, qcsetup, overallStatistics
 import uuid
 import datetime
 import concurrent.futures

@@ -1,20 +1,35 @@
-[project]
+[tool.poetry]
 name = "medusight"
 version = "0.2.0"
 description = "This is a script that will do the initial round of QC for videos for archival purposes."
-authors = [{name = "Northwestern University Libraries", email = "repository@northwestern.edu"}, {name = "Sophia Francis", email = "repository@northwestern.edu"}]
-
-readme = "README.md"
-license = {text = "MIT"}
-requires-python = ">=3.12"
-dependencies = [
-    "lxml >=6.0.0,<7.0.0",
-    "progressbar2 >=4.5.0,<5.0.0",
-    "pandas >=2.3.0,<3.0.0"
+authors = [
+    "Northwestern University Libraries <repository@northwestern.edu>",
+    "Sophia Francis <repository@northwestern.edu>"
 ]
+readme = "README.md"
+license = "MIT"
+homepage = "https://github.com/nulib/medusight"  # Update with actual URL
+repository = "https://github.com/nulib/medusight"  # Update with actual URL
 
-[project.scripts]
-medu="medusight.medusight:main"
+[tool.poetry.dependencies]
+python = "^3.12"
+lxml = "^6.0.0"
+progressbar2 = "^4.5.0"
+pandas = "^2.3.0"
+tk = "^0.1.0"
+eel = "^0.18.2"
+pyqt5 = "^5.15.11"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+pytest-cov = "^6.0.0"
+ruff = "^0.8.0"
+mypy = "^1.13.0"
+black = "^24.0.0"
+
+[tool.poetry.scripts]
+medu = "medusight.medusight:main"
+
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"

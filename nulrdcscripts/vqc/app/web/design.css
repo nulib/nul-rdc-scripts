@@ -1,0 +1,200 @@
+/* ============================================================================
+   HAMBURGER MENU STYLES
+   ============================================================================ */
+
+/* Hamburger Menu Button */
+.menu-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background: rgba(168, 85, 247, 0.2);
+    border: 2px solid rgba(168, 85, 247, 0.4);
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #a855f7;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+}
+
+.menu-toggle:hover {
+    background: rgba(168, 85, 247, 0.3);
+    border-color: rgba(168, 85, 247, 0.6);
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4);
+}
+
+.menu-toggle:focus {
+    outline: 3px solid #a855f7;
+    outline-offset: 2px;
+}
+
+/* Utility Menu */
+.utility-menu {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: rgba(30, 30, 46, 0.95);
+    border: 2px solid rgba(168, 85, 247, 0.3);
+    border-radius: 16px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 200px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 999;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.utility-menu.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Menu Buttons */
+.utility-menu button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.utility-menu button:hover {
+    background: rgba(168, 85, 247, 0.2);
+    border-color: rgba(168, 85, 247, 0.4);
+    transform: translateX(5px);
+}
+
+.utility-menu button:focus {
+    outline: 2px solid #a855f7;
+    outline-offset: 2px;
+}
+
+.utility-menu button span:first-child {
+    font-size: 18px;
+}
+
+/* Active state for toggle buttons */
+.utility-menu button[aria-pressed="true"] {
+    background: rgba(168, 85, 247, 0.3);
+    border-color: rgba(168, 85, 247, 0.5);
+}
+
+/* ============================================================================
+   HIGH CONTRAST MODE
+   ============================================================================ */
+
+body.high-contrast {
+    --bg-primary: #000000;
+    --bg-secondary: #1a1a1a;
+    --text-primary: #ffffff;
+    --text-secondary: #e0e0e0;
+    --accent-primary: #ffff00;
+    --accent-secondary: #00ffff;
+}
+
+body.high-contrast .card {
+    background: #1a1a1a;
+    border: 3px solid #ffffff;
+}
+
+body.high-contrast .btn {
+    background: #ffff00;
+    color: #000000;
+    border: 2px solid #ffffff;
+}
+
+body.high-contrast .mode-btn {
+    border: 2px solid #ffffff;
+}
+
+body.high-contrast .mode-btn.active {
+    background: #ffff00;
+    color: #000000;
+}
+
+/* ============================================================================
+   COLORBLIND MODE
+   ============================================================================ */
+
+body.colorblind-mode {
+    /* Replace problematic red/green with blue/orange */
+    --success-color: #0ea5e9; /* Blue instead of green */
+    --error-color: #f97316; /* Orange instead of red */
+    --warning-color: #eab308; /* Yellow */
+    --accent-primary: #0ea5e9;
+}
+
+body.colorblind-mode .success-icon {
+    color: #0ea5e9;
+}
+
+body.colorblind-mode .btn {
+    background: rgba(14, 165, 233, 0.2);
+    border-color: rgba(14, 165, 233, 0.4);
+}
+
+body.colorblind-mode .btn:hover {
+    background: rgba(14, 165, 233, 0.3);
+    box-shadow: 0 4px 20px rgba(14, 165, 233, 0.4);
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .menu-toggle {
+        top: 15px;
+        right: 15px;
+        width: 45px;
+        height: 45px;
+        font-size: 20px;
+    }
+    
+    .utility-menu {
+        top: 70px;
+        right: 15px;
+        min-width: 180px;
+    }
+    
+    .utility-menu button {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .menu-toggle {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+    
+    .utility-menu {
+        right: 10px;
+        left: 10px;
+        min-width: unset;
+    }
+}

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeduSight - Video Quality Control</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="design.css">
+</head>
+
+<body>
+    <script type="text/javascript" src="/eel.js"></script>
+    <script src="main.js"></script>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Screen reader status announcements -->
+    <div role="status" aria-live="polite" aria-atomic="true" class="sr-only" id="statusAnnounce"></div>
+
+    <div class="container">
+        <header>
+            <img src="medusight_logo.png" class="logo-image"
+                alt="Medusa with snake hair arranged in a circular pattern surrounding a play button symbol. The background is dark with glowing accents, creating a sense of wisdom and dynamic energy. Text in the image reads MeduSight Video Quality Control."
+                id="meduLogo">
+            <h1>MeduSight</h1>
+            <p class="subtitle">Video Quality Control & Analysis</p>
+        </header>
+
+        <main id="main-content">
+            <div class="card" role="region" aria-label="File upload and processing">
+                <div class="mode-selector" role="group" aria-label="Input file type selection">
+                    <button class="mode-btn active" data-mode="video" tabindex="0">
+                        📹 Video Files (MKV/MP4)
+                    </button>
+                    <button class="mode-btn" data-mode="xml" tabindex="0">
+                        📄 XML Files
+                    </button>
+                </div>
+
+                <div id="uploadSection">
+                    <div style="margin: 20px 0; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px;">
+                        <p style="text-align: center; color: rgba(255,255,255,0.9); margin-bottom: 10px; font-weight: 600;">
+                            Enter file or folder path:
+                        </p>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="manualPath" placeholder="/path/to/file.xml or /path/to/folder" 
+                                style="flex: 1; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; font-size: 14px;">
+                            <button onclick="processManualPath()" class="btn" style="white-space: nowrap;">
+                                Process Path
+                            </button>
+                        </div>
+                    </div>
+                    <div class="upload-area" id="uploadArea" tabindex="0" role="button"
+                        aria-label="Upload files or folder. Click, press Enter, or drop here">
+                        <div class="upload-icon" aria-hidden="true">📁</div>
+                        <h3 id="uploadTitle">Click to browse for files or folders</h3>
+                        <p class="info-text" id="uploadInfo">Supports: MKV, MP4 (multiple files supported)</p>
+                        <p class="info-text" id="folderInfo" style="margin-top: 5px; font-style: italic;">You can select
+                            individual files or entire folders</p>
+                        <input type="file" id="fileInput" multiple accept=".mkv,.mp4" tabindex="-1"
+                            aria-label="File input" style="display: none;">
+                        <input type="file" id="folderInput" webkitdirectory directory multiple tabindex="-1"
+                            aria-label="Folder input" style="display: none;">
+
+                        <!-- Upload menu -->
+                        <div class="upload-menu" id="uploadMenu" role="menu">
+                            <button role="menuitem" id="menuSelectFiles" tabindex="0">
+                                <span aria-hidden="true">📄</span> Select Files
+                            </button>
+                            <button role="menuitem" id="menuSelectFolder" tabindex="0">
+                                <span aria-hidden="true">📁</span> Select Folder
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="file-list hidden" id="fileList" role="list" aria-label="Selected files"></div>
+
+                    <button class="btn" id="processBtn" disabled tabindex="0" aria-disabled="true">
+                        <span aria-hidden="true">🔍</span> Process Files
+                    </button>
+                </div>
+
+                <div id="processingSection" class="hidden" role="status" aria-live="polite">
+                    <div class="processing">
+                        <div class="spinner" aria-hidden="true"></div>
+                        <div class="processing-text">Processing your files...</div>
+                        <div class="processing-subtext">This may take several minutes depending on video length</div>
+                    </div>
+                </div>
+
+                <div id="resultsSection" class="hidden" role="status" aria-live="polite">
+                    <div class="results">
+                        <div class="success-icon" aria-hidden="true">✅</div>
+                        <h2>Processing Complete!</h2>
+                        <p class="info-text">Your analysis is ready. Download includes extracted XML data, CSV files,
+                            and text reports.</p>
+                        <button class="btn download-btn" tabindex="0">
+                            <span aria-hidden="true">📥</span> Download Results
+                        </button>
+                        <button class="btn" id="newAnalysisBtn" tabindex="0"
+                            style="background: rgba(168, 85, 247, 0.2); margin-top: 10px;">
+                            <span aria-hidden="true">🔄</span> New Analysis
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!-- Hamburger Menu Button -->
+<button class="menu-toggle" id="menuToggle" aria-label="Open utility menu" aria-expanded="false">
+    <span id="menuIcon">☰</span>
+</button>
+
+<!-- Utility Menu -->
+<div class="utility-menu" id="utilityMenu" role="menu">
+    <button class="contrast-btn" id="contrastBtn" role="menuitem" tabindex="0" aria-pressed="false">
+        <span id="contrastIcon" aria-hidden="true">◐</span>
+        <span id="contrastText">High Contrast</span>
+    </button>
+    
+    <button class="colorblind-btn" id="colorblindBtn" role="menuitem" tabindex="0" aria-pressed="false">
+        <span id="colorblindIcon" aria-hidden="true">👁️</span>
+        <span id="colorblindText">Colorblind Mode</span>
+    </button>
+    
+    <button class="standards-btn" onclick="openStandardsModal()" role="menuitem" tabindex="0">
+        <span aria-hidden="true">📊</span>
+        <span>Standards</span>
+    </button>
+    
+    <button class="license-btn" onclick="openLicenseModal()" role="menuitem" tabindex="0">
+        <span aria-hidden="true">ℹ️</span>
+        <span>License Info</span>
+    </button>
+</div>
+       
+        <div id="licenseModal" class="modal-overlay" style="display: none;"
+            onclick="if(event.target.id==='licenseModal') { closeLicenseModal(); }" role="dialog" aria-modal="true"
+            aria-labelledby="modalTitle">
+            <div class="modal" onclick="event.stopPropagation()">
+                <button class="modal-close" onclick="closeLicenseModal();" tabindex="0"
+                    aria-label="Close license information dialog">×</button>
+                <h2 id="modalTitle">📜 MeduSight License</h2>
+
+                <div class="license-content">
+                    <div class="license-badge">Non-Commercial Use Only</div>
+
+                    <h3>About MeduSight</h3>
+                    <p>
+                        <strong>Developed by Sophia Francis</strong><br>
+                        Northwestern University
+                    </p>
+
+                    <h3>License Terms</h3>
+                    <p>
+                        MeduSight is available for <strong>open use for non-commercial purposes</strong>.
+                        This software may be freely used, modified, and distributed for educational,
+                        research, and personal projects.
+                    </p>
+
+                    <h3>Restrictions</h3>
+                    <p>
+                        <strong>Commercial use is prohibited</strong> without explicit written permission
+                        from Northwestern University. Commercial use includes, but is not limited to:
+                    </p>
+                    <ul style="margin-left: 20px; margin-bottom: 15px;">
+                        <li>Using the software in a commercial product or service</li>
+                        <li>Using the software to generate revenue</li>
+                        <li>Incorporating the software into proprietary systems</li>
+                    </ul>
+
+                    <h3>Attribution</h3>
+                    <p>
+                        Users must retain all copyright notices and provide appropriate attribution
+                        when using or redistributing this software. Please cite as:
+                    </p>
+                    <p
+                        style="background: rgba(168, 85, 247, 0.1); padding: 15px; border-radius: 8px; font-family: monospace; font-size: 13px; border-left: 3px solid #a855f7;">
+                        MeduSight - Video Quality Control Software<br>
+                        Developed by Sophia Francis<br>
+                        Northwestern University<br>
+                        2025
+                    </p>
+
+                    <h3>Disclaimer</h3>
+                    <p style="font-size: 13px; color: #ffffff;">
+                        This software is provided "as is" without warranty of any kind, express or
+                        implied. Northwestern University shall not be liable for any damages arising
+                        from the use of this software.
+                    </p>
+
+                    <div class="copyright">
+                        <strong>Developed by Sophia Francis</strong><br>
+                        <strong>© 2025 Northwestern University</strong><br>
+                        All Rights Reserved
+                    </div>
+
+                    <button class="btn" onclick="closeLicenseModal();" tabindex="0"
+                        style="margin-top: 20px; background: #ef4444; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">
+                        <span aria-hidden="true">✕</span> Close License
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="standardsModal" class="modal-overlay" style="display: none;"
+            onclick="if(event.target.id==='standardsModal') { closeStandardsModal(); }" role="dialog" aria-modal="true"
+            aria-labelledby="standardsModalTitle">
+            <div class="modal" onclick="event.stopPropagation()">
+                <button class="modal-close" onclick="closeStandardsModal();" tabindex="0"
+                    aria-label="Close standards dialog">×</button>
+                <h2 id="standardsModalTitle">📊 10-Bit Video Standards</h2>
+
+                <div class="license-content">
+                    <h3>Bit Depth Specifications</h3>
+                    <table class="standards-table">
+                        <thead>
+                            <tr>
+                                <th>Standard</th>
+                                <th>Bit Depth</th>
+                                <th>Color Range</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>8-bit</strong></td>
+                                <td>256 levels</td>
+                                <td>0-255</td>
+                                <td>Standard definition, consumer video</td>
+                            </tr>
+                            <tr>
+                                <td><strong>10-bit</strong></td>
+                                <td>1,024 levels</td>
+                                <td>0-1023</td>
+                                <td>Professional broadcast, reduced banding</td>
+                            </tr>
+                            <tr>
+                                <td><strong>12-bit</strong></td>
+                                <td>4,096 levels</td>
+                                <td>0-4095</td>
+                                <td>Cinema production, maximum color fidelity</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>10-Bit Video Formats</h3>
+                    <table class="standards-table">
+                        <thead>
+                            <tr>
+                                <th>Format</th>
+                                <th>Codec</th>
+                                <th>Common Use</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>ProRes 422 HQ</strong></td>
+                                <td>Apple ProRes</td>
+                                <td>Professional editing, broadcast</td>
+                            </tr>
+                            <tr>
+                                <td><strong>ProRes 4444</strong></td>
+                                <td>Apple ProRes</td>
+                                <td>VFX, alpha channel support</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DNxHR HQX</strong></td>
+                                <td>Avid DNxHR</td>
+                                <td>High-quality archival, editing</td>
+                            </tr>
+                            <tr>
+                                <td><strong>H.265/HEVC</strong></td>
+                                <td>HEVC Main 10</td>
+                                <td>Streaming, distribution, 4K/HDR</td>
+                            </tr>
+                            <tr>
+                                <td><strong>VP9 Profile 2</strong></td>
+                                <td>VP9</td>
+                                <td>Web video, YouTube, HDR</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Color Space Standards</h3>
+                    <table class="standards-table">
+                        <thead>
+                            <tr>
+                                <th>Color Space</th>
+                                <th>Application</th>
+                                <th>Range</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Rec. 709</strong></td>
+                                <td>HD broadcast standard</td>
+                                <td>Limited (16-235)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Rec. 2020</strong></td>
+                                <td>4K/UHD, HDR, wide color gamut</td>
+                                <td>Limited or Full</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DCI-P3</strong></td>
+                                <td>Digital cinema projection</td>
+                                <td>Full (0-1023)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>sRGB</strong></td>
+                                <td>Web, computer displays</td>
+                                <td>Full (0-255 @ 8-bit)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Quality Benefits of 10-Bit</h3>
+                    <ul style="margin-left: 20px; margin-top: 15px; line-height: 1.8;">
+                        <li><strong>Reduced banding:</strong> Smoother gradients in skies, shadows</li>
+                        <li><strong>Better color grading:</strong> More latitude for post-production</li>
+                        <li><strong>HDR support:</strong> Required for HDR10, Dolby Vision</li>
+                        <li><strong>Professional standard:</strong> Broadcast and cinema requirement</li>
+                        <li><strong>Future-proofing:</strong> Better archival quality</li>
+                    </ul>
+
+                    <button class="btn" onclick="closeStandardsModal();" tabindex="0"
+                        style="margin-top: 20px; background: rgba(20, 184, 166, 0.3); box-shadow: 0 4px 15px rgba(20, 184, 166, 0.4);">
+                        <span aria-hidden="true">✓</span> Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
