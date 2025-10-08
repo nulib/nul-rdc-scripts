@@ -1,6 +1,8 @@
 import eel
 import os
 import sys
+import glob
+import platform
 from pathlib import Path
 
 # Add parent directory to path so we can import medusight
@@ -101,7 +103,8 @@ def process_single_video(file_path):
             size = 0
             extension = '.unknown'
         
-        return {'filename': filename,
+        return {
+            'filename': filename,
             'path': str(file_path),
             'size': size,
             'extension': extension,
@@ -109,19 +112,12 @@ def process_single_video(file_path):
             'issues': [str(e)],
             'processed': False
         }
+
 @eel.expose
 def process_video(file_path):
     """Process video file - your QC logic here"""
     try:
         print(f"Processing: {file_path}")
-        
-        # Your video quality control logic here
-        # Example processing:
-        # - Check video codec
-        # - Verify audio tracks
-        # - Check resolution
-        # - Validate duration
-        # etc.
         
         return {
             'success': True,
@@ -136,6 +132,7 @@ def process_video(file_path):
             'success': False,
             'message': f"Error: {str(e)}"
         }
+
 @eel.expose
 def test_connection():
     print("Test connection called!")
@@ -157,77 +154,201 @@ def get_file_info(file_path):
     except Exception as e:
         return {'error': str(e)}
 
-@eel.expose
-def browse_file():
-    """Open file dialog (alternative approach)"""
-    # Note: File dialogs work better through HTML input type="file"
-    # But you can also use tkinter if needed
-    pass
+# ============================================================================
+# CROSS-PLATFORM FILE DIALOGS
+# ============================================================================
 
 @eel.expose
-def select_files_dialog():
-    """Open native file picker using AppleScript (macOS specific)"""
+def select_files_dialog(file_types=None):
+    """Open native file picker - cross-platform (macOS and Windows)"""
     try:
-        import subprocess
+        print(f"DEBUG: select_files_dialog called with file_types='{file_types}' (type: {type(file_types)})")
         
-        # Use macOS native AppleScript file dialog
-        script = '''
-        tell application "System Events"
-            activate
-            set theFiles to choose file with prompt "Select QCTools XML/JSON files" of type {"xml", "json"} with multiple selections allowed
-            set filePaths to {}
-            repeat with aFile in theFiles
-                set end of filePaths to POSIX path of aFile
-            end repeat
-            return filePaths
-        end tell
-        '''
+        system = platform.system()
         
-        result = subprocess.run(
-            ['osascript', '-e', script],
-            capture_output=True,
-            text=True
-        )
-        
-        if result.returncode == 0:
-            # Parse the comma-separated file paths
-            files = [f.strip() for f in result.stdout.strip().split(',') if f.strip()]
-            print(f"Selected files: {files}")
-            return files
-        else:
-            print(f"Dialog cancelled or error: {result.stderr}")
-            return []
+        if system == 'Darwin':  # macOS
+            return _select_files_macos(file_types)
+        else:  # Windows or Linux
+            return _select_files_windows(file_types)
+            
     except Exception as e:
         print(f"Error: {e}")
         import traceback
         traceback.print_exc()
         return []
 
-@eel.expose  
-def select_folder_dialog():
-    """Open native folder picker using PyQt5"""
+def _select_files_macos(file_types):
+    """macOS file picker using AppleScript"""
+    import subprocess
+    
+    # Handle both 'video' and 'xml' modes
+    if file_types == 'xml':
+        file_type_list = '{"xml", "json", "XML", "JSON"}'
+        prompt_text = "Select QCTools XML/JSON files"
+    else:  # default to video
+        file_type_list = '{"mkv", "mp4", "MKV", "MP4"}'
+        prompt_text = "Select Video Files (MKV/MP4)"
+    
+    script = f'''
+    tell application "System Events"
+        activate
+        set theFiles to choose file with prompt "{prompt_text}" of type {file_type_list} with multiple selections allowed
+        set filePaths to {{}}
+        repeat with aFile in theFiles
+            set end of filePaths to POSIX path of aFile
+        end repeat
+        return filePaths
+    end tell
+    '''
+    
+    result = subprocess.run(
+        ['osascript', '-e', script],
+        capture_output=True,
+        text=True
+    )
+    
+    if result.returncode == 0:
+        files = [f.strip() for f in result.stdout.strip().split(',') if f.strip()]
+        print(f"Selected files: {files}")
+        return files
+    else:
+        print(f"Dialog cancelled or error: {result.stderr}")
+        return []
+
+def _select_files_windows(file_types):
+    """Windows/Linux file picker using tkinter"""
     try:
-        from PyQt5.QtWidgets import QApplication, QFileDialog
-        import sys
+        import tkinter as tk
+        from tkinter import filedialog
         
-        app = QApplication.instance()
-        if app is None:
-            app = QApplication(sys.argv)
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes('-topmost', True)
         
-        folder = QFileDialog.getExistingDirectory(
-            None,
-            "Select folder containing QCTools files",
-            ""
+        # Handle both 'video' and 'xml' modes
+        if file_types == 'xml':
+            filetypes = [
+                ("QCTools files", "*.xml *.json"),
+                ("XML files", "*.xml"),
+                ("JSON files", "*.json"),
+                ("All files", "*.*")
+            ]
+            title = "Select QCTools XML/JSON files"
+        else:  # default to video
+            filetypes = [
+                ("Video files", "*.mkv *.mp4"),
+                ("MKV files", "*.mkv"),
+                ("MP4 files", "*.mp4"),
+                ("All files", "*.*")
+            ]
+            title = "Select Video Files"
+        
+        files = filedialog.askopenfilenames(
+            title=title,
+            filetypes=filetypes
         )
         
+        root.destroy()
+        
+        files_list = list(files) if files else []
+        print(f"Selected files: {files_list}")
+        return files_list
+        
+    except Exception as e:
+        print(f"Error in Windows file dialog: {e}")
+        import traceback
+        traceback.print_exc()
+        return []
+
+@eel.expose  
+def select_folder_dialog(file_types=None):
+    """Open native folder picker and return all matching files - cross-platform"""
+    try:
+        system = platform.system()
+        
+        if system == 'Darwin':  # macOS
+            folder = _select_folder_macos()
+        else:  # Windows or Linux
+            folder = _select_folder_windows()
+        
+        if not folder:
+            print("No folder selected")
+            return []
+        
         print(f"Selected folder: {folder}")
-        return folder if folder else None
+        
+        # Determine which file types to look for
+        if file_types is None or file_types == 'video':
+            extensions = ['*.mkv', '*.mp4', '*.MKV', '*.MP4']
+        else:
+            extensions = ['*.xml', '*.json', '*.XML', '*.JSON']
+        
+        # Find all matching files in the folder (non-recursive)
+        all_files = []
+        for ext in extensions:
+            pattern = os.path.join(folder, ext)
+            all_files.extend(glob.glob(pattern))
+        
+        # Remove duplicates (case-insensitive extensions might cause this)
+        all_files = list(set(all_files))
+        
+        print(f"Found {len(all_files)} files in folder")
+        return all_files
+        
     except Exception as e:
         print(f"Error opening folder dialog: {e}")
         import traceback
         traceback.print_exc()
+        return []
+
+def _select_folder_macos():
+    """macOS folder picker using AppleScript"""
+    import subprocess
+    
+    script = '''
+    tell application "System Events"
+        activate
+        set theFolder to choose folder with prompt "Select folder containing files"
+        return POSIX path of theFolder
+    end tell
+    '''
+    
+    result = subprocess.run(
+        ['osascript', '-e', script],
+        capture_output=True,
+        text=True
+    )
+    
+    if result.returncode == 0:
+        folder = result.stdout.strip()
+        return folder if folder else None
+    else:
         return None
 
+def _select_folder_windows():
+    """Windows/Linux folder picker using tkinter"""
+    try:
+        import tkinter as tk
+        from tkinter import filedialog
+        
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes('-topmost', True)
+        
+        folder = filedialog.askdirectory(
+            title="Select folder containing files"
+        )
+        
+        root.destroy()
+        return folder if folder else None
+        
+    except Exception as e:
+        print(f"Error in Windows folder dialog: {e}")
+        return None
+
+# ============================================================================
+# FOLDER CONTENTS AND FILE PROCESSING
+# ============================================================================
 
 @eel.expose
 def get_folder_contents(folder_path):
@@ -245,7 +366,7 @@ def get_folder_contents(folder_path):
         
         qc_files = []
         for f in path.glob('*'):
-            if f.suffix.lower() in ['.xml', '.json'] or str(f).lower().endswith('.mkv.qctools.xml'):
+            if f.suffix.lower() in ['.xml', '.json', '.mkv', '.mp4'] or str(f).lower().endswith('.mkv.qctools.xml'):
                 qc_files.append({
                     'filename': f.name,
                     'path': str(f),
@@ -285,21 +406,21 @@ def process_path(path_input):
         
         if path.is_file():
             # Check if it's a supported file type
-            if path.suffix.lower() in ['.xml', '.json'] or str(path).lower().endswith('.mkv.qctools.xml'):
+            if path.suffix.lower() in ['.xml', '.json', '.mkv', '.mp4'] or str(path).lower().endswith('.mkv.qctools.xml'):
                 result = process_single_video(path)
                 results.append(result)
             else:
                 return {'success': False, 'message': f'Unsupported file type: {path.suffix}', 'results': []}
         
         elif path.is_dir():
-            # Process all XML/JSON files in folder
+            # Process all supported files in folder
             for f in path.glob('*'):
-                if f.suffix.lower() in ['.xml', '.json'] or str(f).lower().endswith('.mkv.qctools.xml'):
+                if f.suffix.lower() in ['.xml', '.json', '.mkv', '.mp4'] or str(f).lower().endswith('.mkv.qctools.xml'):
                     result = process_single_video(f)
                     results.append(result)
             
             if not results:
-                return {'success': False, 'message': 'No QCTools files found in folder', 'results': []}
+                return {'success': False, 'message': 'No supported files found in folder', 'results': []}
         
         return {
             'success': True, 
@@ -319,7 +440,7 @@ def process_path(path_input):
 
 @eel.expose
 def open_report_file(report_path):
-    """Open the report file in the default text editor"""
+    """Open the report file in the default text editor - cross-platform"""
     try:
         import platform
         import subprocess
@@ -329,7 +450,7 @@ def open_report_file(report_path):
         if system == 'Darwin':  # macOS
             subprocess.run(['open', report_path])
         elif system == 'Windows':
-            subprocess.run(['start', report_path], shell=True)
+            os.startfile(report_path)  # More reliable for Windows
         else:  # Linux
             subprocess.run(['xdg-open', report_path])
         
@@ -337,8 +458,9 @@ def open_report_file(report_path):
     except Exception as e:
         return {'success': False, 'error': str(e)}
 
-# Start the app\
-eel.start('index.html', 
-          size=(1200, 900),
-          mode='chrome',
-          port=8080)
+# Start the app
+if __name__ == '__main__':
+    eel.start('index.html', 
+              size=(1200, 900),
+              mode='chrome',
+              port=8080)

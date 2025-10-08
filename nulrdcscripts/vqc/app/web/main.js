@@ -4,12 +4,14 @@ let lastFocusedElement = null;
 function openLicenseModal() {
     lastFocusedElement = document.activeElement;
     document.getElementById('licenseModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
     trapFocus();
     announceStatus('License dialog opened');
 }
 
 function closeLicenseModal() {
     document.getElementById('licenseModal').style.display = 'none';
+    document.body.style.overflow = '';
     if (lastFocusedElement) {
         lastFocusedElement.focus();
     }
@@ -19,12 +21,14 @@ function closeLicenseModal() {
 function openStandardsModal() {
     lastFocusedElement = document.activeElement;
     document.getElementById('standardsModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
     trapFocus();
     announceStatus('Standards reference opened');
 }
 
 function closeStandardsModal() {
     document.getElementById('standardsModal').style.display = 'none';
+    document.body.style.overflow = '';
     if (lastFocusedElement) {
         lastFocusedElement.focus();
     }
@@ -51,6 +55,7 @@ function announceStatus(message) {
         }, 1000);
     }
 }
+
 // ===== SHARED FUNCTIONS =====
 function formatFileSize(bytes) {
     if (bytes === 0) return '0 Bytes';
@@ -60,63 +65,11 @@ function formatFileSize(bytes) {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
 }
 
-function displayResults(results) {
-    const resultsSection = document.getElementById('resultsSection');
-    const uploadSection = document.getElementById('uploadSection');
-    
-    const passCount = results.filter(r => r.status === 'PASS').length;
-    const failCount = results.filter(r => r.status === 'FAIL').length;
-    const errorCount = results.filter(r => r.status === 'ERROR').length;
-    const totalCount = results.length;
-    
-    const resultsHTML = `
-        <div class="results">
-            <div class="success-icon" aria-hidden="true">✅</div>
-            <h2>Processing Complete!</h2>
-            
-            <div class="summary-stats" style="display: flex; justify-content: space-around; margin: 30px 0; padding: 20px; background: rgba(168, 85, 247, 0.1); border-radius: 12px;">
-                <div style="text-align: center;">
-                    <div style="font-size: 36px; font-weight: 700; color: #10b981;">${passCount}</div>
-                    <div style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">PASSED</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 36px; font-weight: 700; color: #ef4444;">${failCount}</div>
-                    <div style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">FAILED</div>
-                </div>
-                ${errorCount > 0 ? `<div style="text-align: center;"><div style="font-size: 36px; font-weight: 700; color: #f59e0b;">${errorCount}</div><div style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">ERRORS</div></div>` : ''}
-                <div style="text-align: center;">
-                    <div style="font-size: 36px; font-weight: 700;">${totalCount}</div>
-                    <div style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">TOTAL</div>
-                </div>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; margin: 20px 0;">
-                ${results.map(r => {
-                    const color = r.status === 'PASS' ? '#10b981' : r.status === 'FAIL' ? '#ef4444' : '#f59e0b';
-                    const icon = r.status === 'PASS' ? '✓' : r.status === 'FAIL' ? '✗' : '⚠';
-                    return `
-                        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border-left: 4px solid ${color};">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                                <strong>${r.filename}</strong>
-                                <span style="background: ${color}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 11px;">${icon} ${r.status}</span>
-                            </div>
-                            <p style="font-size: 13px; color: rgba(255,255,255,0.7);">Size: ${formatFileSize(r.size)}</p>
-                            ${r.issues && r.issues.length > 0 ? `<p style="font-size: 12px; color: #ef4444; margin-top: 8px;">⚠️ ${r.issues.join(', ')}</p>` : ''}
-                            ${r.report_path ? `<button onclick="window.open('file://${r.report_path}')" style="margin-top: 10px; padding: 6px 12px; background: rgba(168,85,247,0.3); border: none; border-radius: 6px; color: white; cursor: pointer;">📄 View Report</button>` : ''}
-                        </div>
-                    `;
-                }).join('')}
-            </div>
-            
-            <button class="btn" onclick="location.reload()" style="background: rgba(168, 85, 247, 0.2); margin-top: 20px;">🔄 New Analysis</button>
-        </div>
-    `;
-    
-    resultsSection.innerHTML = resultsHTML;
-    resultsSection.classList.remove('hidden');
-}
 // ===== MAIN APPLICATION =====
 document.addEventListener('DOMContentLoaded', function () {
+    console.log('=== SCRIPT LOADED ==='); // First thing to run
+    console.log('DOMContentLoaded fired');
+    
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
     const folderInput = document.getElementById('folderInput');
@@ -132,6 +85,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const modeBtns = document.querySelectorAll('.mode-btn');
     const uploadInfo = document.getElementById('uploadInfo');
 
+    console.log('Elements:', {
+        uploadArea: !!uploadArea,
+        menuSelectFiles: !!menuSelectFiles,
+        menuSelectFolder: !!menuSelectFolder,
+        modeBtns: modeBtns.length
+    });
+
     let selectedFiles = [];
     let currentMode = 'video';
 
@@ -145,6 +105,8 @@ document.addEventListener('DOMContentLoaded', function () {
             btn.classList.add('active');
             btn.setAttribute('aria-pressed', 'true');
             currentMode = btn.dataset.mode;
+            
+            console.log('Mode switched to:', currentMode); // Debug log
 
             if (currentMode === 'video') {
                 fileInput.accept = '.mkv,.mp4';
@@ -160,47 +122,61 @@ document.addEventListener('DOMContentLoaded', function () {
             selectedFiles = [];
             updateFileList();
         });
-        // Hamburger menu toggle
-const menuToggle = document.getElementById('menuToggle');
-const utilityMenu = document.getElementById('utilityMenu');
-const menuIcon = document.getElementById('menuIcon');
+    });
 
-menuToggle.addEventListener('click', () => {
-    const isOpen = utilityMenu.classList.contains('show');
+    // ===== HAMBURGER MENU =====
+    const menuToggle = document.getElementById('menuToggle');
+    const utilityMenu = document.getElementById('utilityMenu');
+    const menuIcon = document.getElementById('menuIcon');
     
-    if (isOpen) {
-        utilityMenu.classList.remove('show');
-        menuIcon.textContent = '☰';
-        menuToggle.setAttribute('aria-expanded', 'false');
-        announceStatus('Menu closed');
-    } else {
-        utilityMenu.classList.open('show');
-        menuIcon.textContent = '✕';
-        menuToggle.setAttribute('aria-expanded', 'true');
-        announceStatus('Menu opened');
+    if (menuToggle && utilityMenu) {
+        menuToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = utilityMenu.classList.contains('active');
+            
+            if (isOpen) {
+                utilityMenu.classList.remove('active');
+                menuIcon.textContent = '☰';
+                menuToggle.setAttribute('aria-expanded', 'false');
+                announceStatus('Menu closed');
+            } else {
+                utilityMenu.classList.add('active');
+                menuIcon.textContent = '✕';
+                menuToggle.setAttribute('aria-expanded', 'true');
+                announceStatus('Menu opened');
+            }
+        });
+    
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!menuToggle.contains(e.target) && !utilityMenu.contains(e.target)) {
+                if (utilityMenu.classList.contains('active')) {
+                    utilityMenu.classList.remove('active');
+                    menuIcon.textContent = '☰';
+                    menuToggle.setAttribute('aria-expanded', 'false');
+                }
+            }
+        });
+    
+        // Close menu when a menu item is clicked
+        utilityMenu.querySelectorAll('button').forEach(menuBtn => {
+            menuBtn.addEventListener('click', () => {
+                utilityMenu.classList.remove('active');
+                menuIcon.textContent = '☰';
+                menuToggle.setAttribute('aria-expanded', 'false');
+            });
+        });
+    
+        // Close menu with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && utilityMenu.classList.contains('active')) {
+                utilityMenu.classList.remove('active');
+                menuIcon.textContent = '☰';
+                menuToggle.setAttribute('aria-expanded', 'false');
+                menuToggle.focus();
+            }
+        });
     }
-});
-
-// Close menu when clicking outside
-document.addEventListener('click', (e) => {
-    if (!menuToggle.contains(e.target) && !utilityMenu.contains(e.target)) {
-        if (utilityMenu.classList.contains('show')) {
-            utilityMenu.classList.remove('show');
-            menuIcon.textContent = '☰';
-            menuToggle.setAttribute('aria-expanded', 'false');
-        }
-    }
-});
-
-// Close menu when a menu item is clicked
-utilityMenu.querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('click', () => {
-        utilityMenu.classList.remove('show');
-        menuIcon.textContent = '☰';
-        menuToggle.setAttribute('aria-expanded', 'false');
-    });
-});
-    });
 
     // ===== DRAG AND DROP DISABLED =====
     // Drag and drop doesn't work because browsers don't expose file paths
@@ -359,16 +335,18 @@ utilityMenu.querySelectorAll('button').forEach(btn => {
         updateFileList();
     };
 
-    function formatFileSize(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-    }
-
     // ===== PROCESSING WITH EEL BACKEND =====
-    processBtn.addEventListener('click', async () => {
+    processBtn.addEventListener('click', async (e) => {
+        e.preventDefault(); // Prevent any default behavior
+        
+        if (selectedFiles.length === 0) {
+            alert('Please select files first');
+            return;
+        }
+        
+        // Disable button to prevent double-clicks
+        processBtn.disabled = true;
+        
         uploadSection.classList.add('hidden');
         processingSection.classList.remove('hidden');
         announceStatus('Processing files. Please wait.');
@@ -391,8 +369,11 @@ utilityMenu.querySelectorAll('button').forEach(btn => {
             uploadSection.classList.remove('hidden');
             alert('Error processing files: ' + error);
             announceStatus('Processing failed');
+        } finally {
+            // Re-enable button
+            processBtn.disabled = false;
         }
-    });
+    }, { once: false }); // Ensure event doesn't fire twice
 
     newAnalysisBtn.addEventListener('click', () => {
         selectedFiles = [];
