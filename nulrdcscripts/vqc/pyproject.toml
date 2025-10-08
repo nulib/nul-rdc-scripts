@@ -8,8 +8,7 @@ authors = [
 ]
 readme = "README.md"
 license = "MIT"
-homepage = "https://github.com/nulib/medusight"  # Update with actual URL
-repository = "https://github.com/nulib/medusight"  # Update with actual URL
+
 
 [tool.poetry.dependencies]
 python = "^3.12"
