@@ -158,18 +158,34 @@ def get_file_info(file_path):
 # CROSS-PLATFORM FILE DIALOGS
 # ============================================================================
 
+# Global variable to store current mode
+current_file_mode = 'video'
+
+@eel.expose
+def set_file_mode(mode):
+    """Set the current file selection mode"""
+    global current_file_mode
+    current_file_mode = mode
+    print(f"Mode set to: {mode}")
+    return True
+
 @eel.expose
 def select_files_dialog(file_types=None):
     """Open native file picker - cross-platform (macOS and Windows)"""
     try:
+        # Use global mode if parameter is None
+        global current_file_mode
+        mode_to_use = file_types if file_types is not None else current_file_mode
+        
         print(f"DEBUG: select_files_dialog called with file_types='{file_types}' (type: {type(file_types)})")
+        print(f"DEBUG: Using mode: '{mode_to_use}'")
         
         system = platform.system()
         
         if system == 'Darwin':  # macOS
-            return _select_files_macos(file_types)
+            return _select_files_macos(mode_to_use)
         else:  # Windows or Linux
-            return _select_files_windows(file_types)
+            return _select_files_windows(mode_to_use)
             
     except Exception as e:
         print(f"Error: {e}")
@@ -183,10 +199,11 @@ def _select_files_macos(file_types):
     
     # Handle both 'video' and 'xml' modes
     if file_types == 'xml':
-        file_type_list = '{"xml", "json", "XML", "JSON"}'
+        # Use proper UTI for XML and JSON
+        file_type_list = '{"public.xml", "public.json"}'
         prompt_text = "Select QCTools XML/JSON files"
-    else:  # default to video
-        file_type_list = '{"mkv", "mp4", "MKV", "MP4"}'
+    else:  # video mode
+        file_type_list = '{"public.mpeg-4", "org.matroska.mkv"}'
         prompt_text = "Select Video Files (MKV/MP4)"
     
     script = f'''

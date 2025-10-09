@@ -70,6 +70,11 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log('=== SCRIPT LOADED ==='); // First thing to run
     console.log('DOMContentLoaded fired');
     
+    // Test Eel connection
+    eel.test_connection()(function(result) {
+        console.log('Eel test result:', result);
+    });
+    
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
     const folderInput = document.getElementById('folderInput');
@@ -97,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ===== MODE SWITCHING =====
     modeBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
             modeBtns.forEach(b => {
                 b.classList.remove('active');
                 b.setAttribute('aria-pressed', 'false');
@@ -106,7 +111,18 @@ document.addEventListener('DOMContentLoaded', function () {
             btn.setAttribute('aria-pressed', 'true');
             currentMode = btn.dataset.mode;
             
+            // Store in window object so it's accessible everywhere
+            window.currentFileMode = currentMode;
+            
             console.log('Mode switched to:', currentMode); // Debug log
+            
+            // Tell Python about the mode change
+            try {
+                await eel.set_file_mode(currentMode)();
+                console.log('Mode sent to Python:', currentMode);
+            } catch (error) {
+                console.error('Error setting mode in Python:', error);
+            }
 
             if (currentMode === 'video') {
                 fileInput.accept = '.mkv,.mp4';
