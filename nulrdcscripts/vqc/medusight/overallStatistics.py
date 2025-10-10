@@ -14,13 +14,13 @@ def setOperatorIR(fullCriteria):
 def setOperatorCL(fullCriteria):
     """Sets operator to use to assess clipping"""
     if fullCriteria.endswith("min"):
-        return "<="
+        return "<"
     else:
-        return ">="
+        return ">"
 
 
 def runyuvanalysis(videoDSDF, standardsDF, fullCriteria):
-    # Determine which row to use
+    # Determine which row to use from the descriptive statistics
     if "low" in fullCriteria:
         stat_row = "min"
     else:
@@ -35,18 +35,18 @@ def runyuvanalysis(videoDSDF, standardsDF, fullCriteria):
 
     # In range check
     if "low" in fullCriteria:
-        tfIR = extractSumData > extractStandDataBRNG
+        tfIR = extractSumData >= extractStandDataBRNG # extracted data is higher than the standard value for low, then produces true
     else:
-        tfIR = extractSumData < extractStandDataBRNG
+        tfIR = extractSumData <= extractStandDataBRNG
 
     if tfIR:
         return None
     else:
         # Clipping check
         if "low" in fullCriteria:
-            tfCL = extractSumData <= extractStandDataClipping
+            tfCL = extractSumData <= extractStandDataClipping # low extracted data is less than or equal to standard. so 0. then true. clipping
         else:
-            tfCL = extractSumData >= extractStandDataClipping
+            tfCL = extractSumData >= extractStandDataClipping # low extracted data is greater or equal to standard. so 1023 or 255. then true. clipping.
         if tfCL:
             return [
                 error(

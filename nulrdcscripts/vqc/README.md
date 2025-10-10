@@ -1,4 +1,4 @@
-Version Date: 8-8-25
+Version Date: 10-10-25
 
 Document Owner: Sophia Francis <br>
 
@@ -10,6 +10,18 @@ Description:<br>
 This document provides information about running MeduSight and what information is required in order to do so.
 
 ## Important information:
+
+### Standard Ranges (citations will be added in the future):
+    - Based on my preference, I have made the ranges exclusive.
+    8 Bit
+        Y: 0 (clipping), 1-15 (out of broadcast range), 16-235 (in range), 236-255 (out of broadcasting range), 256+ (clipping)
+        U: 0 (clipping), 1-15 (out of broadcast range), 16-240 (in range), 241-255 (out of broadcasting range), 256+ (clipping)
+        V: 0 (clipping), 1-15 (out of broadcast range), 16-240 (in range), 241-255 (out of broadcasting range), 256+ (clipping)
+
+    10 Bit: 
+        Y: 0 (clipping), 1-63 (out of broadcast range), 64-940 (in range), 941-1023 (out of broadcasting range), 1024+ (clipping)
+        U: 0 (clipping), 1-63 (out of broadcast range), 64-960 (in range), 961-255 (out of broadcasting range), 1024+ (clipping)
+        V: 0 (clipping), 1-63 (out of broadcast range), 64-960 (in range), 961-255 (out of broadcasting range), 1024+ (clipping)
 
 
 ### Changing Value ranges:
