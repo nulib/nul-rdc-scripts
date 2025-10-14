@@ -123,6 +123,13 @@ def clean_files(files: list[str], skip: list[str]):
     files = [f for f in files if not f.endswith(".md5")]
     files = [f for f in files if not f.endswith(".csv")]
     files = [f for f in files if not f.endswith(".py")]
+    files = [f for f in files if not f.endswith(".log")]
+    files = [f for f in files if not f.endswith("frame_eia608data.txt")]
+    files = [f for f in files if not f.endswith("capture_options.log")]
+    files = [f for f in files if not f.endswith("vrecord_input.tlog")]
+    files = [f for f in files if not f.endswith(".log-0.log.mbtree")]
+    files = [f for f in files if not f.endswith(".scc")]
+    files = [f for f in files if not f.endswith(".vtt")]
 
     if skip:
         skip_list = skip
