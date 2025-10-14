@@ -40,18 +40,17 @@
                 </div>
 
                 <div id="uploadSection">
-                    <div style="margin: 20px 0; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px;">
-                        <p style="text-align: center; color: rgba(255,255,255,0.9); margin-bottom: 10px; font-weight: 600;">
-                            Enter file or folder path:
-                        </p>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="text" id="manualPath" placeholder="/path/to/file.xml or /path/to/folder" 
-                                style="flex: 1; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; font-size: 14px;">
-                            <button onclick="processManualPath()" class="btn" style="white-space: nowrap;">
+                    <div class="manual-path-section">
+                        <p class="manual-path-label">Enter file or folder path:</p>
+                        <div class="manual-path-input-group">
+                            <input type="text" id="manualPath" class="manual-path-input" 
+                                placeholder="/path/to/file.xml or /path/to/folder">
+                            <button onclick="processManualPath()" class="btn" style="width: auto; margin: 0; white-space: nowrap;">
                                 Process Path
                             </button>
                         </div>
                     </div>
+
                     <div class="upload-area" id="uploadArea" tabindex="0" role="button"
                         aria-label="Upload files or folder. Click, press Enter, or drop here">
                         <div class="upload-icon" aria-hidden="true">📁</div>
@@ -107,33 +106,35 @@
                 </div>
             </div>
         </main>
-        <!-- Hamburger Menu Button -->
-<button class="menu-toggle" id="menuToggle" aria-label="Open utility menu" aria-expanded="false">
-    <span id="menuIcon">☰</span>
-</button>
 
-<!-- Utility Menu -->
-<div class="utility-menu" id="utilityMenu" role="menu">
-    <button class="contrast-btn" id="contrastBtn" role="menuitem" tabindex="0" aria-pressed="false">
-        <span id="contrastIcon" aria-hidden="true">◐</span>
-        <span id="contrastText">High Contrast</span>
-    </button>
-    
-    <button class="colorblind-btn" id="colorblindBtn" role="menuitem" tabindex="0" aria-pressed="false">
-        <span id="colorblindIcon" aria-hidden="true">👁️</span>
-        <span id="colorblindText">Colorblind Mode</span>
-    </button>
-    
-    <button class="standards-btn" onclick="openStandardsModal()" role="menuitem" tabindex="0">
-        <span aria-hidden="true">📊</span>
-        <span>Standards</span>
-    </button>
-    
-    <button class="license-btn" onclick="openLicenseModal()" role="menuitem" tabindex="0">
-        <span aria-hidden="true">ℹ️</span>
-        <span>License Info</span>
-    </button>
-</div>
+        <!-- Hamburger Menu Button -->
+        <button class="menu-toggle" id="menuToggle" aria-label="Open utility menu" aria-expanded="false">
+            <span id="menuIcon">☰</span>
+        </button>
+
+        <!-- Utility Menu -->
+        <div class="utility-menu" id="utilityMenu" role="menu">
+            <button class="standards-btn" onclick="openStandardsModal()" role="menuitem" tabindex="0">
+                <span aria-hidden="true">📊</span>
+                <span>Standards</span>
+            </button>
+            
+            <button class="license-btn" onclick="openLicenseModal()" role="menuitem" tabindex="0">
+                <span aria-hidden="true">ℹ️</span>
+                <span>License Info</span>
+            </button>
+        </div>
+
+        <!-- Accessibility Floating Buttons -->
+        <div class="accessibility-buttons">
+            <button class="accessibility-btn" id="contrastBtn" aria-pressed="false" title="Toggle High Contrast">
+                <span id="contrastIcon" aria-hidden="true">◐</span>
+            </button>
+            
+            <button class="accessibility-btn" id="colorblindBtn" aria-pressed="false" title="Toggle Colorblind Mode">
+                <span id="colorblindIcon" aria-hidden="true">👁️</span>
+            </button>
+        </div>
        
         <div id="licenseModal" class="modal-overlay" style="display: none;"
             onclick="if(event.target.id==='licenseModal') { closeLicenseModal(); }" role="dialog" aria-modal="true"

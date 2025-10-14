@@ -53,8 +53,9 @@ def process_single_video(file_path):
         base_filename = path.stem.replace('.mkv.qctools', '').replace('.xml', '').replace('.json', '')
         output_dir = path.parent
         video_report = output_dir / f"{base_filename}_video_level_report.txt"
+        detailed_report = output_dir / f"{base_filename}_failing_frames_by_criteria.txt"
         
-        # Read the report to get PASS/FAIL status
+        # Read the video report to get PASS/FAIL status
         if video_report.exists():
             with open(video_report, 'r') as f:
                 report_content = f.read()
@@ -73,7 +74,8 @@ def process_single_video(file_path):
                 'status': status,
                 'issues': issues,
                 'processed': True,
-                'report_path': str(video_report)
+                'report_path': str(video_report),
+                'detailed_report_path': str(detailed_report) if detailed_report.exists() else None
             }
         else:
             return {
@@ -278,8 +280,8 @@ def _select_files_windows(file_types):
         return []
 
 @eel.expose  
-def select_folder_dialog(file_types=None):
-    """Open native folder picker and return all matching files - cross-platform"""
+def select_folder_dialog():
+    """Open native folder picker and return the folder path - cross-platform"""
     try:
         system = platform.system()
         
@@ -290,33 +292,16 @@ def select_folder_dialog(file_types=None):
         
         if not folder:
             print("No folder selected")
-            return []
+            return None
         
         print(f"Selected folder: {folder}")
-        
-        # Determine which file types to look for
-        if file_types is None or file_types == 'video':
-            extensions = ['*.mkv', '*.mp4', '*.MKV', '*.MP4']
-        else:
-            extensions = ['*.xml', '*.json', '*.XML', '*.JSON']
-        
-        # Find all matching files in the folder (non-recursive)
-        all_files = []
-        for ext in extensions:
-            pattern = os.path.join(folder, ext)
-            all_files.extend(glob.glob(pattern))
-        
-        # Remove duplicates (case-insensitive extensions might cause this)
-        all_files = list(set(all_files))
-        
-        print(f"Found {len(all_files)} files in folder")
-        return all_files
+        return folder
         
     except Exception as e:
         print(f"Error opening folder dialog: {e}")
         import traceback
         traceback.print_exc()
-        return []
+        return None
 
 def _select_folder_macos():
     """macOS folder picker using AppleScript"""
@@ -369,45 +354,144 @@ def _select_folder_windows():
 
 @eel.expose
 def get_folder_contents(folder_path):
-    """Get list of QCTools files in a folder"""
+    """Get list of files in a folder based on current mode"""
     try:
+        global current_file_mode
         from pathlib import Path
         path = Path(folder_path)
         
+        print(f"DEBUG: get_folder_contents called with: {folder_path}")
+        print(f"DEBUG: Current mode: {current_file_mode}")
+        
         if not path.exists() or not path.is_dir():
+            print(f"DEBUG: Path doesn't exist or is not a directory")
             return {
                 'success': False,
                 'message': 'Invalid folder path',
                 'files': []
             }
         
-        qc_files = []
-        for f in path.glob('*'):
-            if f.suffix.lower() in ['.xml', '.json', '.mkv', '.mp4'] or str(f).lower().endswith('.mkv.qctools.xml'):
-                qc_files.append({
-                    'filename': f.name,
-                    'path': str(f),
-                    'size': f.stat().st_size,
-                    'extension': f.suffix.lower()
-                })
+        # Determine which extensions to look for based on mode
+        if current_file_mode == 'xml':
+            valid_extensions = ['.xml', '.json']
+            print(f"DEBUG: Looking for XML/JSON files")
+        else:  # video mode
+            valid_extensions = ['.mkv', '.mp4']
+            print(f"DEBUG: Looking for video files (MKV/MP4)")
+        
+        files_found = []
+        for f in path.iterdir():
+            if f.is_file():
+                ext = f.suffix.lower()
+                print(f"DEBUG: Checking file: {f.name}, extension: {ext}")
+                
+                # Check if file matches current mode
+                if ext in valid_extensions:
+                    files_found.append({
+                        'filename': f.name,
+                        'path': str(f),
+                        'size': f.stat().st_size,
+                        'extension': ext
+                    })
+                    print(f"DEBUG: ✓ Added: {f.name}")
+                else:
+                    print(f"DEBUG: ✗ Skipped: {f.name} (extension '{ext}' not in {valid_extensions})")
+        
+        print(f"DEBUG: Total files found: {len(files_found)}")
         
         return {
-            'success': True,
-            'files': qc_files,
-            'count': len(qc_files)
+            'success': len(files_found) > 0,
+            'files': files_found,
+            'count': len(files_found)
         }
     
     except Exception as e:
+        print(f"ERROR in get_folder_contents: {e}")
+        import traceback
+        traceback.print_exc()
         return {
             'success': False,
             'message': str(e),
             'files': []
         }
-        
+
 @eel.expose
 def process_single_file(file_path):
     """Process a single file - exposed to JavaScript"""
     return process_single_video(file_path)
+
+@eel.expose
+def process_manual_path(path_input):
+    """Process single file or folder from manual path input"""
+    try:
+        global current_file_mode
+        from pathlib import Path
+        path = Path(path_input)
+        
+        print(f"DEBUG: process_manual_path called with: {path_input}")
+        print(f"DEBUG: Current mode: {current_file_mode}")
+        
+        if not path.exists():
+            return {'success': False, 'error': 'Path does not exist'}
+        
+        # Determine valid extensions based on mode
+        if current_file_mode == 'xml':
+            valid_extensions = ['.xml', '.json']
+        else:
+            valid_extensions = ['.mkv', '.mp4']
+        
+        if path.is_file():
+            # Check if it's a supported file type for current mode
+            ext = path.suffix.lower()
+            if ext in valid_extensions:
+                return {
+                    'success': True,
+                    'is_folder': False,
+                    'file': {
+                        'filename': path.name,
+                        'path': str(path),
+                        'size': path.stat().st_size
+                    }
+                }
+            else:
+                return {
+                    'success': False, 
+                    'error': f'File type {ext} not supported in {current_file_mode} mode'
+                }
+        
+        elif path.is_dir():
+            # Get all supported files in folder
+            files_found = []
+            for f in path.iterdir():
+                if f.is_file() and f.suffix.lower() in valid_extensions:
+                    files_found.append({
+                        'filename': f.name,
+                        'path': str(f),
+                        'size': f.stat().st_size
+                    })
+            
+            if files_found:
+                return {
+                    'success': True,
+                    'is_folder': True,
+                    'files': files_found
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': f'No {current_file_mode} files found in folder'
+                }
+        
+        return {'success': False, 'error': 'Invalid path'}
+    
+    except Exception as e:
+        print(f"ERROR in process_manual_path: {e}")
+        import traceback
+        traceback.print_exc()
+        return {
+            'success': False,
+            'error': str(e)
+        }
 
 @eel.expose
 def process_path(path_input):
@@ -464,6 +548,8 @@ def open_report_file(report_path):
         
         system = platform.system()
         
+        print(f"DEBUG: Opening report file: {report_path}")
+        
         if system == 'Darwin':  # macOS
             subprocess.run(['open', report_path])
         elif system == 'Windows':
@@ -473,7 +559,38 @@ def open_report_file(report_path):
         
         return {'success': True}
     except Exception as e:
+        print(f"ERROR opening report file: {e}")
         return {'success': False, 'error': str(e)}
+
+@eel.expose
+def read_report_file(report_path):
+    """Read report file content and return it"""
+    try:
+        from pathlib import Path
+        path = Path(report_path)
+        
+        print(f"DEBUG: read_report_file called with: {report_path}")
+        
+        if not path.exists():
+            print(f"DEBUG: File does not exist: {report_path}")
+            return {'success': False, 'error': 'Report file not found'}
+        
+        with open(path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        print(f"DEBUG: Successfully read {len(content)} characters")
+        return {
+            'success': True,
+            'content': content
+        }
+    except Exception as e:
+        print(f"ERROR in read_report_file: {e}")
+        import traceback
+        traceback.print_exc()
+        return {
+            'success': False,
+            'error': str(e)
+        }
 
 # Start the app
 if __name__ == '__main__':

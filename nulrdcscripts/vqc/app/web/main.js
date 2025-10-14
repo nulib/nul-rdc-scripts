@@ -67,13 +67,15 @@ function formatFileSize(bytes) {
 
 // ===== MAIN APPLICATION =====
 document.addEventListener('DOMContentLoaded', function () {
-    console.log('=== SCRIPT LOADED ==='); // First thing to run
+    console.log('=== SCRIPT LOADED ===');
     console.log('DOMContentLoaded fired');
     
     // Test Eel connection
-    eel.test_connection()(function(result) {
-        console.log('Eel test result:', result);
-    });
+    if (typeof eel !== 'undefined') {
+        eel.test_connection()(function(result) {
+            console.log('Eel test result:', result);
+        });
+    }
     
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
@@ -89,12 +91,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const newAnalysisBtn = document.getElementById('newAnalysisBtn');
     const modeBtns = document.querySelectorAll('.mode-btn');
     const uploadInfo = document.getElementById('uploadInfo');
+    const manualPathInput = document.getElementById('manualPath');
 
     console.log('Elements:', {
         uploadArea: !!uploadArea,
         menuSelectFiles: !!menuSelectFiles,
         menuSelectFolder: !!menuSelectFolder,
-        modeBtns: modeBtns.length
+        modeBtns: modeBtns.length,
+        processBtn: !!processBtn
     });
 
     let selectedFiles = [];
@@ -102,11 +106,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ===== MODE SWITCHING =====
     modeBtns.forEach(btn => {
-        btn.addEventListener('click', async () => {
+        btn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            console.log('Mode button clicked:', btn.dataset.mode);
+            
+            // Remove active from all buttons
             modeBtns.forEach(b => {
                 b.classList.remove('active');
                 b.setAttribute('aria-pressed', 'false');
             });
+            
+            // Set this button as active
             btn.classList.add('active');
             btn.setAttribute('aria-pressed', 'true');
             currentMode = btn.dataset.mode;
@@ -114,16 +126,19 @@ document.addEventListener('DOMContentLoaded', function () {
             // Store in window object so it's accessible everywhere
             window.currentFileMode = currentMode;
             
-            console.log('Mode switched to:', currentMode); // Debug log
+            console.log('Mode switched to:', currentMode);
             
             // Tell Python about the mode change
-            try {
-                await eel.set_file_mode(currentMode)();
-                console.log('Mode sent to Python:', currentMode);
-            } catch (error) {
-                console.error('Error setting mode in Python:', error);
+            if (typeof eel !== 'undefined') {
+                try {
+                    await eel.set_file_mode(currentMode)();
+                    console.log('Mode sent to Python:', currentMode);
+                } catch (error) {
+                    console.error('Error setting mode in Python:', error);
+                }
             }
 
+            // Update UI based on mode
             if (currentMode === 'video') {
                 fileInput.accept = '.mkv,.mp4';
                 uploadInfo.textContent = 'Supports: MKV, MP4 (multiple files supported)';
@@ -135,9 +150,73 @@ document.addEventListener('DOMContentLoaded', function () {
                 announceStatus('Switched to XML file mode');
             }
 
+            // Clear selected files when switching modes
             selectedFiles = [];
             updateFileList();
         });
+    });
+
+    // ===== MANUAL PATH PROCESSING =====
+    window.processManualPath = async function() {
+        const pathInput = manualPathInput.value.trim();
+        
+        if (!pathInput) {
+            alert('Please enter a file or folder path');
+            return;
+        }
+        
+        console.log('Processing manual path:', pathInput);
+        announceStatus('Processing path...');
+        
+        if (typeof eel === 'undefined') {
+            alert('Eel backend not connected');
+            return;
+        }
+        
+        try {
+            // Try to process as file first
+            const result = await eel.process_manual_path(pathInput)();
+            
+            if (result.success) {
+                if (result.is_folder && result.files) {
+                    // It's a folder with multiple files
+                    const newFiles = result.files.map(file => ({
+                        name: file.filename,
+                        path: file.path,
+                        size: file.size
+                    }));
+                    
+                    selectedFiles = [...selectedFiles, ...newFiles];
+                    announceStatus(`${result.files.length} file${result.files.length > 1 ? 's' : ''} found in folder`);
+                } else if (result.file) {
+                    // It's a single file
+                    selectedFiles.push({
+                        name: result.file.filename,
+                        path: result.file.path,
+                        size: result.file.size
+                    });
+                    announceStatus('File added');
+                }
+                
+                updateFileList();
+                manualPathInput.value = ''; // Clear input
+            } else {
+                alert(result.error || 'Invalid path or no valid files found');
+                announceStatus('Path processing failed');
+            }
+        } catch (error) {
+            console.error('Error processing manual path:', error);
+            alert('Error processing path: ' + error);
+            announceStatus('Error processing path');
+        }
+    };
+
+    // Allow Enter key to submit manual path
+    manualPathInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            window.processManualPath();
+        }
     });
 
     // ===== HAMBURGER MENU =====
@@ -174,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     
-        // Close menu when a menu item is clicked
+        // Close menu ONLY for menu buttons (Standards and License)
         utilityMenu.querySelectorAll('button').forEach(menuBtn => {
             menuBtn.addEventListener('click', () => {
                 utilityMenu.classList.remove('active');
@@ -194,18 +273,27 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ===== DRAG AND DROP DISABLED =====
-    // Drag and drop doesn't work because browsers don't expose file paths
-    // Users must use the native file dialogs instead
-    
+    // ===== DRAG AND DROP ERROR HANDLING =====
     uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
+        e.stopPropagation();
     });
 
     uploadArea.addEventListener('drop', (e) => {
         e.preventDefault();
-        alert('Drag and drop is not supported. Please use "Select Files" or "Select Folder" buttons.');
+        e.stopPropagation();
+        
+        // Add error styling
+        uploadArea.classList.add('drag-error');
+        
+        // Show alert
+        alert('⚠️ Drag and drop is not supported.\n\nPlease use "Select Files" or "Select Folder" buttons instead.');
         announceStatus('Please use the file selection buttons');
+        
+        // Remove error styling after animation
+        setTimeout(() => {
+            uploadArea.classList.remove('drag-error');
+        }, 500);
     });
 
     // ===== FILE LIST =====
@@ -231,6 +319,11 @@ document.addEventListener('DOMContentLoaded', function () {
         e.stopPropagation();
         uploadMenu.style.display = 'none';
         announceStatus('Opening file selector...');
+        
+        if (typeof eel === 'undefined') {
+            alert('Eel backend not connected');
+            return;
+        }
         
         try {
             const files = await eel.select_files_dialog()();
@@ -259,6 +352,11 @@ document.addEventListener('DOMContentLoaded', function () {
         uploadMenu.style.display = 'none';
         announceStatus('Opening folder selector...');
         
+        if (typeof eel === 'undefined') {
+            alert('Eel backend not connected');
+            return;
+        }
+        
         try {
             const folder = await eel.select_folder_dialog()();
             
@@ -276,7 +374,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     announceStatus(`${result.files.length} file${result.files.length > 1 ? 's' : ''} found in folder`);
                     updateFileList();
                 } else {
-                    announceStatus('No QCTools files found in folder');
+                    announceStatus('No valid files found in folder');
+                    alert('No valid files found in the selected folder.');
                 }
             } else {
                 announceStatus('No folder selected');
@@ -322,16 +421,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ===== UPLOAD MENU =====
     function updateFileList() {
+        console.log('updateFileList called, files:', selectedFiles.length);
+        
         if (selectedFiles.length === 0) {
             fileList.classList.add('hidden');
             processBtn.disabled = true;
             processBtn.setAttribute('aria-disabled', 'true');
+            console.log('No files, button disabled');
             return;
         }
 
         fileList.classList.remove('hidden');
         processBtn.disabled = false;
         processBtn.removeAttribute('aria-disabled');
+        console.log('Files present, button enabled');
 
         fileList.innerHTML = selectedFiles.map((file, index) => `
             <div class="file-item" role="listitem">
@@ -353,19 +456,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ===== PROCESSING WITH EEL BACKEND =====
     processBtn.addEventListener('click', async (e) => {
-        e.preventDefault(); // Prevent any default behavior
+        e.preventDefault();
         
         if (selectedFiles.length === 0) {
             alert('Please select files first');
             return;
         }
         
-        // Disable button to prevent double-clicks
+        console.log('Processing', selectedFiles.length, 'files');
+        
+        // Add loading state
+        processBtn.classList.add('btn-loading');
         processBtn.disabled = true;
+        const originalText = processBtn.innerHTML;
+        processBtn.innerHTML = 'Processing...';
         
         uploadSection.classList.add('hidden');
         processingSection.classList.remove('hidden');
         announceStatus('Processing files. Please wait.');
+
+        if (typeof eel === 'undefined') {
+            alert('Eel backend not connected');
+            processingSection.classList.add('hidden');
+            uploadSection.classList.remove('hidden');
+            processBtn.classList.remove('btn-loading');
+            processBtn.disabled = false;
+            processBtn.innerHTML = originalText;
+            return;
+        }
 
         try {
             const results = [];
@@ -385,19 +503,26 @@ document.addEventListener('DOMContentLoaded', function () {
             uploadSection.classList.remove('hidden');
             alert('Error processing files: ' + error);
             announceStatus('Processing failed');
-        } finally {
-            // Re-enable button
+            
+            // Remove loading state
+            processBtn.classList.remove('btn-loading');
             processBtn.disabled = false;
+            processBtn.innerHTML = originalText;
         }
-    }, { once: false }); // Ensure event doesn't fire twice
+    });
 
     newAnalysisBtn.addEventListener('click', () => {
         selectedFiles = [];
         fileInput.value = '';
+        manualPathInput.value = '';
         resultsSection.classList.add('hidden');
         uploadSection.classList.remove('hidden');
         announceStatus('Ready for new analysis');
         updateFileList();
+        
+        // Reset button state
+        processBtn.classList.remove('btn-loading');
+        processBtn.innerHTML = '<span aria-hidden="true">🔍</span> Process Files';
     });
 
     // ===== RESULTS DISPLAY =====
@@ -412,32 +537,32 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="success-icon" aria-hidden="true">✅</div>
                 <h2>Processing Complete!</h2>
                 
-                <div class="summary-stats" style="display: flex; justify-content: space-around; margin: 30px 0; padding: 20px; background: rgba(168, 85, 247, 0.1); border-radius: 12px;">
-                    <div class="stat-item" style="text-align: center;">
-                        <div style="font-size: 36px; font-weight: 700; color: #10b981;">${passCount}</div>
-                        <div style="color: rgba(255, 255, 255, 0.7); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px;">Passed</div>
+                <div class="summary-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" style="color: #10b981;">${passCount}</div>
+                        <div class="stat-label">Passed</div>
                     </div>
-                    <div class="stat-item" style="text-align: center;">
-                        <div style="font-size: 36px; font-weight: 700; color: #ef4444;">${failCount}</div>
-                        <div style="color: rgba(255, 255, 255, 0.7); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px;">Failed</div>
+                    <div class="stat-item">
+                        <div class="stat-value" style="color: #ef4444;">${failCount}</div>
+                        <div class="stat-label">Failed</div>
                     </div>
                     ${errorCount > 0 ? `
-                    <div class="stat-item" style="text-align: center;">
-                        <div style="font-size: 36px; font-weight: 700; color: #f59e0b;">${errorCount}</div>
-                        <div style="color: rgba(255, 255, 255, 0.7); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px;">Errors</div>
+                    <div class="stat-item">
+                        <div class="stat-value" style="color: #f59e0b;">${errorCount}</div>
+                        <div class="stat-label">Errors</div>
                     </div>
                     ` : ''}
-                    <div class="stat-item" style="text-align: center;">
-                        <div style="font-size: 36px; font-weight: 700; color: rgba(255, 255, 255, 0.9);">${totalCount}</div>
-                        <div style="color: rgba(255, 255, 255, 0.7); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px;">Total</div>
+                    <div class="stat-item">
+                        <div class="stat-value" style="color: rgba(255, 255, 255, 0.9);">${totalCount}</div>
+                        <div class="stat-label">Total</div>
                     </div>
                 </div>
                 
-                <div class="results-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; margin: 20px 0;">
+                <div class="results-grid">
                     ${results.map(result => createResultCard(result)).join('')}
                 </div>
                 
-                <button class="btn" id="newAnalysisBtn2" tabindex="0" style="background: rgba(168, 85, 247, 0.2); margin-top: 20px;">
+                <button class="btn" id="newAnalysisBtn2" tabindex="0" style="background: rgba(168, 85, 247, 0.2); margin-top: 15px;">
                     <span aria-hidden="true">🔄</span> New Analysis
                 </button>
             </div>
@@ -446,17 +571,49 @@ document.addEventListener('DOMContentLoaded', function () {
         resultsSection.innerHTML = resultsHTML;
         resultsSection.classList.remove('hidden');
         
-        document.getElementById('newAnalysisBtn2').addEventListener('click', () => {
+        // Add event listeners for report buttons using event delegation
+        // Remove any existing listeners first
+        const newResultsSection = resultsSection.cloneNode(true);
+        resultsSection.parentNode.replaceChild(newResultsSection, resultsSection);
+        
+        newResultsSection.addEventListener('click', (e) => {
+            console.log('Click detected on:', e.target.className);
+            
+            // Check if clicked element or its parent is a button
+            const button = e.target.closest('.view-report-btn, .open-report-btn');
+            
+            if (button) {
+                const reportPath = button.getAttribute('data-report-path');
+                const filename = button.getAttribute('data-filename');
+                
+                if (button.classList.contains('view-report-btn')) {
+                    console.log('View report clicked:', reportPath, filename);
+                    window.viewReportInline(reportPath, filename);
+                } else if (button.classList.contains('open-report-btn')) {
+                    console.log('Open report clicked:', reportPath);
+                    window.openReportFile(reportPath);
+                }
+            }
+        });
+        
+        newResultsSection.querySelector('#newAnalysisBtn2').addEventListener('click', () => {
             selectedFiles = [];
             fileInput.value = '';
-            resultsSection.classList.add('hidden');
+            manualPathInput.value = '';
+            newResultsSection.classList.add('hidden');
             uploadSection.classList.remove('hidden');
             announceStatus('Ready for new analysis');
             updateFileList();
+            
+            // Reset button state
+            processBtn.classList.remove('btn-loading');
+            processBtn.innerHTML = '<span aria-hidden="true">🔍</span> Process Files';
         });
     }
 
     function createResultCard(result) {
+        console.log('Creating result card for:', result.filename, 'report_path:', result.report_path);
+        
         const statusClass = result.status === 'PASS' ? 'pass' : 
                            result.status === 'FAIL' ? 'fail' : 'error';
         
@@ -466,17 +623,16 @@ document.addEventListener('DOMContentLoaded', function () {
         const borderColor = result.status === 'PASS' ? '#10b981' :
                            result.status === 'FAIL' ? '#ef4444' : '#f59e0b';
         
-        const badgeColor = result.status === 'PASS' ? 'background: #10b981; color: white;' :
-                          result.status === 'FAIL' ? 'background: #ef4444; color: white;' :
-                          'background: #f59e0b; color: #1a1a2e;';
+        const badgeClass = result.status === 'PASS' ? 'status-pass' :
+                          result.status === 'FAIL' ? 'status-fail' : 'status-error';
         
         let issuesHTML = '';
         if (result.issues && result.issues.length > 0) {
             issuesHTML = `
-                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-                    <strong style="color: #ef4444; display: block; margin-bottom: 8px;">⚠️ Issues Detected:</strong>
-                    <ul style="margin: 0; padding-left: 20px; font-size: 13px;">
-                        ${result.issues.map(issue => `<li style="margin: 4px 0; color: rgba(255, 255, 255, 0.8);">${issue}</li>`).join('')}
+                <div class="result-issues">
+                    <div class="result-issues-title">⚠️ Issues Detected:</div>
+                    <ul class="result-issues-list">
+                        ${result.issues.map(issue => `<li>${issue}</li>`).join('')}
                     </ul>
                 </div>
             `;
@@ -484,24 +640,39 @@ document.addEventListener('DOMContentLoaded', function () {
         
         let reportLinkHTML = '';
         if (result.report_path) {
-            reportLinkHTML = `
-                <button onclick="openReportFile('${result.report_path}')" 
-                    style="margin-top: 12px; padding: 8px 16px; background: rgba(168, 85, 247, 0.3); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.3s;">
-                    📄 View Full Report
+            console.log('Report path exists, creating buttons');
+            const videoReportBtn = `
+                <button class="report-btn view-report-btn" data-report-path="${result.report_path}" data-filename="${result.filename}" style="flex: 1;">
+                    📊 Video Report
                 </button>
             `;
+            
+            const detailedReportBtn = result.detailed_report_path ? `
+                <button class="report-btn open-report-btn" data-report-path="${result.detailed_report_path}" style="flex: 1;">
+                    📝 Detailed Report
+                </button>
+            ` : '';
+            
+            reportLinkHTML = `
+                <div style="display: flex; gap: 8px; margin-top: 10px;">
+                    ${videoReportBtn}
+                    ${detailedReportBtn}
+                </div>
+            `;
+        } else {
+            console.log('No report_path found for', result.filename);
         }
         
         return `
-            <div class="result-card" style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; border-left: 4px solid ${borderColor}; transition: transform 0.2s;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h4 style="color: rgba(255, 255, 255, 0.95); font-size: 16px; word-break: break-word; flex: 1; margin: 0 10px 0 0;">${result.filename}</h4>
-                    <span style="padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; white-space: nowrap; ${badgeColor}">${statusIcon} ${result.status}</span>
+            <div class="result-card" style="border-left: 4px solid ${borderColor};">
+                <div class="result-card-header">
+                    <h4 class="result-filename">${result.filename}</h4>
+                    <span class="status-badge ${badgeClass}">${statusIcon} ${result.status}</span>
                 </div>
                 <div>
-                    <p style="margin: 8px 0; color: rgba(255, 255, 255, 0.7); font-size: 14px;"><strong style="color: rgba(255, 255, 255, 0.9);">Size:</strong> ${formatFileSize(result.size)}</p>
-                    <p style="margin: 8px 0; color: rgba(255, 255, 255, 0.7); font-size: 14px;"><strong style="color: rgba(255, 255, 255, 0.9);">Type:</strong> ${result.extension.toUpperCase()}</p>
-                    ${result.status === 'PASS' ? '<p style="margin: 8px 0; color: rgba(255, 255, 255, 0.7); font-size: 14px;"><strong style="color: rgba(255, 255, 255, 0.9);">Status:</strong> All quality checks passed</p>' : ''}
+                    <p class="result-detail"><strong>Size:</strong> ${formatFileSize(result.size)}</p>
+                    <p class="result-detail"><strong>Type:</strong> ${result.extension.toUpperCase()}</p>
+                    ${result.status === 'PASS' ? '<p class="result-detail"><strong>Status:</strong> All quality checks passed</p>' : ''}
                     ${issuesHTML}
                     ${reportLinkHTML}
                 </div>
@@ -510,19 +681,118 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     window.openReportFile = async function(reportPath) {
+        console.log('openReportFile called with:', reportPath);
+        
+        if (typeof eel === 'undefined') {
+            console.error('Eel not defined');
+            alert('Cannot open report: Backend not connected');
+            return;
+        }
+        
         try {
-            await eel.open_report_file(reportPath)();
+            console.log('Calling eel.open_report_file...');
+            const result = await eel.open_report_file(reportPath)();
+            console.log('Result:', result);
             announceStatus('Opening report file');
         } catch (error) {
+            console.error('Error opening report:', error);
             alert('Could not open report: ' + error);
+        }
+    };
+
+    // View report inline in modal
+    window.viewReportInline = async function(reportPath, filename) {
+        console.log('viewReportInline called with:', reportPath, filename);
+        
+        if (typeof eel === 'undefined') {
+            console.error('Eel not defined');
+            alert('Cannot load report: Backend not connected');
+            return;
+        }
+        
+        try {
+            console.log('Calling eel.read_report_file...');
+            const reportContent = await eel.read_report_file(reportPath)();
+            console.log('Report content received:', reportContent);
+            
+            if (reportContent.success) {
+                openReportModal(filename, reportContent.content);
+                announceStatus('Report opened');
+            } else {
+                console.error('Report read failed:', reportContent.error);
+                alert('Could not read report: ' + reportContent.error);
+            }
+        } catch (error) {
+            console.error('Error loading report:', error);
+            alert('Error loading report: ' + error);
+        }
+    };
+
+    function openReportModal(filename, content) {
+        // Create modal if it doesn't exist
+        let modal = document.getElementById('reportModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'reportModal';
+            modal.className = 'modal-overlay';
+            modal.style.display = 'none';
+            modal.setAttribute('role', 'dialog');
+            modal.setAttribute('aria-modal', 'true');
+            modal.setAttribute('aria-labelledby', 'reportModalTitle');
+            
+            modal.onclick = (e) => {
+                if (e.target.id === 'reportModal') {
+                    closeReportModal();
+                }
+            };
+            
+            document.body.appendChild(modal);
+        }
+        
+        const modalHTML = `
+            <div class="modal" onclick="event.stopPropagation()" style="max-width: 800px;">
+                <button class="modal-close" onclick="closeReportModal();" tabindex="0"
+                    aria-label="Close report dialog">×</button>
+                <h2 id="reportModalTitle">📄 ${filename}</h2>
+                <div class="report-content">
+                    <pre style="background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 8px; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.6; color: rgba(255, 255, 255, 0.9); max-height: 60vh; overflow-y: auto;">${content}</pre>
+                </div>
+                <button class="btn" onclick="closeReportModal();" tabindex="0"
+                    style="margin-top: 20px; background: rgba(20, 184, 166, 0.3); box-shadow: 0 4px 15px rgba(20, 184, 166, 0.4);">
+                    <span aria-hidden="true">✓</span> Close
+                </button>
+            </div>
+        `;
+        
+        modal.innerHTML = modalHTML;
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        lastFocusedElement = document.activeElement;
+        
+        // Focus first focusable element
+        const closeBtn = modal.querySelector('.modal-close');
+        if (closeBtn) closeBtn.focus();
+    }
+
+    window.closeReportModal = function() {
+        const modal = document.getElementById('reportModal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+            if (lastFocusedElement) {
+                lastFocusedElement.focus();
+            }
+            announceStatus('Report dialog closed');
         }
     };
 
     // ===== ACCESSIBILITY FEATURES =====
     const contrastBtn = document.getElementById('contrastBtn');
     const contrastIcon = document.getElementById('contrastIcon');
-    const contrastText = document.getElementById('contrastText');
     let isHighContrast = false;
+
+    console.log('Contrast button found:', !!contrastBtn);
 
     if (localStorage) {
         try {
@@ -531,47 +801,63 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.body.classList.add('high-contrast');
                 isHighContrast = true;
                 contrastIcon.textContent = '◑';
-                contrastText.textContent = 'Normal Mode';
                 contrastBtn.setAttribute('aria-pressed', 'true');
             }
         } catch (e) { }
     }
 
-    contrastBtn.addEventListener('click', () => {
-        isHighContrast = !isHighContrast;
+    if (contrastBtn) {
+        contrastBtn.addEventListener('click', () => {
+            console.log('Contrast button clicked');
+            isHighContrast = !isHighContrast;
 
-        if (isHighContrast) {
-            document.body.classList.add('high-contrast');
-            contrastIcon.textContent = '◑';
-            contrastText.textContent = 'Normal Mode';
-            contrastBtn.setAttribute('aria-pressed', 'true');
-            announceStatus('High contrast mode enabled');
-        } else {
-            document.body.classList.remove('high-contrast');
-            contrastIcon.textContent = '◐';
-            contrastText.textContent = 'High Contrast';
-            contrastBtn.setAttribute('aria-pressed', 'false');
-            announceStatus('Normal mode enabled');
-        }
+            if (isHighContrast) {
+                // Turn OFF colorblind mode if it's on
+                if (isColorblindMode) {
+                    isColorblindMode = false;
+                    document.body.classList.remove('colorblind-mode');
+                    colorblindIcon.textContent = '👁️';
+                    colorblindBtn.setAttribute('aria-pressed', 'false');
+                    if (localStorage) {
+                        try {
+                            localStorage.setItem('medusight-colorblind-mode', false);
+                        } catch (e) { }
+                    }
+                }
+                
+                document.body.classList.add('high-contrast');
+                contrastIcon.textContent = '◑';
+                contrastBtn.setAttribute('aria-pressed', 'true');
+                announceStatus('High contrast mode enabled');
+                console.log('High contrast ON');
+            } else {
+                document.body.classList.remove('high-contrast');
+                contrastIcon.textContent = '◐';
+                contrastBtn.setAttribute('aria-pressed', 'false');
+                announceStatus('Normal mode enabled');
+                console.log('High contrast OFF');
+            }
 
-        if (localStorage) {
-            try {
-                localStorage.setItem('medusight-high-contrast', isHighContrast);
-            } catch (e) { }
-        }
-    });
+            if (localStorage) {
+                try {
+                    localStorage.setItem('medusight-high-contrast', isHighContrast);
+                } catch (e) { }
+            }
+        });
 
-    contrastBtn.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            contrastBtn.click();
-        }
-    });
+        contrastBtn.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                contrastBtn.click();
+            }
+        });
+    }
 
     const colorblindBtn = document.getElementById('colorblindBtn');
     const colorblindIcon = document.getElementById('colorblindIcon');
-    const colorblindText = document.getElementById('colorblindText');
     let isColorblindMode = false;
+
+    console.log('Colorblind button found:', !!colorblindBtn);
 
     if (localStorage) {
         try {
@@ -580,53 +866,71 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.body.classList.add('colorblind-mode');
                 isColorblindMode = true;
                 colorblindIcon.textContent = '✓';
-                colorblindText.textContent = 'Normal Colors';
                 colorblindBtn.setAttribute('aria-pressed', 'true');
             }
         } catch (e) { }
     }
 
-    colorblindBtn.addEventListener('click', () => {
-        isColorblindMode = !isColorblindMode;
+    if (colorblindBtn) {
+        colorblindBtn.addEventListener('click', () => {
+            console.log('Colorblind button clicked');
+            isColorblindMode = !isColorblindMode;
 
-        if (isColorblindMode) {
-            document.body.classList.add('colorblind-mode');
-            colorblindIcon.textContent = '✓';
-            colorblindText.textContent = 'Normal Colors';
-            colorblindBtn.setAttribute('aria-pressed', 'true');
-            announceStatus('Colorblind friendly mode enabled');
-        } else {
-            document.body.classList.remove('colorblind-mode');
-            colorblindIcon.textContent = '👁️';
-            colorblindText.textContent = 'Colorblind Mode';
-            colorblindBtn.setAttribute('aria-pressed', 'false');
-            announceStatus('Normal colors enabled');
-        }
+            if (isColorblindMode) {
+                // Turn OFF high contrast mode if it's on
+                if (isHighContrast) {
+                    isHighContrast = false;
+                    document.body.classList.remove('high-contrast');
+                    contrastIcon.textContent = '◐';
+                    contrastBtn.setAttribute('aria-pressed', 'false');
+                    if (localStorage) {
+                        try {
+                            localStorage.setItem('medusight-high-contrast', false);
+                        } catch (e) { }
+                    }
+                }
+                
+                document.body.classList.add('colorblind-mode');
+                colorblindIcon.textContent = '✓';
+                colorblindBtn.setAttribute('aria-pressed', 'true');
+                announceStatus('Colorblind friendly mode enabled');
+                console.log('Colorblind mode ON');
+            } else {
+                document.body.classList.remove('colorblind-mode');
+                colorblindIcon.textContent = '👁️';
+                colorblindBtn.setAttribute('aria-pressed', 'false');
+                announceStatus('Normal colors enabled');
+                console.log('Colorblind mode OFF');
+            }
 
-        if (localStorage) {
-            try {
-                localStorage.setItem('medusight-colorblind-mode', isColorblindMode);
-            } catch (e) { }
-        }
-    });
+            if (localStorage) {
+                try {
+                    localStorage.setItem('medusight-colorblind-mode', isColorblindMode);
+                } catch (e) { }
+            }
+        });
 
-    colorblindBtn.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            colorblindBtn.click();
-        }
-    });
+        colorblindBtn.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                colorblindBtn.click();
+            }
+        });
+    }
 
     // ESC key to close modals
     document.addEventListener('keydown', (e) => {
         const licenseModal = document.getElementById('licenseModal');
         const standardsModal = document.getElementById('standardsModal');
+        const reportModal = document.getElementById('reportModal');
 
         if (e.key === 'Escape') {
-            if (licenseModal.style.display === 'flex') {
+            if (licenseModal && licenseModal.style.display === 'flex') {
                 closeLicenseModal();
-            } else if (standardsModal.style.display === 'flex') {
+            } else if (standardsModal && standardsModal.style.display === 'flex') {
                 closeStandardsModal();
+            } else if (reportModal && reportModal.style.display === 'flex') {
+                closeReportModal();
             }
         }
     });
