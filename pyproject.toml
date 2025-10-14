@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "nul-rdc-scripts"
-version = "0.5.2"
+version = "0.6.0"
 description = "Scripts for NUL RDC Digitization Team"
 authors = [
     "Northwestern University Libraries <repository@northwestern.edu>",
     "Sophia Francis",
-    "Alec Bertoy (until May 2024",
+    "Alec Bertoy (until May 2024)",
     "Joshua Yocum (until Oct 2022)",
 ]
 packages = [{include = "nulrdcscripts"}]
@@ -15,8 +15,11 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 progressbar2 = "^4.5.0"
+ffmpeg = "^1.4"
+lxml = "^6.0.1"
+pandas = "^2.3.2"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 
 [tool.poetry.scripts]
 aproc = 'nulrdcscripts.aproc.aproc:main'

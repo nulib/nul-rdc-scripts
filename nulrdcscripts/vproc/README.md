@@ -31,9 +31,9 @@ Example file structure
 input_folder
 ├── transcode_inventory.csv
 ├── item_1
-│   └── item_1.mov
+│   └── item_1_p.mkv
 └── item_2
-    └── item_2.mov
+    └── item_2_p.mkv
 ```
 
 ## Commands

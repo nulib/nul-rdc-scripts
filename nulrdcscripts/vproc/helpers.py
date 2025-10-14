@@ -8,7 +8,6 @@ import json
 import csv
 import datetime
 import time
-import nulrdcscripts.vproc.equipment_dict as equipment_dict
 from nulrdcscripts.vproc.params import args
 
 
@@ -220,93 +219,6 @@ def ffprobe_report(filename, input_file_abspath):
     return ffprobe_metadata
 
 
-def ffv1_lossless_transcode(input_metadata, transcode_nameDict, audioStreamCounter):
-    # get relevant names from nameDict
-    inputAbsPath = transcode_nameDict.get("inputAbsPath")
-    tempMasterFile = transcode_nameDict.get("tempMasterFile")
-    framemd5AbsPath = transcode_nameDict.get("framemd5AbsPath")
-    outputAbsPath = transcode_nameDict.get("outputAbsPath")
-    framemd5File = transcode_nameDict.get("framemd5File")
-
-    # create ffmpeg command
-    ffmpeg_command = [args.ffmpeg_path]
-    if not args.verbose:
-        ffmpeg_command.extend(("-loglevel", "error"))
-    ffmpeg_command.extend(
-        [
-            "-i",
-            inputAbsPath,
-            "-map",
-            "0",
-            "-dn",
-            "-c:v",
-            "ffv1",
-            "-level",
-            "3",
-            "-g",
-            "1",
-            "-slices",
-            str(args.ffv1_slice_count),
-            "-slicecrc",
-            "1",
-        ]
-    )
-    # TO DO: consider putting color data in a list or dict to replace the following if statements with a single if statement in a for loop
-    if input_metadata["techMetaV"]["color primaries"]:
-        ffmpeg_command.extend(
-            ("-color_primaries", input_metadata["techMetaV"]["color primaries"])
-        )
-    if input_metadata["techMetaV"]["color transfer"]:
-        ffmpeg_command.extend(
-            ("-color_trc", input_metadata["techMetaV"]["color transfer"])
-        )
-    if input_metadata["techMetaV"]["color space"]:
-        ffmpeg_command.extend(
-            ("-colorspace", input_metadata["techMetaV"]["color space"])
-        )
-    if audioStreamCounter > 0:
-        ffmpeg_command.extend(("-c:a", "copy"))
-    ffmpeg_command.extend(
-        (
-            tempMasterFile if args.embed_framemd5 else outputAbsPath,
-            "-f",
-            "framemd5",
-            "-an",
-            framemd5AbsPath,
-        )
-    )
-
-    # execute ffmpeg command
-    subprocess.run(ffmpeg_command)
-
-    # remux to attach framemd5
-    if args.embed_framemd5:
-        add_attachment = [
-            args.ffmpeg_path,
-            "-loglevel",
-            "error",
-            "-i",
-            tempMasterFile,
-            "-c",
-            "copy",
-            "-map",
-            "0",
-            "-attach",
-            framemd5AbsPath,
-            "-metadata:s:t:0",
-            "mimetype=application/octet-stream",
-            "-metadata:s:t:0",
-            "filename=" + framemd5File,
-            outputAbsPath,
-        ]
-        if os.path.isfile(tempMasterFile):
-            subprocess.call(add_attachment)
-            filesToDelete = [tempMasterFile, framemd5AbsPath]
-            delete_files(filesToDelete)
-        else:
-            print("There was an issue finding the file", tempMasterFile)
-
-
 def delete_files(list):
     """
     Loops through a list of files and tries to delete them
@@ -319,52 +231,55 @@ def delete_files(list):
             print("File not found")
 
 
-def checksum_streams(input, audioStreamCounter):
-    """
-    Gets the stream md5 of a file
-    Uses both video and all audio streams if audio is present
-    """
-    stream_sum = []
-    stream_sum_command = [
-        args.ffmpeg_path,
-        "-loglevel",
-        "error",
-        "-i",
-        input,
-        "-map",
-        "0:v",
-        "-an",
-    ]
+fourtoThree = [
+    "-filter_complex",
+    "[0:a:0][0:a:1]amerge=inputs2[a]",
+    "-map",
+    "0:v",
+    "-map",
+    "[a]",
+    "-map",
+    "0:a:2",
+    "-map",
+    "0:a:3",
+]
 
-    stream_sum_command.extend(("-f", "md5", "-"))
-    video_stream_sum = (
-        subprocess.check_output(stream_sum_command).decode("ascii").rstrip()
-    )
-    stream_sum.append(video_stream_sum.replace("MD5=", ""))
-    for i in range(audioStreamCounter):
-        audio_sum_command = [args.ffmpeg_path]
-        audio_sum_command += ["-loglevel", "error", "-y", "-i", input]
-        audio_sum_command += ["-vn", "-map", "0:a:%(a)s" % {"a": i}]
-        audio_sum_command += ["-c:a", "pcm_s24le", "-f", "md5", "-"]
-        audio_stream_sum = (
-            subprocess.check_output(audio_sum_command).decode("ascii").rstrip()
-        )
-        stream_sum.append(audio_stream_sum.replace("MD5=", ""))
-    return stream_sum
+fourtoTwo = [
+    "-filter_complex",
+    "[0:a:0][0:a:1]amerge=inputs=2[a];[0:a:2][0:a:3]amerge=inputs=2[b]",
+    "-map",
+    "0:v",
+    "-map",
+    "[a]",
+    "-map",
+    "[b]",
+]
+
+twotoOne = [
+    "-filter_complex",
+    "[0:a:0][0:a:1]amerge=inputs=2[a]",
+    "-map",
+    "0:v",
+    "-map",
+    "[a]",
+]
 
 
-def two_pass_h264_encoding(audioStreamCounter, outputAbsPath, acAbsPath):
+def two_pass_h264_encoding(audioStreamCounter, preservationAbsPath, accessAbsPath, logfile=None):
     if os.name == "nt":
         nullOut = "NUL"
     else:
         nullOut = "/dev/null"
+    if logfile is None:
+        logfile = "ffmpeg2pass-0.log"  # fallback, but should always pass a unique one!
+
     pass1 = [args.ffmpeg_path]
     if not args.verbose:
         pass1 += ["-loglevel", "error"]
     pass1 += [
         "-y",
         "-i",
-        outputAbsPath,
+        preservationAbsPath,
         "-c:v",
         "libx264",
         "-preset",
@@ -375,51 +290,27 @@ def two_pass_h264_encoding(audioStreamCounter, outputAbsPath, acAbsPath):
         "yuv420p",
         "-pass",
         "1",
+        "-passlogfile",
+        logfile,
     ]
     if audioStreamCounter > 0:
         if args.mixdown == "copy":
             pass1 += ["-c:a", "aac", "-b:a", "256k"]
         if args.mixdown == "4to3" and audioStreamCounter == 4:
-            pass1 += [
-                "-filter_complex",
-                "[0:a:0][0:a:1]amerge=inputs=2[a]",
-                "-map",
-                "0:v",
-                "-map",
-                "[a]",
-                "-map",
-                "0:a:2",
-                "-map",
-                "0:a:3",
-            ]
+            pass1 += fourtoThree
         if args.mixdown == "4to2" and audioStreamCounter == 4:
-            pass1 += [
-                "-filter_complex",
-                "[0:a:0][0:a:1]amerge=inputs=2[a];[0:a:2][0:a:3]amerge=inputs=2[b]",
-                "-map",
-                "0:v",
-                "-map",
-                "[a]",
-                "-map",
-                "[b]",
-            ]
+            pass1 += fourtoTwo
         if args.mixdown == "2to1" and audioStreamCounter == 2:
-            pass1 += [
-                "-filter_complex",
-                "[0:a:0][0:a:1]amerge=inputs=2[a]",
-                "-map",
-                "0:v",
-                "-map",
-                "[a]",
-            ]
+            pass1 += twotoOne
     pass1 += ["-f", "mp4", nullOut]
+
     pass2 = [args.ffmpeg_path]
     if not args.verbose:
         pass2 += ["-loglevel", "error"]
     pass2 += [
         "-y",
         "-i",
-        outputAbsPath,
+        preservationAbsPath,
         "-c:v",
         "libx264",
         "-preset",
@@ -430,53 +321,27 @@ def two_pass_h264_encoding(audioStreamCounter, outputAbsPath, acAbsPath):
         "yuv420p",
         "-pass",
         "2",
+        "-passlogfile",
+        logfile,
     ]
     if audioStreamCounter > 0:
         if args.mixdown == "copy":
             pass2 += ["-c:a", "aac", "-b:a", "256k"]
         if args.mixdown == "4to3" and audioStreamCounter == 4:
-            pass2 += [
-                "-filter_complex",
-                "[0:a:0][0:a:1]amerge=inputs=2[a]",
-                "-map",
-                "0:v",
-                "-map",
-                "[a]",
-                "-map",
-                "0:a:2",
-                "-map",
-                "0:a:3",
-            ]
+            pass2 += fourtoThree
         if args.mixdown == "4to2" and audioStreamCounter == 4:
-            pass2 += [
-                "-filter_complex",
-                "[0:a:0][0:a:1]amerge=inputs=2[a];[0:a:2][0:a:3]amerge=inputs=2[b]",
-                "-map",
-                "0:v",
-                "-map",
-                "[a]",
-                "-map",
-                "[b]",
-            ]
+            pass2 += fourtoTwo
         if args.mixdown == "2to1" and audioStreamCounter == 2:
-            pass2 += [
-                "-filter_complex",
-                "[0:a:0][0:a:1]amerge=inputs=2[a]",
-                "-map",
-                "0:v",
-                "-map",
-                "[a]",
-            ]
-    pass2 += [acAbsPath]
+            pass2 += twotoOne
+    pass2 += [accessAbsPath]
     subprocess.run(pass1)
     subprocess.run(pass2)
 
-    # sometimes these files are created I'm not sure why
-    current_dir = os.getcwd()
-    if os.path.isfile(os.path.join(current_dir, "ffmpeg2pass-0.log")):
-        os.remove(os.path.join(current_dir, "ffmpeg2pass-0.log"))
-    if os.path.isfile(os.path.join(current_dir, "ffmpeg2pass-0.log.mbtree")):
-        os.remove(os.path.join(current_dir, "ffmpeg2pass-0.log.mbtree"))
+    # Clean up unique log files
+    for ext in ["", ".mbtree"]:
+        log_path = logfile + ext
+        if os.path.isfile(log_path):
+            os.remove(log_path)
 
 
 def generate_spectrogram(input, channel_layout_list, outputFolder, outputName):
@@ -485,7 +350,9 @@ def generate_spectrogram(input, channel_layout_list, outputFolder, outputName):
     """
     spectrogram_resolution = "1920x1080"
     for index, item in enumerate(channel_layout_list):
-        output = os.path.join(outputFolder, outputName + "_spectrogram0" + str(index) + "_s.png")
+        output = os.path.join(
+            outputFolder, outputName + "_spectrogram0" + str(index) + "_s.png"
+        )
         spectrogram_args = [args.ffmpeg_path]
         spectrogram_args += ["-loglevel", "error", "-y"]
         spectrogram_args += ["-i", input, "-lavfi"]
@@ -511,18 +378,16 @@ def generate_qctools(input):
     subprocess.run(qctools_args)
 
 
-def mediaconch_policy_check(input, policy):
-    mediaconchResults = (
-        subprocess.check_output([args.mediaconch_path, "--policy=" + policy, input])
-        .decode("ascii")
-        .rstrip()
-        .split()[0]
-    )
-    if mediaconchResults == "pass!":
-        mediaconchResults = "PASS"
+def mediaconch_policy_check(input, policy, debug=False):
+    result = subprocess.check_output([args.mediaconch_path, "--policy=" + policy, input]).decode("ascii").rstrip()
+    if debug:
+        return result  # Return the full output for debugging
+    # Default: just PASS/FAIL
+    first_word = result.split()[0] if result else ""
+    if first_word == "pass!":
+        return "PASS"
     else:
-        mediaconchResults = "FAIL"
-    return mediaconchResults
+        return f"FAIL: {result}"
 
 
 def mediaconch_implementation_check(input):
@@ -546,17 +411,16 @@ def generate_system_log(ffvers, tstime, tftime):
         "operating system": osinfo,
         "ffmpeg version": ffvers,
         "transcode start time": tstime,
-        "transcode end time": tftime
+        "transcode end time": tftime,
         # TO DO: add capture software/version maybe -- would have to pull from csv
     }
     return systemInfo
 
 
-def qc_results(inventoryCheck, losslessCheck, mediaconchResults):
+def qc_results(inventoryCheck, mediaconchResults):
     QC_results = {}
     QC_results["QC"] = {
         "inventory check": inventoryCheck,
-        "lossless check": losslessCheck,
         "mediaconch results": mediaconchResults,
     }
     return QC_results
@@ -571,267 +435,63 @@ def guess_date(string):
     raise ValueError(string)
 
 
-def generate_coding_history(coding_history, hardware, append_list):
-    """
-    Formats hardware into BWF style coding history. Takes a piece of hardware (formatted: 'model; serial No.'), splits it at ';' and then searches the equipment dictionary for that piece of hardware. Then iterates through a list of other fields to append in the free text section. If the hardware is not found in the equipment dictionary this will just pull the info from the csv file and leave out some of the BWF formatting.
-    """
-    equipmentDict = equipment_dict.equipment_dict()
-    if hardware.split(";")[0] in equipmentDict.keys():
-        hardware_history = (
-            equipmentDict[hardware.split(";")[0]]["coding algorithm"]
-            + ","
-            + "T="
-            + hardware
-        )
-        for i in append_list:
-            if i:
-                hardware_history += "; "
-                hardware_history += i
-        if "hardware type" in equipmentDict.get(hardware.split(";")[0]):
-            hardware_history += "; "
-            hardware_history += equipmentDict[hardware.split(";")[0]]["hardware Type"]
-        coding_history.append(hardware_history)
-    # handle case where equipment is not in the equipmentDict using a more general format
-    elif hardware and not hardware.split(";")[0] in equipmentDict.keys():
-        hardware_history = hardware
-        for i in append_list:
-            if i:
-                hardware_history += "; "
-                hardware_history += i
-        coding_history.append(hardware_history)
-    else:
-        pass
-    return coding_history
-
-
-def import_csv(csvInventory):
-    csvDict = {}
+def generate_coding_history(csvDict, baseFilename):
+    encoding_chain = {}
+    file_path = os.path.join(os.path.dirname(__file__), "deckconfig.json")
     try:
-        with open(csvInventory, encoding="utf-8") as f:
-            # skip through annoying lines at beginning
-            while True:
-                # save spot
-                stream_index = f.tell()
-                # skip advancing line by line
-                line = f.readline()
-                if not ("Name of Person Inventorying" in line or "MEADOW Ingest fields" in line):
-                    # go back one line and break out of loop once fieldnames are found
-                    f.seek(stream_index, os.SEEK_SET)
-                    break
-            reader = csv.DictReader(f, delimiter=",")
-            # fieldnames to check for
-            # some items have multiple options
-            # 0 index is our current standard
-            video_fieldnames_list = [
-                ["filename"],
-                ["work_accession_number"],
-                ["box/folder alma number", "Box/Folder\nAlma number"],
-                ["barcode"],
-                ["description", "inventory_title"],
-                ["record date/time"],
-                ["housing/container markings"],
-                ["condition notes"],
-                ["call number"],
-                ["format"],
-                ["capture date"],
-                ["staff initials", "Digitizer"],
-                ["VTR used"],
-                ["VTR output used"],
-                ["tape brand"],
-                ["tape record mode"],
-                ["TBC used"],
-                ["TBC output used"],
-                ["ADC"],
-                ["capture card"],
-                ["sound"],
-                ["video standard", "Region"],
-                ["capture notes"],
-            ]
-            # dictionary of fieldnames found in the inventory file,
-            # keyed by our current standard fieldnames
-            # ex. for up to date inventory
-            # "video standard": "video standard"
-            # ex. if old inventory was used
-            # "video standard": "Region"
-            # this way old inventories work
-            fieldnames = {}
-            missing_fieldnames = []
+        # Read JSON data from the file
+        with open(file_path, "r") as file:
+            data = json.load(file)
+        encoding_chain = csvDict.get(baseFilename)
+        vTR = encoding_chain.get("vtr")
+        # Access nested elements
+        # VTR Data
+        vtr_name = data[vTR]["VTR"]["vtr_name"]
+        vtr_nutag = data[vTR]["VTR"]["vtr_nuTag"]
+        vtr_out = data[vTR]["VTR"]["vtr_out"]
 
-            # loops through each field and checks for each option
-            for field in video_fieldnames_list:
-                for field_option in field:
-                    for reader_field in reader.fieldnames:
-                        if field_option.lower() in reader_field.lower():
-                            # adds the fieldname used in the file
-                            # to a dictionary for us to use
-                            # the key is our current standard
-                            fieldnames.update({field[0]: reader_field})
-                            break
-                # keep track of any missing
-                # uses field[0] so when it tells user which ones are missin
-                # they will use our current standard
-                if not field[0] in fieldnames:
-                    missing_fieldnames.append(field[0])
+        # TBC Data
+        tbc_name = data[vTR]["TBC"]["tbc_name"]
+        tbc_nutag = data[vTR]["TBC"]["tbc_nuTag"]
+        tbc_out = data[vTR]["TBC"]["tbc_out"]
 
-            if not missing_fieldnames:
-                for row in reader:
-                    # index field using dictionary of found fieldnames
-                    name = row[fieldnames["filename"]]
-                    id1 = row[fieldnames["work_accession_number"]]
-                    id2 = row[fieldnames["box/folder alma number"]]
-                    id3 = row[fieldnames["barcode"]]
-                    description = row[fieldnames["description"]]
-                    record_date = row[fieldnames["record date/time"]]
-                    container_markings = row[fieldnames["housing/container markings"]]
-                    if container_markings:
-                        container_markings = container_markings.split("\n")
-                    condition_notes = row[fieldnames["condition notes"]]
-                    format = row[fieldnames["format"]]
-                    captureDate = row[fieldnames["capture date"]]
-                    # try to format date as yyyy-mm-dd if not formatted correctly
-                    try:
-                        captureDate = str(guess_date(captureDate))
-                    except:
-                        captureDate = None
-                    staff_initials = row[fieldnames["staff initials"]]
-                    vtr = row[fieldnames["VTR used"]]
-                    vtrOut = row[fieldnames["VTR output used"]]
-                    tapeBrand = row[fieldnames["tape brand"]]
-                    recordMode = row[fieldnames["tape record mode"]]
-                    tbc = row[fieldnames["TBC used"]]
-                    tbcOut = row[fieldnames["TBC output used"]]
-                    adc = row[fieldnames["ADC"]]
-                    dio = row[fieldnames["capture card"]]
-                    sound = row[fieldnames["sound"]]
-                    sound = sound.split("\n")
-                    videoStandard = row[fieldnames["video standard"]]
-                    capture_notes = row[fieldnames["capture notes"]]
-                    coding_history = []
-                    coding_history = generate_coding_history(
-                        coding_history,
-                        vtr,
-                        [tapeBrand, recordMode, videoStandard, vtrOut],
-                    )
-                    coding_history = generate_coding_history(
-                        coding_history, tbc, [tbcOut]
-                    )
-                    coding_history = generate_coding_history(
-                        coding_history, adc, [None]
-                    )
-                    coding_history = generate_coding_history(
-                        coding_history, dio, [None]
-                    )
-                    csvData = {
-                        "accession number/call number": id1,
-                        "box/folder alma number": id2,
-                        "barcode": id3,
-                        "description": description,
-                        "record date": record_date,
-                        "housing/container markings": container_markings,
-                        "condition notes": condition_notes,
-                        "format": format,
-                        "staff initials": staff_initials,
-                        "capture date": captureDate,
-                        "coding history": coding_history,
-                        "sound note": sound,
-                        "capture notes": capture_notes,
-                    }
-                    csvDict.update({name: csvData})
-            elif not "File name" in missing_fieldnames:
-                print("WARNING: Unable to find all column names in csv file")
-                print("File name column found. Interpreting csv file as file list")
-                print("CONTINUE? (y/n)")
-                yes = {"yes", "y", "ye", ""}
-                no = {"no", "n"}
-                choice = input().lower()
-                if choice in yes:
-                    for row in reader:
-                        name = row["File name"]
-                        csvData = {}
-                        csvDict.update({name: csvData})
-                elif choice in no:
-                    quit()
-                else:
-                    sys.stdout.write("Please respond with 'yes' or 'no'")
-                    quit()
-            else:
-                print("No matching column names found in csv file")
-            # print(csvDict)
+        # A/D Converter Data
+        ad_name = data[vTR]["A/D Converter"]["ad_name"]
+        ad_nutag = data[vTR]["A/D Converter"]["ad_nuTag"]
+        ad_out = data[vTR]["A/D Converter"]["ad_out"]
+
+        # Capture Card Data
+        capturecard_name = data[vTR]["Capture Card"]["capturecard_name"]
+        capturecard_nutag = data[vTR]["Capture Card"]["capturecard_nuTag"]
+        capturecard_out = data[vTR]["Capture Card"]["capturecard_out"]
+
+        encoding_chain = {
+            "vtr": {
+                "vtr name": vtr_name,
+                "vtr nu tag": vtr_nutag,
+                "vtr output": vtr_out,
+            },
+            "tbc": {
+                "tbc name": tbc_name,
+                "tbc nu tag": tbc_nutag,
+                "tbc output": tbc_out,
+            },
+            "ad": {
+                "ad name": ad_name,
+                "ad nu tag": ad_nutag,
+                "ad output": ad_out,
+            },
+            "capturecard": {
+                "cc name": capturecard_name,
+                "cc nu tag": capturecard_nutag,
+                "cc output": capturecard_out,
+            },
+        }
     except FileNotFoundError:
-        print("Issue importing csv file")
-    return csvDict
+        print(f"File not found: {file_path}")
+    return encoding_chain
 
 
 def convert_runtime(duration):
     runtime = time.strftime("%H:%M:%S", time.gmtime(float(duration)))
     return runtime
-
-
-def write_output_csv(outdir, csvHeaderList, csvWriteList, output_metadata, qcResults):
-    csv_file = os.path.join(outdir, "qc_log.csv")
-    csvOutFileExists = os.path.isfile(csv_file)
-
-    with open(csv_file, "a") as f:
-        writer = csv.writer(f, delimiter=",", lineterminator="\n")
-        if not csvOutFileExists:
-            writer.writerow(csvHeaderList)
-        writer.writerow(csvWriteList)
-
-
-def create_json(
-    jsonAbsPath,
-    systemInfo,
-    input_metadata,
-    mov_stream_sum,
-    mkvHash,
-    mkv_stream_sum,
-    baseFilename,
-    output_metadata,
-    item_csvDict,
-    qcResults,
-):
-    input_techMetaV = input_metadata.get("techMetaV")
-    input_techMetaA = input_metadata.get("techMetaA")
-    input_file_metadata = input_metadata.get("file metadata")
-    output_techMetaV = output_metadata.get("techMetaV")
-    output_techMetaA = output_metadata.get("techMetaA")
-    output_file_metadata = output_metadata.get("file metadata")
-
-    # create dictionary for json output
-    data = {}
-    data[baseFilename] = []
-
-    # gather pre and post transcode file metadata for json output
-    mov_file_meta = {}
-    ffv1_file_meta = {}
-    # add stream checksums to metadata
-    mov_md5_dict = {"a/v streamMD5s": mov_stream_sum}
-    ffv1_md5_dict = {"md5 checksum": mkvHash, "a/v streamMD5s": mkv_stream_sum}
-    input_file_metadata = {**input_file_metadata, **mov_md5_dict}
-    output_file_metadata = {**output_file_metadata, **ffv1_md5_dict}
-    ffv1_file_meta = {"post-transcode metadata": output_file_metadata}
-    mov_file_meta = {"pre-transcode metadata": input_file_metadata}
-
-    # gather technical metadata for json output
-    techdata = {}
-    video_techdata = {}
-    audio_techdata = {}
-    techdata["technical metadata"] = []
-    video_techdata = {"video": input_techMetaV}
-    audio_techdata = {"audio": input_techMetaA}
-    techdata["technical metadata"].append(video_techdata)
-    techdata["technical metadata"].append(audio_techdata)
-
-    # gather metadata from csv dictionary as capture metadata
-    csv_metadata = {"inventory metadata": item_csvDict}
-
-    system_info = {"system information": systemInfo}
-
-    data[baseFilename].append(csv_metadata)
-    data[baseFilename].append(system_info)
-    data[baseFilename].append(ffv1_file_meta)
-    data[baseFilename].append(mov_file_meta)
-    data[baseFilename].append(techdata)
-    data[baseFilename].append(qcResults)
-    with open(jsonAbsPath, "w", newline="\n") as outfile:
-        json.dump(data, outfile, indent=4)

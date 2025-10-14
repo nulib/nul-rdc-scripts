@@ -1,0 +1,103 @@
+"file_name" : [
+	{
+	"inventory metadata" : {
+		"accession number": accession_number,
+		"box/folder alma number": boxFolderAlma,
+		"barcode": barcode,
+		"call number": call_number,
+		"description": description,
+		"date created": date_created, 
+		"container markings": container_markings,
+		"condition notes": condition_notes,
+		"format": format, 
+		"tape brand" : tape_brand,
+		"tape record mode": tape_record_mode,
+		"digitizer": digitizer,
+		"digitization date": digitization_date,
+		"sound note": sound_note,
+		"capture_notes": capture_notes
+	}
+	},
+	{
+	"encoding_chain":{
+		"VTR": {
+			"VTR name:": vtr_name,
+			"VTR NU tag": vtr_nutag,
+			"VTR out": vtr_out
+			},
+		"TBC": {
+			"TBC name": tbc_name,
+			"TBC NU tag": tbc_nutag,
+			"TBC out": tbc_out
+			},
+		"A/D converter" : {
+			"A/D name": ad_name,
+			"A/D NU tag": ad_nutag,
+			"A/D out": ad_out
+			},
+		"Capture card":{
+			"Capture card name": capturecard_name,
+			"Capture card NU tag": capturecard_nutag,
+			"Capture card out": capturecard_out
+		}
+
+
+	}
+	},
+	{
+		"preservation file metadata":{
+			"filename": filename,
+			"file_size": file_size,
+			"duration (sec)": duration,
+			"streams": x,
+			"video streams": [],
+			"audio streams": [],
+			"data streams": [],
+			"attachments": [],	
+		}
+	},
+	{
+		"access file metadata":{
+			"filename": filename,
+			"file_size": file_size,
+			"duration (sec)": duration,
+			"streams": x,
+			"video streams": [],
+			"audio streams": []
+			}
+			
+	},
+	{
+		"technical metadata":[
+			{
+				"video":{
+					"width": width,
+					"height": height,
+					"sample aspect ratio": SAR,
+					"display aspect ratio": DAR,
+					"pixel format": pix_fmt,
+					"framerate": frame_rate,
+					"color space": color_space,
+					"color range": color_range, 
+					"color primaries": color_primaries, 
+					"color transfer": color_transfer
+				}
+			},
+			{
+				"audio":{
+					"audio stream count": audio_stream_count,
+					"audio bitrate": [audio_bit_rate]
+					"audio sample rate": [audio_sample_rate]
+					"channels":[channels]
+				}
+				
+			}
+		]
+	},
+	{ "QC": {
+		"inventory check": inventory_pass_fail,
+		"mediaconch check": media_conch_pass_fail
+		}
+		
+	}
+]
