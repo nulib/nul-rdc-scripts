@@ -17,6 +17,8 @@ readme = "README.md"
 python = "^3.10"
 progressbar2 = "^4.5.0"
 pandas = "^2.3.2"
+ffmpeg = "^1.4"
+lxml = "^6.0.2"
 
 [tool.poetry.group.dev.dependencies]
 
