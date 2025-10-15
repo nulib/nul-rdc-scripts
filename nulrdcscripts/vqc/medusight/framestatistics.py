@@ -23,9 +23,9 @@ def get_failing_frametimes(errors, videodata, standardDF):
         if crit not in videodata.columns:
             continue
 
-        # Special handling for 'sat' and 'satmax'
-        if crit in ("sat", "satmax"):
-            # Use the correct columns for sat/satmax
+        # Special handling for 'sat' and 'sathigh'
+        if crit in ("sat", "sathigh"):
+            # Use the correct columns for sat/sathigh
             brng = get_threshold(crit, "brnglimit", standardDF)
             clipping = get_threshold(crit, "clippinglimit", standardDF)
             illegal = get_threshold(crit, "illegal", standardDF)
@@ -112,7 +112,7 @@ def get_failing_frametimes(errors, videodata, standardDF):
 
 def get_threshold(crit, col, standardDF):
     # If crit is 'satmax', use 'sat' thresholds
-    if crit == "satmax":
+    if crit == "sathigh":
         crit = "sat"
     try:
         return standardDF.at[crit, col]

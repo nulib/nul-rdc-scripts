@@ -81,7 +81,7 @@ def runcheckyuv(videoDSDF, standardsDF):
 
 def runsatanalysis(videoDSDF, standardsDF, error):
     criteria = "sat"
-    leveltoCheck = "max"
+    leveltoCheck = "high"
     fullCriteria = criteria + leveltoCheck
     try:
         extractSumData = videoDSDF.at[leveltoCheck, fullCriteria]
@@ -145,7 +145,7 @@ def get_passing_stats(all_criteria, errors, videoDSDF, standardDF):
 
 def get_threshold(crit, col, standardDF):
     # If crit is 'satmax', use 'sat' thresholds
-    if crit == "satmax":
+    if crit == "sathigh":
         crit = "sat"
     try:
         return standardDF.at[crit, col]
