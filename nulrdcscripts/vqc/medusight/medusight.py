@@ -178,8 +178,8 @@ def write_video_stats_to_txt(
     else:
         for err in errors:
             if not isinstance(err, str):
-                # Special handling for sat and satmax
-                if err.criteria in ("sat", "satmax"):
+                # Special handling for sat and sathigh
+                if err.criteria in ("sat", "sathigh"):
                     for label in ("illegal", "clipping", "brng"):
                         key = f"{err.criteria}_{label}"
                         count = fail_counts.get(key, 0) if fail_counts else 0

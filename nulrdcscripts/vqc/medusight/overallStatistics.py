@@ -44,9 +44,9 @@ def runyuvanalysis(videoDSDF, standardsDF, fullCriteria):
     else:
         # Clipping check
         if "low" in fullCriteria:
-            tfCL = extractSumData <= extractStandDataClipping
+            tfCL = extractSumData < extractStandDataClipping
         else:
-            tfCL = extractSumData >= extractStandDataClipping
+            tfCL = extractSumData > extractStandDataClipping
         if tfCL:
             return [
                 error(
@@ -94,7 +94,7 @@ def runsatanalysis(videoDSDF, standardsDF, error):
     if extractSumData <= extractStandDataBRNG:
         status = "pass"
         return [error(fullCriteria, status, extractSumData, extractStandDataBRNG)]
-    elif extractSumData >= extractStandDataIllegal:
+    elif extractSumData > extractStandDataIllegal:
         status = "fail"
         return [error(fullCriteria, status, extractSumData, extractStandDataIllegal)]
     else:

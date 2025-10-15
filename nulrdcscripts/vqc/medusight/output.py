@@ -81,8 +81,8 @@ def write_video_stats_to_txt(
     error_lines = []
     for err in errors:
         if not isinstance(err, str):
-            # Special handling for sat and satmax
-            if err.criteria in ("sat", "satmax"):
+            # Special handling for sat and sathigh
+            if err.criteria in ("sat", "sathigh"):
                 # Only report the most severe level that has failures
                 levels = [
                     ("illegal", "Illegal"),
