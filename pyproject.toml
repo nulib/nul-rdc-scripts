@@ -7,6 +7,7 @@ authors = [
     "Sophia Francis",
     "Alec Bertoy (until May 2024)",
     "Joshua Yocum (until Oct 2022)",
+    "Quinn Sluzenski-Rose",
 ]
 packages = [{include = "nulrdcscripts"}]
 license = "MIT"
