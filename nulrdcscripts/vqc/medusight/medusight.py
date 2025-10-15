@@ -6,7 +6,6 @@ import progressbar
 import pandas as pd
 from medusight.params import args
 from medusight import dataparsing, output, framestatistics, qcsetup, overallStatistics
-import uuid
 import datetime
 import concurrent.futures
 import os
