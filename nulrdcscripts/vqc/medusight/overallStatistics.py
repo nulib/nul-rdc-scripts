@@ -81,8 +81,8 @@ def runcheckyuv(videoDSDF, standardsDF):
 
 def runsatanalysis(videoDSDF, standardsDF, error):
     criteria = "sat"
-    leveltoCheck = "high"
-    fullCriteria = criteria + leveltoCheck
+    leveltoCheck = "max"
+    fullCriteria = criteria + "high"
     try:
         extractSumData = videoDSDF.at[leveltoCheck, fullCriteria]
         extractStandDataBRNG = standardsDF.at[criteria, "brnglimit"]
