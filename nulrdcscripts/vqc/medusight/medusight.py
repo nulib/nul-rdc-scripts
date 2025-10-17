@@ -264,11 +264,8 @@ def write_video_stats_to_txt(
     """
     error_lines = []
     
-    # If there are no errors, set status to PASS and skip error details
-    if not errors:
-        passfail_video = "PASS"
-        error_text = "No errors detected.\n"
-    else:
+    # Process errors if they exist
+    if errors:
         for err in errors:
             if not isinstance(err, str):
                 # Special handling for sat and sathigh
@@ -306,17 +303,7 @@ def write_video_stats_to_txt(
                                 f"  Failed Frames: {count} ({percent:.2f}% of {total_frames})\n"
                             )
                             break  # Only report the most severe level
-                    else:
-                        # If no failures at any level, still report 0 for brng
-                        count = fail_counts.get(f"{err.criteria}_brng", 0)
-                        percent = (count / total_frames) * 100 if total_frames else 0
-                        error_lines.append(
-                            f"Criteria: {err.criteria} (Broadcast Range)\n"
-                            f"  Status: {err.status}\n"
-                            f"  Video Value (max): N/A\n"
-                            f"  Standard Value (threshold): N/A\n"
-                            f"  Failed Frames: {count} ({percent:.2f}% of {total_frames})\n"
-                        )
+                    # Removed the 'else' clause that reports 0 failures
                 else:
                     # Regular criteria (ylow, yhigh, ulow, uhigh, vlow, vhigh, etc.)
                     count = fail_counts.get(err.criteria, 0) if fail_counts else 0
@@ -337,8 +324,14 @@ def write_video_stats_to_txt(
             else:
                 # String errors (legacy format)
                 error_lines.append(err.replace("\n", " ").replace("\r", " "))
-        
-        error_text = "\n".join(error_lines) if error_lines else "No frame-level failures detected.\n"
+    
+    # Determine error text based on whether we have errors
+    if not errors:
+        error_text = "No errors detected.\n"
+    elif not error_lines:
+        error_text = "No frame-level failures detected.\n"
+    else:
+        error_text = "\n".join(error_lines)
     
     # Load template
     with open(template_path, "r", encoding="utf-8") as template_file:
@@ -476,6 +469,7 @@ def processfile(inputPath, outputPath):
         errors = overallStatistics.runstatsvideo(videoDSDF, standardDF)
         errors = filter_errors_with_failed_frames(errors, videodata, standardDF)
         
+        # Recalculate pass/fail status AFTER filtering
         passfail_video = "PASS" if not errors else "FAIL"
         
         all_criteria = [
