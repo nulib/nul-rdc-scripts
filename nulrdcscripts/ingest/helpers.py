@@ -130,6 +130,9 @@ def clean_files(files: list[str], skip: list[str]):
     files = [f for f in files if not f.endswith(".log-0.log.mbtree")]
     files = [f for f in files if not f.endswith(".scc")]
     files = [f for f in files if not f.endswith(".vtt")]
+    files = [f for f in files if not f.endswith(".mkv.qctools.xml")]
+    files = [f for f in files if not f.endswith("_failing_frames_by_criteria.txt")]
+    files = [f for f in files if not f.endswith("_video_level_report.txt")]
 
     if skip:
         skip_list = skip
