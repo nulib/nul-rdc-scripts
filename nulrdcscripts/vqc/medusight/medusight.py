@@ -166,57 +166,94 @@ def filter_errors_with_failed_frames(errors, videodata, standardDF):
         # Get the criteria name
         criteria = err.criteria
         
+        print(f"DEBUG FILTER: Checking {criteria}")
+        
         # Count actual failing frames for this criteria
         if criteria in ("sat", "sathigh"):
-            # For saturation, check all three sub-criteria
+            # For saturation, check all three sub-criteria using correct column names
             has_failures = False
-            for label in ("illegal", "clipping", "brng"):
-                col_name = f"sat_{label}"
+            for label in ("illegal", "clippinglimit", "brnglimit"):
+                col_name = f"sat_{label}" if label != "illegal" else "sat_illegal"
+                # Map column names: illegal->sat_illegal, clippinglimit->sat_clipping, brnglimit->sat_brng
+                if label == "clippinglimit":
+                    col_name = "sat_clipping"
+                elif label == "brnglimit":
+                    col_name = "sat_brng"
+                
                 if col_name in videodata.columns:
                     if criteria in standardDF.index and label in standardDF.columns:
                         threshold = standardDF.loc[criteria, label]
                         failing_count = (videodata[col_name] > threshold).sum()
+                        print(f"DEBUG FILTER:   {col_name} > {threshold}: {failing_count} failures")
                         if failing_count > 0:
                             has_failures = True
                             break
             
             if has_failures:
+                print(f"DEBUG FILTER:   ✓ Keeping {criteria} (has failures)")
                 filtered_errors.append(err)
-        else:
-            # For other criteria, check if any frames fail
-            base_metric = criteria.replace('low', '').replace('high', '')
-            
-            if base_metric in videodata.columns:
-                # Determine if it's a "low" or "high" check
-                if criteria.endswith('low'):
-                    # For "low" criteria, frames fail if below threshold
-                    if criteria in standardDF.index and "min" in standardDF.columns:
-                        threshold = standardDF.loc[criteria, "min"]
-                        failing_count = (videodata[base_metric] < threshold).sum()
-                    else:
-                        # Can't determine threshold, keep error to be safe
-                        filtered_errors.append(err)
-                        continue
-                elif criteria.endswith('high'):
-                    # For "high" criteria, frames fail if above threshold
-                    if criteria in standardDF.index and "max" in standardDF.columns:
-                        threshold = standardDF.loc[criteria, "max"]
-                        failing_count = (videodata[base_metric] > threshold).sum()
-                    else:
-                        # Can't determine threshold, keep error to be safe
-                        filtered_errors.append(err)
-                        continue
-                else:
-                    # Unknown criteria type, keep the error
-                    filtered_errors.append(err)
-                    continue
-                
-                if failing_count > 0:
-                    filtered_errors.append(err)
             else:
-                # Column not found, keep the error to be safe
+                print(f"DEBUG FILTER:   ✗ Removing {criteria} (no failures)")
+        else:
+            # For other criteria (ymin, ymax, umin, umax, vmin, vmax)
+            # The criteria name now matches the videodata column name directly!
+            
+            if criteria not in videodata.columns:
+                print(f"DEBUG FILTER:   ! Column {criteria} not found in videodata")
+                print(f"DEBUG FILTER:   Available columns: {list(videodata.columns)[:15]}...")
                 filtered_errors.append(err)
+                continue
+            
+            # Map criteria to standardDF row names
+            # ymin -> ylow, ymax -> yhigh, etc.
+            if 'min' in criteria.lower():
+                standards_row = criteria.replace('min', 'low')
+            elif 'max' in criteria.lower():
+                standards_row = criteria.replace('max', 'high')
+            else:
+                print(f"DEBUG FILTER:   ! Unknown criteria type {criteria}, keeping to be safe")
+                filtered_errors.append(err)
+                continue
+            
+            # Check if we can get the threshold from standardDF
+            if standards_row not in standardDF.index:
+                print(f"DEBUG FILTER:   ! {standards_row} not in standardDF index")
+                print(f"DEBUG FILTER:   standardDF index: {list(standardDF.index)[:10]}")
+                filtered_errors.append(err)
+                continue
+            
+            print(f"DEBUG FILTER:   ✓ {standards_row} found in standardDF index")
+            print(f"DEBUG FILTER:   standardDF columns: {list(standardDF.columns)}")
+            
+            if "brngout" not in standardDF.columns:
+                print(f"DEBUG FILTER:   ! brngout column not in standardDF")
+                # Check if there's an alternative column name
+                brng_cols = [col for col in standardDF.columns if 'brng' in col.lower() or 'out' in col.lower()]
+                print(f"DEBUG FILTER:   Possible brng columns: {brng_cols}")
+                filtered_errors.append(err)
+                continue
+            
+            print(f"DEBUG FILTER:   ✓ brngout found in standardDF columns")
+            threshold = standardDF.loc[standards_row, "brngout"]
+            print(f"DEBUG FILTER:   ✓ Retrieved threshold: {threshold}")
+            
+            # Count failures based on min/max
+            if 'min' in criteria.lower():
+                # For MIN criteria: frames fail if value <= threshold
+                failing_count = (videodata[criteria] <= threshold).sum()
+                print(f"DEBUG FILTER:   {criteria} <= {threshold} (from {standards_row}): {failing_count} failures")
+            else:  # max
+                # For MAX criteria: frames fail if value >= threshold
+                failing_count = (videodata[criteria] >= threshold).sum()
+                print(f"DEBUG FILTER:   {criteria} >= {threshold} (from {standards_row}): {failing_count} failures")
+            
+            if failing_count > 0:
+                print(f"DEBUG FILTER:   ✓ Keeping {criteria} (has failures)")
+                filtered_errors.append(err)
+            else:
+                print(f"DEBUG FILTER:   ✗ Removing {criteria} (no failures)")
     
+    print(f"DEBUG FILTER: Filtered {len(errors)} errors down to {len(filtered_errors)}")
     return filtered_errors
 
 
@@ -264,6 +301,10 @@ def write_video_stats_to_txt(
     """
     error_lines = []
     
+    # Debug: Print what we received
+    print(f"DEBUG: write_video_stats_to_txt received {len(errors)} errors")
+    print(f"DEBUG: passfail_video = {passfail_video}")
+    
     # Process errors if they exist
     if errors:
         for err in errors:
@@ -276,10 +317,13 @@ def write_video_stats_to_txt(
                         ("clipping", "Clipping"),
                         ("brng", "Broadcast Range"),
                     ]
+                    found_failure = False
                     for label, label_pretty in levels:
                         key = f"{err.criteria}_{label}"
                         count = fail_counts.get(key, 0) if fail_counts else 0
                         percent = (count / total_frames) * 100 if total_frames else 0
+                        
+                        print(f"DEBUG: Checking {key}: count={count}")
                         
                         if count > 0:
                             # Get the actual values for this saturation level
@@ -302,12 +346,17 @@ def write_video_stats_to_txt(
                                 f"  Standard Value (threshold): {standard_value}\n"
                                 f"  Failed Frames: {count} ({percent:.2f}% of {total_frames})\n"
                             )
+                            found_failure = True
                             break  # Only report the most severe level
-                    # Removed the 'else' clause that reports 0 failures
+                    
+                    if not found_failure:
+                        print(f"DEBUG: No failures found for {err.criteria}, but error still in list!")
                 else:
                     # Regular criteria (ylow, yhigh, ulow, uhigh, vlow, vhigh, etc.)
                     count = fail_counts.get(err.criteria, 0) if fail_counts else 0
                     percent = (count / total_frames) * 100 if total_frames else 0
+                    
+                    print(f"DEBUG: Checking {err.criteria}: count={count}")
                     
                     if count > 0:
                         # Extract video and standard values from error object
@@ -321,15 +370,19 @@ def write_video_stats_to_txt(
                             f"  Standard Value: {standard_value}\n"
                             f"  Failed Frames: {count} ({percent:.2f}% of {total_frames})\n"
                         )
+                    else:
+                        print(f"DEBUG: {err.criteria} has 0 failures but still in error list!")
             else:
                 # String errors (legacy format)
                 error_lines.append(err.replace("\n", " ").replace("\r", " "))
+    
+    print(f"DEBUG: Generated {len(error_lines)} error lines")
     
     # Determine error text based on whether we have errors
     if not errors:
         error_text = "No errors detected.\n"
     elif not error_lines:
-        error_text = "No frame-level failures detected.\n"
+        error_text = "No errors detected.\n"  # Changed: if no error_lines, treat as pass
     else:
         error_text = "\n".join(error_lines)
     
@@ -467,6 +520,11 @@ def processfile(inputPath, outputPath):
         
         # Analyze statistics and filter out errors with no failing frames
         errors = overallStatistics.runstatsvideo(videoDSDF, standardDF)
+        
+        # Debug: Show what we're working with
+        print(f"DEBUG: videodata columns (first 15): {list(videodata.columns[:15])}")
+        print(f"DEBUG: Errors before filtering: {[err.criteria if hasattr(err, 'criteria') else err for err in errors]}")
+        
         errors = filter_errors_with_failed_frames(errors, videodata, standardDF)
         
         # Recalculate pass/fail status AFTER filtering
