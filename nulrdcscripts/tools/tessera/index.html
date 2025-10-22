@@ -11,7 +11,7 @@
 </head>
 
 <body>
-    <div class="header">
+    <div class=" header">
         <h1><span style="color: var(--accent);">♪</span> Tessera</h1>
         <div class="header-controls">
             <div class="theme-selector">
@@ -145,11 +145,13 @@ Set piece context and add captions...</textarea>
     </div>
 
     <footer class="footer">
-        <span><kbd>Ctrl+S</kbd> Save session</span>
-        <span><kbd>Ctrl+E</kbd> Export VTT</span>
-        <span>Piece context applies to all new captions until changed</span>
+        <span><kbd>Space/K</kbd> Play • <kbd>←/→</kbd> 1s • <kbd>Shift+←/→</kbd> 0.1s • <kbd>Ctrl+←/→</kbd> 5s •
+            <kbd>,/.</kbd> Frame</span>
+        <span><kbd>J/L</kbd> Skip 10s • <kbd>I</kbd> Mark Start • <kbd>O</kbd> Mark End • <kbd>M</kbd> Mute</span>
+        <span><kbd>Ctrl+S</kbd> Save • <kbd>Ctrl+E</kbd> Export</span>
     </footer>
 
+    <!-- Context Modal -->
     <div class="modal" id="contextModal">
         <div class="modal-content">
             <h2>Edit Piece Context</h2>
@@ -174,20 +176,21 @@ Set piece context and add captions...</textarea>
             <textarea id="contextInfo" rows="2" placeholder="Any other context..."></textarea>
 
             <div class="modal-actions">
-                <button class="btn-secondary" data-modal-close="contextModal">Cancel</button>
+                <button class="btn-secondary" data-modal-close="contextModal"
+                    aria-label="Cancel and close context dialog">Cancel</button>
                 <button class="btn-primary" id="saveContextBtn">Save Context</button>
             </div>
         </div>
     </div>
 
+    <!-- README Modal -->
     <div class="modal" id="readmeModal">
         <div class="modal-content">
             <h2>📖 README</h2>
             <div style="line-height: 1.8;">
                 <h3 style="color: var(--accent); margin-top: 15px;">What is Tessera?</h3>
                 <p>A context-based WebVTT caption editor designed for archival audio with complex metadata. Perfect
-                    for
-                    cassette digitization, classical music recordings, lectures, and performances with multiple
+                    for cassette digitization, classical music recordings, lectures, and performances with multiple
                     movements or speakers.</p>
 
                 <h3 style="color: var(--accent); margin-top: 15px;">Features</h3>
@@ -198,6 +201,7 @@ Set piece context and add captions...</textarea>
                     <li>Override performers/date for specific movements</li>
                     <li>Session save/load to resume work anytime</li>
                     <li>Multiple accessibility themes</li>
+                    <li>Precision audio controls with keyboard shortcuts</li>
                 </ul>
 
                 <h3 style="color: var(--accent); margin-top: 15px;">Workflow</h3>
@@ -210,6 +214,15 @@ Set piece context and add captions...</textarea>
 
                 <h3 style="color: var(--accent); margin-top: 15px;">Keyboard Shortcuts</h3>
                 <ul style="margin-left: 20px; font-family: monospace; font-size: 13px;">
+                    <li><kbd style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">Space/K</kbd>
+                        - Play/Pause</li>
+                    <li><kbd style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">←/→</kbd> -
+                        Skip 1 second</li>
+                    <li><kbd
+                            style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">Shift+←/→</kbd>
+                        - Skip 0.1 second (fine)</li>
+                    <li><kbd style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">I/O</kbd> -
+                        Mark Start/End times</li>
                     <li><kbd style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">Ctrl+S</kbd>
                         - Save session</li>
                     <li><kbd style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">Ctrl+E</kbd>
@@ -224,40 +237,44 @@ Set piece context and add captions...</textarea>
                 </p>
             </div>
             <div class="modal-actions">
-                <button data-modal-close="readmeModal">Close</button>
+                <button class="btn-primary" data-modal-close="readmeModal"
+                    aria-label="Close README dialog">Close</button>
             </div>
         </div>
     </div>
 
+    <!-- License Modal -->
     <div class="modal" id="licenseModal">
         <div class="modal-content">
             <h2>⚖️ MIT License</h2>
             <div
-                style="font-family: monospace; font-size: 12px; line-height: 1.8; white-space: pre-wrap; background: var(--bg-tertiary); padding: 15px; border-radius: 8px;">
-                MIT License
+                style="font-family: monospace; font-size: 12px; line-height: 1.6; background: var(--bg-tertiary); padding: 15px; border-radius: 8px; max-height: 400px; overflow-y: auto;">
+                <pre style="margin: 0; white-space: pre-wrap; word-wrap: break-word;">MIT License
 
-                Copyright (c) 2025 Northwestern University
-                Developed by Sophia Francis
+Copyright (c) 2025 Northwestern University
+Developed by Sophia Francis
 
-                Permission is hereby granted, free of charge, to any person obtaining a copy
-                of this software and associated documentation files (the "Software"), to deal
-                in the Software without restriction, including without limitation the rights
-                to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-                copies of the Software, and to permit persons to whom the Software is
-                furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-                The above copyright notice and this permission notice shall be included in all
-                copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-                THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-                IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-                FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-                AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-                LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-                OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-                SOFTWARE.</div>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</pre>
+            </div>
             <div class="modal-actions">
-                <button data-modal-close="licenseModal">Close</button>
+                <button class="btn-primary" data-modal-close="licenseModal"
+                    aria-label="Close License dialog">Close</button>
             </div>
         </div>
     </div>

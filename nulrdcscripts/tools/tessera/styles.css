@@ -160,11 +160,18 @@ textarea,
 
 .header-controls {
     display: flex;
-    gap: 8px;
     flex-wrap: wrap;
     align-items: center;
     flex: 1;
     justify-content: flex-end;
+}
+
+.header-controls>* {
+    margin-right: 50px;
+}
+
+.header-controls>*:last-child {
+    margin-right: 0;
 }
 
 .theme-selector {
@@ -763,4 +770,17 @@ kbd {
 
 .menu-option:hover {
     background: var(--bg-tertiary);
+}
+
+/* FORCE BUTTON SPACING */
+.header-controls button,
+.header-controls .theme-selector,
+.header-controls>span,
+.header-controls .hamburger-menu {
+    margin-right: 8px !important;
+}
+
+.header-controls>*:last-child,
+.header-controls .hamburger-menu {
+    margin-right: 0 !important;
 }
