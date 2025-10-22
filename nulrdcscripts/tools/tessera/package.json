@@ -1,0 +1,81 @@
+{
+    "name": "webvtt-writer",
+    "version": "1.0.0",
+    "description": "WebVTT caption creation tool for music and speaking events",
+    "main": "main.js",
+    "author": "Sophia Francis - Northwestern University",
+    "license": "MIT",
+    "scripts": {
+        "start": "electron .",
+        "build": "electron-builder",
+        "build:mac": "electron-builder --mac",
+        "build:win": "electron-builder --win",
+        "build:all": "electron-builder -mw"
+    },
+    "build": {
+        "appId": "edu.northwestern.tessera",
+        "productName": "Tessera",
+        "copyright": "Copyright © 2025 Northwestern University",
+        "directories": {
+            "output": "dist"
+        },
+        "files": [
+            "main.js",
+            "index.html",
+            "styles.css",
+            "app.js",
+            "icon.png",
+            "icon.icns",
+            "icon.ico"
+        ],
+        "mac": {
+            "category": "public.app-category.productivity",
+            "icon": "icon.icns",
+            "target": [
+                {
+                    "target": "dmg",
+                    "arch": [
+                        "x64",
+                        "arm64"
+                    ]
+                },
+                {
+                    "target": "zip",
+                    "arch": [
+                        "x64",
+                        "arm64"
+                    ]
+                }
+            ]
+        },
+        "win": {
+            "icon": "icon.ico",
+            "target": [
+                {
+                    "target": "nsis",
+                    "arch": [
+                        "x64"
+                    ]
+                },
+                {
+                    "target": "portable",
+                    "arch": [
+                        "x64"
+                    ]
+                }
+            ]
+        },
+        "linux": {
+            "icon": "icon.png",
+            "target": [
+                "AppImage",
+                "deb"
+            ],
+            "category": "AudioVideo"
+        }
+    },
+    "devDependencies": {
+        "electron": "^28.0.0",
+        "electron-builder": "^24.9.0"
+    }
+}

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tessera</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♪</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="header">
+        <h1><span style="color: var(--accent);">♪</span> Tessera</h1>
+        <div class="header-controls">
+            <div class="theme-selector">
+                <button class="theme-dropdown-btn" id="themeDropdownBtn" aria-label="Select theme" aria-haspopup="menu"
+                    aria-expanded="false">
+                    🎨 <span id="currentTheme">Tessera</span> ▾
+                </button>
+                <div class="theme-dropdown" id="themeDropdown" role="menu" aria-label="Theme options">
+                    <div class="theme-option active" data-theme="tessera" role="menuitem" tabindex="0">Tessera</div>
+                    <div class="theme-option" data-theme="dark" role="menuitem" tabindex="0">Dark</div>
+                    <div class="theme-option" data-theme="light" role="menuitem" tabindex="0">Light</div>
+                    <div class="theme-option" data-theme="blue" role="menuitem" tabindex="0">Blue</div>
+                    <div class="theme-option" data-theme="purple" role="menuitem" tabindex="0">Purple</div>
+                    <div class="theme-option" data-theme="colorblind" role="menuitem" tabindex="0">Colorblind</div>
+                    <div class="theme-option" data-theme="pastel" role="menuitem" tabindex="0">Pastel</div>
+                </div>
+            </div>
+            <span style="font-size: 12px;">Captions: <strong id="cueCount"
+                    style="color: var(--accent);">0</strong></span>
+            <button id="saveBtn" aria-label="Save session">💾 Save</button>
+            <button id="loadBtn" aria-label="Load session">📂 Load</button>
+            <input type="file" id="loadFile" accept=".json" style="display: none;" aria-label="Load session file">
+            <button id="exportBtn" aria-label="Export WebVTT file">⬇️ Export VTT</button>
+            <div class="hamburger-menu">
+                <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu" aria-haspopup="menu"
+                    aria-expanded="false">☰</button>
+                <div class="hamburger-dropdown" id="hamburgerDropdown" role="menu" aria-label="Application menu">
+                    <div class="menu-option" id="readmeOption" role="menuitem" tabindex="0">📖 README</div>
+                    <div class="menu-option" id="licenseOption" role="menuitem" tabindex="0">⚖️ License</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="left">
+            <section class="card">
+                <h3>Audio Player</h3>
+                <div id="audioUploadBox" class="audio-upload" tabindex="0">
+                    <div><span style="color: var(--accent); font-size: 24px;">♪</span> Click or Drop Audio File
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 5px;">MP3, WAV, OGG, M4A
+                    </div>
+                    <input type="file" id="audioFile" accept="audio/*" style="display: none;"
+                        aria-label="Upload audio file">
+                </div>
+                <audio id="audio" controls style="width: 100%; margin-top: 10px; display: none;"
+                    aria-label="Audio player"></audio>
+                <div class="time-display" id="timeDisplay" style="display: none;" role="timer" aria-live="off">
+                    00:00.000
+                </div>
+            </section>
+
+            <section class="card">
+                <h3>Current Piece Context</h3>
+                <div class="context-display" id="contextDisplay">
+                    <div class="context-empty">No piece context set. Click "Edit Piece Context" to begin.</div>
+                </div>
+                <button class="btn-primary" id="editContextBtn" style="width: 100%;">📝 Edit Piece Context</button>
+            </section>
+
+            <section class="card">
+                <h3>Add Movement/Caption</h3>
+                <p class="help-text">Inherits current piece context</p>
+
+                <label for="movementName">Movement/Section Name</label>
+                <input type="text" id="movementName" placeholder="e.g., Allegro con brio, Opening Remarks">
+
+                <div class="time-inputs">
+                    <div>
+                        <label for="startTime">Start Time</label>
+                        <input type="text" id="startTime" placeholder="00:00:00.000">
+                    </div>
+                    <div>
+                        <label for="endTime">End Time</label>
+                        <input type="text" id="endTime" placeholder="00:00:00.000">
+                    </div>
+                </div>
+
+                <details id="overrideDetails">
+                    <summary>▸ Override Context (Optional)</summary>
+                    <label for="overridePerformers">Different Performers</label>
+                    <input type="text" id="overridePerformers" placeholder="Leave blank to use current context">
+
+                    <label for="overrideDate">Different Date</label>
+                    <input type="text" id="overrideDate" placeholder="Leave blank to use current context">
+
+                    <label for="overrideConductor">Different Conductor</label>
+                    <input type="text" id="overrideConductor" placeholder="Leave blank to use current context">
+                </details>
+
+                <label for="notes">Notes (Optional)</label>
+                <textarea id="notes" rows="2" placeholder="Additional notes..."></textarea>
+
+                <button class="btn-primary" id="addBtn" style="width: 100%; margin-top: 10px;">
+                    <span style="color: var(--bg-primary); font-size: 18px;">+</span> Add Caption
+                </button>
+            </section>
+
+            <section class="card">
+                <h3>Caption Timeline</h3>
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <button id="sortBtn" class="btn-secondary" style="flex: 1; background: #495057;">↕️
+                        Sort</button>
+                    <button id="clearBtn" class="btn-danger" style="flex: 1;">🗑️ Clear All</button>
+                </div>
+                <div id="cueList">
+                    <div class="empty">No captions yet<br><small>Set piece context and add captions</small></div>
+                </div>
+            </section>
+        </div>
+
+        <aside class="right">
+            <div class="tabs">
+                <button class="tab active" data-tab="vtt">WebVTT Output</button>
+                <button class="tab" data-tab="preview">Preview</button>
+            </div>
+
+            <div class="tab-content active" id="vttTab">
+                <textarea class="vtt" id="vttOutput" readonly>WEBVTT
+
+Set piece context and add captions...</textarea>
+            </div>
+
+            <div class="tab-content" id="previewTab">
+                <div id="previewContent">
+                    <div class="empty">No captions to preview</div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <footer class="footer">
+        <span><kbd>Ctrl+S</kbd> Save session</span>
+        <span><kbd>Ctrl+E</kbd> Export VTT</span>
+        <span>Piece context applies to all new captions until changed</span>
+    </footer>
+
+    <div class="modal" id="contextModal">
+        <div class="modal-content">
+            <h2>Edit Piece Context</h2>
+            <p class="help-text">This context will apply to all new captions until you change it</p>
+
+            <label for="contextTitle">Title *</label>
+            <input type="text" id="contextTitle" placeholder="e.g., Sonata No. 1 for Violin & Piano (1938)">
+
+            <label for="contextPerformers">Performers *</label>
+            <input type="text" id="contextPerformers" placeholder="e.g., Composer, Violin. Frances Newman, Piano">
+
+            <label for="contextDate">Date</label>
+            <input type="text" id="contextDate" placeholder="e.g., 12/10/45">
+
+            <label for="contextConductor">Conductor (Optional)</label>
+            <input type="text" id="contextConductor" placeholder="e.g., Howard Barlow">
+
+            <label for="contextComposer">Composer (Optional)</label>
+            <input type="text" id="contextComposer" placeholder="e.g., Ludwig van Beethoven">
+
+            <label for="contextInfo">Additional Info (Optional)</label>
+            <textarea id="contextInfo" rows="2" placeholder="Any other context..."></textarea>
+
+            <div class="modal-actions">
+                <button class="btn-secondary" data-modal-close="contextModal">Cancel</button>
+                <button class="btn-primary" id="saveContextBtn">Save Context</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="readmeModal">
+        <div class="modal-content">
+            <h2>📖 README</h2>
+            <div style="line-height: 1.8;">
+                <h3 style="color: var(--accent); margin-top: 15px;">What is Tessera?</h3>
+                <p>A context-based WebVTT caption editor designed for archival audio with complex metadata. Perfect
+                    for
+                    cassette digitization, classical music recordings, lectures, and performances with multiple
+                    movements or speakers.</p>
+
+                <h3 style="color: var(--accent); margin-top: 15px;">Features</h3>
+                <ul style="margin-left: 20px;">
+                    <li>Context-based workflow: Set piece info once, reuse for all movements</li>
+                    <li>Full metadata in every caption for standalone clarity</li>
+                    <li>Visual grouping by piece in timeline</li>
+                    <li>Override performers/date for specific movements</li>
+                    <li>Session save/load to resume work anytime</li>
+                    <li>Multiple accessibility themes</li>
+                </ul>
+
+                <h3 style="color: var(--accent); margin-top: 15px;">Workflow</h3>
+                <ol style="margin-left: 20px;">
+                    <li>Click "Edit Piece Context" to set title, performers, date</li>
+                    <li>Add movements with just name + timestamps</li>
+                    <li>Context automatically applies to each caption</li>
+                    <li>Export clean, consistent WebVTT files</li>
+                </ol>
+
+                <h3 style="color: var(--accent); margin-top: 15px;">Keyboard Shortcuts</h3>
+                <ul style="margin-left: 20px; font-family: monospace; font-size: 13px;">
+                    <li><kbd style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">Ctrl+S</kbd>
+                        - Save session</li>
+                    <li><kbd style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">Ctrl+E</kbd>
+                        - Export VTT</li>
+                </ul>
+
+                <h3 style="color: var(--accent); margin-top: 15px;">Output Format</h3>
+                <p>Each caption includes: Title. Movement. Performers. Conductor. Date</p>
+                <p style="margin-top: 10px; font-size: 12px; color: var(--text-secondary);">
+                    Example: <code
+                        style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 3px;">Sonata No. 1 for Violin & Piano (1938). Allegro con brio. Composer, Violin. Frances Newman, Piano. 12/10/45</code>
+                </p>
+            </div>
+            <div class="modal-actions">
+                <button data-modal-close="readmeModal">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="licenseModal">
+        <div class="modal-content">
+            <h2>⚖️ MIT License</h2>
+            <div
+                style="font-family: monospace; font-size: 12px; line-height: 1.8; white-space: pre-wrap; background: var(--bg-tertiary); padding: 15px; border-radius: 8px;">
+                MIT License
+
+                Copyright (c) 2025 Northwestern University
+                Developed by Sophia Francis
+
+                Permission is hereby granted, free of charge, to any person obtaining a copy
+                of this software and associated documentation files (the "Software"), to deal
+                in the Software without restriction, including without limitation the rights
+                to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+                copies of the Software, and to permit persons to whom the Software is
+                furnished to do so, subject to the following conditions:
+
+                The above copyright notice and this permission notice shall be included in all
+                copies or substantial portions of the Software.
+
+                THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+                IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+                FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+                AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+                LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+                OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+                SOFTWARE.</div>
+            <div class="modal-actions">
+                <button data-modal-close="licenseModal">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="tessera.js"></script>
+</body>
+
+</html>
