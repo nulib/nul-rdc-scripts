@@ -1,5 +1,9 @@
 {
     "githubPullRequests.ignoredPullRequestBranches": [
         "main"
-    ]
+    ],
+    "files.exclude": {
+        "**/node_modules": true,
+        "**/dist": true
+    }
 }
