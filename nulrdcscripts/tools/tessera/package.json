@@ -1,5 +1,5 @@
 {
-    "name": "webvtt-writer",
+    "name": "tessera",
     "version": "1.0.0",
     "description": "WebVTT caption creation tool for music and speaking events",
     "main": "main.js",
@@ -13,12 +13,8 @@
         "build:all": "electron-builder -mw"
     },
     "build": {
-        "appId": "edu.northwestern.tessera",
+        "appId": "com.northwestern.tessera",
         "productName": "Tessera",
-        "copyright": "Copyright © 2025 Northwestern University",
-        "directories": {
-            "output": "dist"
-        },
         "files": [
             "main.js",
             "index.html",
@@ -50,6 +46,7 @@
         },
         "win": {
             "icon": "icon.ico",
+            "signAndEditExecutable": false,
             "target": [
                 {
                     "target": "nsis",
@@ -64,14 +61,6 @@
                     ]
                 }
             ]
-        },
-        "linux": {
-            "icon": "icon.png",
-            "target": [
-                "AppImage",
-                "deb"
-            ],
-            "category": "AudioVideo"
         }
     },
     "devDependencies": {
