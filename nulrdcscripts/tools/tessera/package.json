@@ -46,7 +46,6 @@
         },
         "win": {
             "icon": "icon.ico",
-            "signAndEditExecutable": false,
             "extraResources": [
                 {
                     "from": "icon.ico",

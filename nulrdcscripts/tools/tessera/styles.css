@@ -168,16 +168,9 @@ textarea,
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    gap: 8px;
     flex: 1;
     justify-content: flex-end;
-}
-
-.header-controls>* {
-    margin-right: 50px;
-}
-
-.header-controls>*:last-child {
-    margin-right: 0;
 }
 
 .theme-selector {
@@ -779,19 +772,6 @@ kbd {
     background: var(--bg-tertiary);
 }
 
-/* FORCE BUTTON SPACING */
-.header-controls button,
-.header-controls .theme-selector,
-.header-controls>span,
-.header-controls .hamburger-menu {
-    margin-right: 8px !important;
-}
-
-.header-controls>*:last-child,
-.header-controls .hamburger-menu {
-    margin-right: 0 !important;
-}
-
 /* Modal content formatting */
 .modal-content p {
     margin: 10px 0;
@@ -873,4 +853,47 @@ kbd {
 
 .modal-content>div::-webkit-scrollbar-thumb:hover {
     background: var(--accent-light);
+}
+
+/* README Modal specific styling */
+.readme-scroll {
+    line-height: 1.6;
+    overflow-y: auto;
+    max-height: calc(85vh - 150px);
+    padding-right: 10px;
+}
+
+.readme-subtitle {
+    font-style: italic;
+    color: var(--text-secondary);
+}
+
+.example-text {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.readme-footer {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+/* License text styling */
+.license-text {
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    background: var(--bg-tertiary);
+    padding: 15px;
+    border-radius: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.license-text pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }

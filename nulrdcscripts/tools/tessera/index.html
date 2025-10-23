@@ -185,97 +185,94 @@ Set piece context and add captions...</textarea>
 
     <!-- README Modal -->
     <div class="modal" id="readmeModal">
-        <div class="modal-content" style="max-width: 800px; max-height: 85vh;">
+        <div class="modal-content">
             <h2>📖 Tessera User Guide</h2>
-            <div style="line-height: 1.6; overflow-y: auto; max-height: calc(85vh - 120px); padding-right: 10px;">
-                <p style="font-style: italic; color: var(--text-secondary);">WebVTT Caption Editor for Classical Music
-                    Archival</p>
+            <div class="readme-scroll">
+                <p class="readme-subtitle">WebVTT Caption Editor for Classical Music Archival</p>
 
-                <h3 style="color: var(--accent); margin-top: 20px;">Memory Protection & Large Files</h3>
+                <h3>Memory Protection & Large Files</h3>
                 <p>Tessera is designed to work with preservation-quality audio files, which can be very large (often
                     2GB+ for uncompressed WAV files). To protect your work and system performance, Tessera includes
                     automatic memory management.</p>
 
-                <h4 style="margin-top: 15px;">Understanding the Protections</h4>
+                <h4>Understanding the Protections</h4>
 
-                <p><strong>Large File Warning (>2GB)</strong></p>
+                <p><strong>Large File Warning (&gt;2GB)</strong></p>
                 <p>When you try to load a file larger than 2GB, you'll see a confirmation dialog. Click OK to proceed or
                     Cancel to choose a different file. This is just a warning - you can still work with the file, but be
                     aware it may slow down your system.</p>
 
                 <p><strong>3-Hour Session Timeout</strong></p>
                 <p>Tessera automatically monitors:</p>
-                <ul style="margin-left: 20px;">
+                <ul>
                     <li>Total session time: How long you've had the application open</li>
                     <li>Total audio loaded: Combined size of all audio files loaded this session</li>
                 </ul>
                 <p>When EITHER session has been open for 3+ hours OR you've loaded 3+ GB of total audio files, Tessera
                     will trigger its memory protection system.</p>
 
-                <h4 style="margin-top: 15px;">What Happens During Memory Protection</h4>
+                <h4>What Happens During Memory Protection</h4>
 
                 <p><strong>Step 1: Automatic Save</strong></p>
-                <p>Before showing you any warning, Tessera automatically saves your work as <code
-                        style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 3px;">tessera_autosave_session.json</code>.
+                <p>Before showing you any warning, Tessera automatically saves your work as
+                    <code>tessera_autosave_session.json</code>.
                     Your work is safe!</p>
 
                 <p><strong>Step 2: Warning Dialog</strong></p>
                 <p>You have two choices:</p>
-                <ul style="margin-left: 20px;">
+                <ul>
                     <li><strong>Click OK:</strong> Application closes immediately (recommended)</li>
                     <li><strong>Click Cancel:</strong> You get 2 more minutes to finish up. Application closes
                         automatically after 2 minutes.</li>
                 </ul>
 
-                <h4 style="margin-top: 15px;">Resuming Your Work</h4>
-                <ol style="margin-left: 20px;">
+                <h4>Resuming Your Work</h4>
+                <ol>
                     <li>Reopen Tessera</li>
                     <li>Click "Load Session"</li>
-                    <li>Select your <code
-                            style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 3px;">tessera_autosave_session.json</code>
-                        file</li>
+                    <li>Select your <code>tessera_autosave_session.json</code> file</li>
                     <li>All your captions and context will be restored</li>
                     <li>Reload your audio file (audio files are not saved in sessions)</li>
                 </ol>
 
-                <h4 style="margin-top: 15px;">Memory Tips</h4>
-                <ul style="margin-left: 20px;">
+                <h4>Memory Tips</h4>
+                <ul>
                     <li>Save frequently using Ctrl/Cmd+S</li>
                     <li>Close and reopen every 2-3 hours for best performance</li>
                     <li>Work on one file at a time when possible</li>
                     <li>If Tessera starts feeling sluggish, save and restart</li>
                 </ul>
 
-                <h3 style="color: var(--accent); margin-top: 20px;">Getting Started</h3>
+                <h3>Getting Started</h3>
 
-                <h4 style="margin-top: 15px;">Basic Workflow</h4>
-                <ol style="margin-left: 20px;">
-                    <li><strong>Load audio file</strong> → Click the upload area or drag & drop</li>
+                <h4>Basic Workflow</h4>
+                <ol>
+                    <li><strong>Load audio file</strong> → Click the upload area or drag &amp; drop</li>
                     <li><strong>Set piece context</strong> → Click "Edit Piece Context"</li>
                     <li><strong>Add captions</strong> → Mark timestamps for each movement</li>
                     <li><strong>Export WebVTT</strong> → Save your completed caption file</li>
                 </ol>
 
-                <h3 style="color: var(--accent); margin-top: 20px;">Setting Piece Context</h3>
+                <h3>Setting Piece Context</h3>
                 <p>Before adding captions, you must set the piece context. This information will be included in every
                     caption.</p>
 
                 <p><strong>Required Fields:</strong></p>
-                <ul style="margin-left: 20px;">
+                <ul>
                     <li>Title: Full title of the work</li>
                     <li>Performers: Primary performing ensemble</li>
                 </ul>
 
                 <p><strong>Optional Fields:</strong></p>
-                <ul style="margin-left: 20px;">
+                <ul>
                     <li>Date: Performance date</li>
                     <li>Conductor: Conductor name</li>
                     <li>Composer: Composer name</li>
                     <li>Additional Info: Any other relevant context</li>
                 </ul>
 
-                <h3 style="color: var(--accent); margin-top: 20px;">Adding Movement Captions</h3>
-                <ol style="margin-left: 20px;">
+                <h3>Adding Movement Captions</h3>
+                <ol>
                     <li>Play the audio using the built-in player controls</li>
                     <li>Note the start time when a movement begins</li>
                     <li>Fill in: Movement Name, Start Time, End Time</li>
@@ -285,9 +282,9 @@ Set piece context and add captions...</textarea>
 
                 <p><strong>Time Format:</strong> HH:MM:SS.mmm (e.g., 00:03:45.250 = 3 minutes, 45.25 seconds)</p>
 
-                <h3 style="color: var(--accent); margin-top: 20px;">Using Override Fields</h3>
+                <h3>Using Override Fields</h3>
                 <p>Sometimes you need to override the piece context for specific movements. Common scenarios:</p>
-                <ul style="margin-left: 20px;">
+                <ul>
                     <li>Multiple pieces on one recording with different performers</li>
                     <li>Guest artists joining for one movement</li>
                     <li>Movements recorded on different dates</li>
@@ -295,50 +292,31 @@ Set piece context and add captions...</textarea>
                 <p>Click "Override Details" in the Add Caption section to override Performers, Date, or Conductor for
                     individual captions.</p>
 
-                <h3 style="color: var(--accent); margin-top: 20px;">Keyboard Shortcuts</h3>
+                <h3>Keyboard Shortcuts</h3>
 
                 <p><strong>Audio Playback:</strong></p>
-                <ul style="margin-left: 20px; font-family: monospace; font-size: 13px;">
-                    <li><kbd style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">Space/K</kbd>
-                        - Play/Pause</li>
-                    <li><kbd style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">←/→</kbd> -
-                        Skip 1 second</li>
-                    <li><kbd
-                            style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">Shift+←/→</kbd>
-                        - Skip 0.1 second (fine-tuning)</li>
-                    <li><kbd
-                            style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">Ctrl+←/→</kbd>
-                        - Skip 5 seconds</li>
-                    <li><kbd style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">,/.</kbd> -
-                        Frame-by-frame (0.033s)</li>
-                    <li><kbd style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">J/L</kbd> -
-                        Jump 10 seconds</li>
-                    <li><kbd style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">↑/↓</kbd> -
-                        Volume up/down 10%</li>
-                    <li><kbd style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">M</kbd> -
-                        Mute/Unmute</li>
-                    <li><kbd style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">I</kbd> -
-                        Mark Start Time</li>
-                    <li><kbd style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">O</kbd> -
-                        Mark End Time</li>
+                <ul>
+                    <li><kbd>Space/K</kbd> - Play/Pause</li>
+                    <li><kbd>←/→</kbd> - Skip 1 second</li>
+                    <li><kbd>Shift+←/→</kbd> - Skip 0.1 second (fine-tuning)</li>
+                    <li><kbd>Ctrl+←/→</kbd> - Skip 5 seconds</li>
+                    <li><kbd>,/.</kbd> - Frame-by-frame (0.033s)</li>
+                    <li><kbd>J/L</kbd> - Jump 10 seconds</li>
+                    <li><kbd>↑/↓</kbd> - Volume up/down 10%</li>
+                    <li><kbd>M</kbd> - Mute/Unmute</li>
+                    <li><kbd>I</kbd> - Mark Start Time</li>
+                    <li><kbd>O</kbd> - Mark End Time</li>
                 </ul>
 
                 <p><strong>Application:</strong></p>
-                <ul style="margin-left: 20px; font-family: monospace; font-size: 13px;">
-                    <li><kbd
-                            style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">Ctrl/Cmd+S</kbd>
-                        - Save session</li>
-                    <li><kbd
-                            style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">Ctrl/Cmd+E</kbd>
-                        - Export WebVTT</li>
-                    <li><kbd
-                            style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">Ctrl/Cmd+O</kbd>
-                        - Load session</li>
-                    <li><kbd style="background: var(--bg-tertiary); padding: 3px 7px; border-radius: 4px;">ESC</kbd> -
-                        Close modals</li>
+                <ul>
+                    <li><kbd>Ctrl/Cmd+S</kbd> - Save session</li>
+                    <li><kbd>Ctrl/Cmd+E</kbd> - Export WebVTT</li>
+                    <li><kbd>Ctrl/Cmd+O</kbd> - Load session</li>
+                    <li><kbd>ESC</kbd> - Close modals</li>
                 </ul>
 
-                <h3 style="color: var(--accent); margin-top: 20px;">Managing Your Work</h3>
+                <h3>Managing Your Work</h3>
 
                 <p><strong>Saving Sessions:</strong></p>
                 <p>Click "Save Session" or press Ctrl/Cmd+S to save your work as a .json file. This saves your piece
@@ -351,8 +329,8 @@ Set piece context and add captions...</textarea>
                 <p><strong>Exporting WebVTT:</strong></p>
                 <p>Click "Export VTT" or press Ctrl/Cmd+E to save your completed caption file as .vtt format.</p>
 
-                <h3 style="color: var(--accent); margin-top: 20px;">Tips & Best Practices</h3>
-                <ul style="margin-left: 20px;">
+                <h3>Tips &amp; Best Practices</h3>
+                <ul>
                     <li>Use full, formal names for titles and performers</li>
                     <li>Include movement markings in original language</li>
                     <li>Be consistent with date formatting</li>
@@ -362,38 +340,38 @@ Set piece context and add captions...</textarea>
                     <li>Review the Preview tab before exporting</li>
                 </ul>
 
-                <h3 style="color: var(--accent); margin-top: 20px;">Troubleshooting</h3>
+                <h3>Troubleshooting</h3>
 
                 <p><strong>Audio won't load:</strong></p>
-                <ul style="margin-left: 20px;">
+                <ul>
                     <li>Check file format (MP3, WAV, OGG, M4A supported)</li>
-                    <li>For files >2GB, confirm you want to proceed</li>
+                    <li>For files &gt;2GB, confirm you want to proceed</li>
                     <li>Check available system memory</li>
                 </ul>
 
                 <p><strong>Application closes unexpectedly:</strong></p>
-                <p>This is the memory protection system! Your work was automatically saved as <code
-                        style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 3px;">tessera_autosave_session.json</code>.
+                <p>This is the memory protection system! Your work was automatically saved as
+                    <code>tessera_autosave_session.json</code>.
                     Simply reopen Tessera and load the autosave file.</p>
 
                 <p><strong>Can't add caption:</strong></p>
-                <ul style="margin-left: 20px;">
+                <ul>
                     <li>"Please set piece context first" - Click "Edit Piece Context" and fill in Title and Performers
                     </li>
                     <li>"Invalid time format" - Use HH:MM:SS.mmm format</li>
                     <li>"End time must be after start time" - Check your timestamps</li>
                 </ul>
 
-                <h3 style="color: var(--accent); margin-top: 20px;">Output Format</h3>
+                <h3>Output Format</h3>
                 <p>Each caption includes: Title. Movement. Performers. Conductor. Date</p>
-                <p style="margin-top: 10px; font-size: 12px; color: var(--text-secondary);">
-                    Example: <code
-                        style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 3px;">Symphony No. 5 in C minor, Op. 67. I. Allegro con brio. Chicago Symphony Orchestra. Riccardo Muti, Conductor. March 15, 2024</code>
+                <p class="example-text">
+                    Example:
+                    <code>Symphony No. 5 in C minor, Op. 67. I. Allegro con brio. Chicago Symphony Orchestra. Riccardo Muti, Conductor. March 15, 2024</code>
                 </p>
 
-                <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--border);">
+                <hr>
 
-                <p style="text-align: center; color: var(--text-secondary); font-size: 12px;">
+                <p class="readme-footer">
                     <strong>Northwestern University Libraries</strong><br>
                     Digital Preservation Services<br>
                     Developed by Sophia Francis
@@ -410,9 +388,8 @@ Set piece context and add captions...</textarea>
     <div class="modal" id="licenseModal">
         <div class="modal-content">
             <h2>⚖️ MIT License</h2>
-            <div
-                style="font-family: monospace; font-size: 12px; line-height: 1.6; background: var(--bg-tertiary); padding: 15px; border-radius: 8px; max-height: 400px; overflow-y: auto;">
-                <pre style="margin: 0; white-space: pre-wrap; word-wrap: break-word;">MIT License
+            <div class="license-text">
+                <pre>MIT License
 
 Copyright (c) 2025 Northwestern University
 Developed by Sophia Francis
