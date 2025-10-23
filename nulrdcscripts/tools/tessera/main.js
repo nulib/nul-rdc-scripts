@@ -14,7 +14,7 @@ function createWindow() {
             contextIsolation: true,
             enableRemoteModule: false
         },
-        icon: path.join(__dirname, 'assets/icon.png') // Optional: add your icon
+        icon: path.join(__dirname, 'icon.png') // Fixed: removed 'assets/' path
     });
 
     mainWindow.loadFile('index.html');
