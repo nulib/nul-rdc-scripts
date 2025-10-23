@@ -14,8 +14,11 @@ function createWindow() {
             contextIsolation: true,
             enableRemoteModule: false
         },
-        icon: path.join(__dirname, 'icon.png') // Fixed: removed 'assets/' path
+        icon: path.join(__dirname, 'icon.png')
     });
+
+    // Clear cache on every startup
+    mainWindow.webContents.session.clearCache();
 
     mainWindow.loadFile('index.html');
 
