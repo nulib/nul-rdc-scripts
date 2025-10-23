@@ -1,6 +1,6 @@
 {
     "name": "tessera",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "WebVTT caption creation tool for music and speaking events",
     "main": "main.js",
     "author": "Sophia Francis - Northwestern University",
@@ -47,6 +47,12 @@
         "win": {
             "icon": "icon.ico",
             "signAndEditExecutable": false,
+            "extraResources": [
+                {
+                    "from": "icon.ico",
+                    "to": "icon.ico"
+                }
+            ],
             "target": [
                 {
                     "target": "nsis",
