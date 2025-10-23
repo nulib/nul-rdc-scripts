@@ -12,16 +12,27 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
-            enableRemoteModule: false
+            enableRemoteModule: false,
+            cache: false  // Disable cache entirely
         },
         icon: path.join(__dirname, 'icon.png')
     });
 
-    // Clear cache on every startup
-    mainWindow.webContents.session.clearCache();
+    // Clear all cache on startup
+    const session = mainWindow.webContents.session;
+
+    session.clearCache().then(() => {
+        console.log('Cache cleared');
+    });
+
+    // Also clear storage data (includes cached files)
+    session.clearStorageData({
+        storages: ['cachestorage', 'serviceworkers']
+    });
 
     mainWindow.loadFile('index.html');
 
+    // Rest of your code...
     // Optional: Open DevTools in development
     // mainWindow.webContents.openDevTools();
 
