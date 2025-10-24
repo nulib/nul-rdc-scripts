@@ -1,0 +1,17 @@
+﻿criteria,brngout,clipping,avglow,avghigh,brnglimit,clippinglimit,illegal,ideal,max
+ylow,64,0,,,,,,,
+yhigh,940,1023,,,,,,,
+yavg,,,321,682,,,,,
+ulow,64,0,,,,,,,
+uhigh,960,1023,,,,,,,
+uavg,,,341,682,,,,,
+vlow,64,0,,,,,,,
+vhigh,960,1023,,,,,,,
+vavg,,,341,682,,,,,
+tout,,,,,,,,0,0.009
+vrep,,,,,,,,0,0.03
+brng,,,,,,,,0,1
+sat,,,,,354.8,472.8,724.08,,
+msef,,,,,,,,0,
+psnrideal,,,,,30,,50,,
+psnrmax,,,,,0,,60,,
