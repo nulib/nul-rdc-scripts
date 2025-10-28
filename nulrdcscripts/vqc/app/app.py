@@ -3,19 +3,16 @@ import os
 import sys
 import glob
 import platform
+import traceback
 from pathlib import Path
 
-# Add parent directory to path so we can import medusight
-parent_dir = Path(__file__).parent.parent
-sys.path.insert(0, str(parent_dir))
+# Add parent directory to Python path
+parent_dir = str(Path(__file__).parent.parent)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
 
-# Handle PyInstaller paths
-if getattr(sys, 'frozen', False):
-    base_path = sys._MEIPASS
-else:
-    base_path = os.path.dirname(os.path.abspath(__file__))
-
-web_path = os.path.join(base_path, 'web')
+# Simplify web path
+web_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web')
 eel.init(web_path)
 
 # Create uploads directory
@@ -24,95 +21,38 @@ if not os.path.exists(uploads_dir):
     os.makedirs(uploads_dir)
 
 def process_single_video(file_path):
-    """Process a single video file - calls medusight processfile"""
+    """Process a single video file"""
     try:
-        from pathlib import Path
+        # Import directly from medusight package
+        from medusight import processfile
+        result = processfile(str(file_path), 'input')
+        
         path = Path(file_path)
-        print(f"Processing: {path.name}")
-        
-        # Mock command-line arguments for medusight
-        import sys
-        old_argv = sys.argv
-        sys.argv = ['app.py', '--input', str(path), '--output', 'input']
-        
-        try:
-            # Get file extension first
-            extension = path.suffix.lower() if path.suffix else '.unknown'
-            file_size = path.stat().st_size if path.exists() else 0
-            
-            # Call your medusight processfile function
-            from medusight.medusight import processfile
-            
-            # Process the file (output goes to same directory as input)
-            processfile(str(path), 'input')
-        finally:
-            # Restore original argv
-            sys.argv = old_argv
-        
-        # After processing, check for output files
-        base_filename = path.stem.replace('.mkv.qctools', '').replace('.xml', '').replace('.json', '')
+        base_name = path.stem.replace('.mkv.qctools', '').replace('.xml', '').replace('.json', '')
         output_dir = path.parent
-        video_report = output_dir / f"{base_filename}_video_level_report.txt"
-        detailed_report = output_dir / f"{base_filename}_failing_frames_by_criteria.txt"
-        
-        # Read the video report to get PASS/FAIL status
-        if video_report.exists():
-            with open(video_report, 'r') as f:
-                report_content = f.read()
-            
-            status = 'PASS' if 'PASS' in report_content else 'FAIL'
-            
-            issues = []
-            if status == 'FAIL':
-                issues.append('Quality control issues detected - check report file')
-            
-            return {
-                'filename': path.name,
-                'path': str(path),
-                'size': file_size,
-                'extension': extension,
-                'status': status,
-                'issues': issues,
-                'processed': True,
-                'report_path': str(video_report),
-                'detailed_report_path': str(detailed_report) if detailed_report.exists() else None
-            }
-        else:
-            return {
-                'filename': path.name,
-                'path': str(path),
-                'size': file_size,
-                'extension': extension,
-                'status': 'ERROR',
-                'issues': ['Report file not generated'],
-                'processed': False
-            }
-            
-    except Exception as e:
-        import traceback
-        print(f"Error processing {file_path}:")
-        print(traceback.format_exc())
-        
-        # Make sure we always return all required fields
-        try:
-            from pathlib import Path
-            path = Path(file_path)
-            filename = path.name
-            size = path.stat().st_size if path.exists() else 0
-            extension = path.suffix.lower() if path.suffix else '.unknown'
-        except:
-            filename = str(file_path)
-            size = 0
-            extension = '.unknown'
+        video_report = output_dir / f"{base_name}_video_level_report.txt"
+        detailed_report = output_dir / f"{base_name}_failing_frames_by_criteria.txt"
         
         return {
-            'filename': filename,
+            'filename': path.name,
+            'path': str(path),
+            'status': 'PASS' if result else 'FAIL',
+            'issues': [],
+            'processed': True,
+            'report_path': str(video_report),
+            'detailed_report_path': str(detailed_report) if detailed_report.exists() else None,
+            'extension': path.suffix.lower()
+        }
+    except Exception as e:
+        print(f"Error processing {file_path}:")
+        traceback.print_exc()
+        return {
+            'filename': os.path.basename(file_path),
             'path': str(file_path),
-            'size': size,
-            'extension': extension,
             'status': 'ERROR',
             'issues': [str(e)],
-            'processed': False
+            'processed': False,
+            'extension': os.path.splitext(file_path)[1].lower()
         }
 
 @eel.expose

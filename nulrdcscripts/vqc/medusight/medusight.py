@@ -11,18 +11,29 @@ Supports:
 - Audio quality analysis (LUFS, silence detection)
 """
 
-import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+import sys
 import progressbar
 import pandas as pd
 import re
-from medusight.params import args
-from medusight import dataparsing, framestatistics, qcsetup, overallStatistics
-import datetime
+from pathlib import Path
+import traceback
 import concurrent.futures
-import warnings
 import multiprocessing
+import warnings
+from video_data_extractor import process_video_with_options
+from dataparsing import (
+    dataparsingandtabulatingvideoXML,
+    dataparsingandtabulatingvideoCSV,
+    dataparsingandtabulatingvideoJSON,
+    videodatastatistics,
+    videostatstocsv
+)
+from audio_analysis import analyze_audio_quality, generate_audio_report
+from framestatistics import get_failing_frametimes, get_saturation_column
+from qcsetup import inputCheck, outputCheck, setInputFileType, setVideoBitDepth
+from overallStatistics import runstatsvideo
+from params import args
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
@@ -165,9 +176,6 @@ def filter_errors_with_failed_frames(errors, videodata, standardDF):
         
         print(f"DEBUG FILTER: Checking {criteria}")
         
-        # Get saturation column to use
-        from medusight.framestatistics import get_saturation_column
-        
         # Count actual failing frames for this criteria
         if criteria in ("sat", "sathigh", "satmax"):
             # For saturation, check using the appropriate column
@@ -266,7 +274,6 @@ def write_video_stats_to_txt(
     print(f"DEBUG: passfail_video = {passfail_video}")
     
     # Get saturation column for reporting
-    from medusight.framestatistics import get_saturation_column
     try:
         sat_column = get_saturation_column(videodata)
     except ValueError:
@@ -436,11 +443,11 @@ def processfile(inputPath, outputPath):
         # Setup phase
         with progressbar.ProgressBar(max_value=4) as qcsetupBar:
             qcsetupBar.update(0)
-            qcsetup.inputCheck(inputPath)
+            inputCheck(inputPath)
             qcsetupBar.update(1)
-            outputLocation = qcsetup.outputCheck(inputPath, outputPath)
+            outputLocation = outputCheck(inputPath, outputPath)
             qcsetupBar.update(2)
-            inputFileType = qcsetup.setInputFileType(inputPath)
+            inputFileType = setInputFileType(inputPath)
             qcsetupBar.update(3)
         
         print("*****Setup Complete*****")
@@ -453,9 +460,6 @@ def processfile(inputPath, outputPath):
         # ==================================================================
         if file_ext in ('.mkv', '.mov', '.mp4', '.avi', '.mxf', '.dv'):
             print("*****Raw video detected - extracting statistics*****")
-            
-            # Import extraction functions
-            from video_analysis_with_crop_options import process_video_with_options
             
             # Extract video stats with crop options
             print("*****Extracting Video Statistics with Crop Detection*****")
@@ -474,7 +478,6 @@ def processfile(inputPath, outputPath):
             # Audio analysis if requested
             if args.analyze_audio:
                 print("*****Analyzing Audio Quality*****")
-                from audio_analysis import analyze_audio_quality, generate_audio_report
                 
                 # Build custom thresholds if provided
                 custom_thresholds = {}
@@ -506,21 +509,21 @@ def processfile(inputPath, outputPath):
         # ==================================================================
         elif file_ext == '.csv':
             print("*****Parsing CSV Video Data*****")
-            videodata = dataparsing.dataparsingandtabulatingvideoCSV(inputPath)
+            videodata = dataparsingandtabulatingvideoCSV(inputPath)
         
         # ==================================================================
         # BRANCH 3: QCTools JSON - External preprocessing
         # ==================================================================
         elif file_ext == '.json':
             print("*****Parsing QCTools JSON*****")
-            videodata = dataparsing.dataparsingandtabulatingvideoJSON(inputPath)
+            videodata = dataparsingandtabulatingvideoJSON(inputPath)
         
         # ==================================================================
         # BRANCH 4: QCTools XML - External preprocessing
         # ==================================================================
         else:  # .xml
             print("*****Parsing QCTools XML*****")
-            videodata = dataparsing.dataparsingandtabulatingvideoXML(inputPath)
+            videodata = dataparsingandtabulatingvideoXML(inputPath)
         
         # ==================================================================
         # COMMON ANALYSIS PATH - All input types converge here
@@ -534,22 +537,22 @@ def processfile(inputPath, outputPath):
         print("*****Generating Full Video Descriptive Statistics*****")
         
         # Generate statistics
-        videoDSDF = dataparsing.videodatastatistics(videodata)
+        videoDSDF = videodatastatistics(videodata)
         
         # Test and determine bit depth
         print("***Determining Video Bit Depth Standards***")
         test_bitdepth_medians(videoDSDF)
         videobitdepth = videoDSDF["ybitdepth"].mode()[0]
-        standardDF = qcsetup.setVideoBitDepth(videobitdepth)
+        standardDF = setVideoBitDepth(videobitdepth)
         
         # Save summary statistics
-        sumVideoStatsCSV = dataparsing.videostatstocsv(videoDSDF, outputDir, base_filename)
+        sumVideoStatsCSV = videostatstocsv(videoDSDF, outputDir, base_filename)
         
         print("*****Generated Full Video Descriptive Statistics*****")
         print("*****Analysing Full Video Descriptive Statistics*****")
         
         # Analyze statistics and filter out errors with no failing frames
-        errors = overallStatistics.runstatsvideo(videoDSDF, standardDF)
+        errors = runstatsvideo(videoDSDF, standardDF)
         
         print(f"DEBUG: videodata columns (first 15): {list(videodata.columns[:15])}")
         print(f"DEBUG: Errors before filtering: {[err.criteria if hasattr(err, 'criteria') else err for err in errors]}")
@@ -564,7 +567,7 @@ def processfile(inputPath, outputPath):
         ]
         
         # Get failing frames information
-        failing_frames_text, fail_counts = framestatistics.get_failing_frametimes(
+        failing_frames_text, fail_counts = get_failing_frametimes(
             errors, videodata, standardDF
         )
         total_frames = len(videodata)
@@ -605,6 +608,43 @@ def processfile(inputPath, outputPath):
     except Exception as e:
         print(f"Error processing {inputPath}: {str(e)}")
         raise
+
+
+def process_file(input_path: str, output_path: str = 'input') -> dict:
+    """
+    Process a video file and generate QC reports.
+    Returns a dictionary with processing results.
+    """
+    try:
+        path = Path(input_path)
+        print(f"Processing file: {path.name}")
+        
+        # Call the main processing function
+        processfile(str(path), output_path)
+        
+        # Generate report paths
+        base_name = path.stem.replace('.mkv.qctools', '').replace('.xml', '').replace('.json', '')
+        output_dir = path.parent if output_path == 'input' else Path(output_path)
+        video_report = output_dir / f"{base_name}_video_level_report.txt"
+        detailed_report = output_dir / f"{base_name}_failing_frames_by_criteria.txt"
+        
+        return {
+            'success': True,
+            'filename': path.name,
+            'path': str(path),
+            'size': path.stat().st_size,
+            'extension': path.suffix.lower(),
+            'report_path': str(video_report),
+            'detailed_report_path': str(detailed_report)
+        }
+        
+    except Exception as e:
+        print(f"Error processing {input_path}:")
+        traceback.print_exc()
+        return {
+            'success': False,
+            'error': str(e)
+        }
 
 
 # ============================================================================
@@ -667,3 +707,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+__all__ = ['processfile', 'process_file']
