@@ -21,19 +21,17 @@ import traceback
 import concurrent.futures
 import multiprocessing
 import warnings
-from video_data_extractor import process_video_with_options
-from dataparsing import (
+from .mainprocessing.video_data_extractor import process_video_with_options
+from .mainprocessing.dataparsing import (
     dataparsingandtabulatingvideoXML,
-    dataparsingandtabulatingvideoCSV,
-    dataparsingandtabulatingvideoJSON,
     videodatastatistics,
     videostatstocsv
 )
-from audio_analysis import analyze_audio_quality, generate_audio_report
-from framestatistics import get_failing_frametimes, get_saturation_column
-from qcsetup import inputCheck, outputCheck, setInputFileType, setVideoBitDepth
-from overallStatistics import runstatsvideo
-from params import args
+from .mainprocessing.audioanalysis import analyze_audio_quality, generate_audio_report
+from .mainprocessing.framestatistics import get_failing_frametimes, get_saturation_column
+from .mainprocessing.qcsetup import inputCheck, outputCheck, setInputFileType, setVideoBitDepth
+from .mainprocessing.overallStatistics import runstatsvideo
+from .mainprocessing.params import args
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
@@ -509,17 +507,10 @@ def processfile(inputPath, outputPath):
         # ==================================================================
         elif file_ext == '.csv':
             print("*****Parsing CSV Video Data*****")
-            videodata = dataparsingandtabulatingvideoCSV(inputPath)
-        
+            videodata = inputPath
+    
         # ==================================================================
-        # BRANCH 3: QCTools JSON - External preprocessing
-        # ==================================================================
-        elif file_ext == '.json':
-            print("*****Parsing QCTools JSON*****")
-            videodata = dataparsingandtabulatingvideoJSON(inputPath)
-        
-        # ==================================================================
-        # BRANCH 4: QCTools XML - External preprocessing
+        # BRANCH 3: QCTools XML - External preprocessing
         # ==================================================================
         else:  # .xml
             print("*****Parsing QCTools XML*****")

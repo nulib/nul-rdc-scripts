@@ -6,9 +6,9 @@ authors = [
     "Northwestern University Libraries <repository@northwestern.edu>",
     "Sophia Francis <repository@northwestern.edu>"
 ]
+packages = [{include = "medusight"}]
 readme = "README.md"
 license = "MIT"
-
 
 [tool.poetry.dependencies]
 python = "^3.12"

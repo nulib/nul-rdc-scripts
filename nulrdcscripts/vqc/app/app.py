@@ -6,20 +6,39 @@ import platform
 import traceback
 from pathlib import Path
 
-# Add parent directory to Python path
-parent_dir = str(Path(__file__).parent.parent)
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
+# === FIX: Add PARENT directory to Python path ===
+# app.py is in app/ folder, medusight/ is in parent folder
+# So we need to go UP one level from app.py's location
+script_dir = Path(__file__).parent  # This is app/
+parent_dir = script_dir.parent       # This is nulrdcscripts/
 
-# Simplify web path
-web_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web')
+# Add parent to path so we can import medusight
+if str(parent_dir) not in sys.path:
+    sys.path.insert(0, str(parent_dir))
+
+print(f"Script directory: {script_dir}")
+print(f"Parent directory (where medusight is): {parent_dir}")
+print(f"Python will look for medusight in: {parent_dir}")
+
+# Simplify web path (relative to app.py location)
+web_path = os.path.join(script_dir, 'web')
 eel.init(web_path)
 
-# Create uploads directory
-uploads_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
+# Create uploads directory (relative to app.py location)
+uploads_dir = os.path.join(script_dir, 'uploads')
 if not os.path.exists(uploads_dir):
     os.makedirs(uploads_dir)
 
+# Now import medusight - should work!
+try:
+    from medusight import processfile
+    print("✓ Successfully imported medusight.processfile")
+except ImportError as e:
+    print(f"✗ Failed to import medusight: {e}")
+    print(f"   Check that medusight folder exists at: {parent_dir / 'medusight'}")
+    sys.exit(1)
+
+# ... rest of your app.py code stays the same ...
 def process_single_video(file_path):
     """Process a single video file"""
     try:

@@ -42,3 +42,8 @@ def cleanCriteria(criteria):
             criteria = criteria.replace("VREP", "Vertical Line Repetitions")
 
     return criteria
+
+def cleaners(criteria):
+    criteria=criteriacleaner(criteria)
+    criteria = cleanCriteria(criteria)
+    return criteria
