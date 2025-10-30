@@ -541,6 +541,6 @@ All fields are separated by periods for readability.
 ---
 
 **Northwestern University Libraries**  
-**Digital Preservation Services**
+**Data Curation, a division of Academic Innovation**
 
 *Last updated: 2025*
