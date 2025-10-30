@@ -110,8 +110,8 @@ def get_passing_stats(all_criteria, errors, videoDSDF, standardDF):
 
 def validate_template_files():
     """Validate that required template files exist."""
-    template_path = os.path.join(os.path.dirname(__file__), "data", "templateVideo.txt")
-    template_frames_path = os.path.join(os.path.dirname(__file__), "data", "templateFrames.txt")
+    template_path = os.path.join(os.path.dirname(__file__),"mainprocessing", "data", "templateVideo.txt")
+    template_frames_path = os.path.join(os.path.dirname(__file__),"mainprocessing", "data", "templateFrames.txt")
     
     missing_templates = []
     if not os.path.exists(template_path):
@@ -418,7 +418,7 @@ def processfile(inputPath, outputPath):
     
     Supports:
     - Raw video files (.mkv, .mov, .mp4, etc.) - Direct extraction with crop detection
-    - QCTools XML/JSON - External preprocessing
+    - QCTools XML - External preprocessing
     - CSV files - Previous extraction results
     
     Args:
@@ -650,7 +650,7 @@ def main():
     if os.path.isdir(inputPath):
         # Batch processing mode
         print(f"Batch processing directory: {inputPath}")
-        supported_exts = (".xml", ".json", ".csv", ".mkv", ".mov", ".mp4", ".avi", ".mxf", ".dv")
+        supported_exts = (".xml", ".csv", ".mkv", ".mov", ".mp4", ".avi", ".mxf", ".dv")
         
         files_to_process = [
             os.path.join(inputPath, fname)
