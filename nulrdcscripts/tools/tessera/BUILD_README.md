@@ -145,13 +145,13 @@ The app will be 100-200 MB because it includes Chromium and Node.js. This is nor
 
 ## Features of Desktop Version
 
-✅ Native menu bar with keyboard shortcuts
-✅ Standalone application (no browser needed)
-✅ File system access for saving/loading
-✅ Works offline
-✅ Professional appearance
-✅ Cross-platform compatibility
-✅ Smart memory management with notifications
+✅ Native menu bar with keyboard shortcuts /n
+✅ Standalone application (no browser needed) /n
+✅ File system access for saving/loading /n
+✅ Works offline /n
+✅ Professional appearance /n
+✅ Cross-platform compatibility /n
+✅ Smart memory management with notifications /n
 
 ## Working with Large WAV Files
 
