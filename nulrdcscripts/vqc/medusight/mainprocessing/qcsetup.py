@@ -45,8 +45,6 @@ def setVideoBitDepth(videobitdepth):
 def setInputFileType(inputPath):
     """Sets the file type of the input file"""
     fileExt = pathlib.Path(inputPath).suffix
-    if fileExt == ".json":
-        fileType = "JSON"
     elif fileExt == ".xml":
         fileType = "XML"
     else:
