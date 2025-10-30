@@ -1,4 +1,4 @@
-#Tessera
+Tessera
 
 A desktop application for creating WebVTT captions for audio and video content, designed for both musical performances and speaking events.
 
