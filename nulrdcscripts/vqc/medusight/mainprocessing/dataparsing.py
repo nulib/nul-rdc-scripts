@@ -1,5 +1,5 @@
 import pandas as pd
-from .cleaners import cleaners
+from .cleaners import criteriacleaners
 from lxml import etree  # switched to lxml for faster XML parsing
 from concurrent.futures import ProcessPoolExecutor
 import os
@@ -25,7 +25,7 @@ def parse_frame_xml(frame_xml):
     row["Frame Time"] = float(frametime)
     for tag in elem.iter("tag"):
         criteria = tag.attrib["key"]
-        criteria = cleaners.criteriacleaner(criteria)
+        criteria = criteriacleaner(criteria)
         value = tag.attrib["value"]
         try:
             row[criteria] = float(value)
@@ -44,7 +44,7 @@ def dataparsingandtabulatingaudioXML(inputPath):
             row["Frame Time"] = float(frametime)
             for tag in elem.iter("tag"):
                 criteria = tag.attrib["key"]
-                criteria = cleaners.criteriacleaner(criteria)
+                criteria = criteriacleaner(criteria)
                 value = tag.attrib["value"]
                 try:
                     row[criteria] = float(value)
@@ -76,7 +76,7 @@ def dataparsingandtabulatingvideoXML(inputPath):
             row["Frame Time"] = float(frametime)
             for tag in elem.iter("tag"):
                 criteria = tag.attrib["key"]
-                criteria = cleaners.criteriacleaner(criteria)
+                criteria = criteriacleaner(criteria)
                 value = tag.attrib["value"]
                 try:
                     row[criteria] = float(value)
