@@ -290,6 +290,7 @@ Session files (.json) are tiny (typically <1MB even with 1000+ captions), so sav
 ## License
 
 MIT License - Copyright (c) 2025 Northwestern University
+
 Developed by Sophia Francis
 
 ## Support
