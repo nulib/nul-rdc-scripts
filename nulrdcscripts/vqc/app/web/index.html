@@ -32,7 +32,7 @@
             <div class="card" role="region" aria-label="File upload and processing">
                 <div class="mode-selector" role="group" aria-label="Input file type selection">
                     <button class="mode-btn active" data-mode="video" tabindex="0">
-                        📹 Video Files (MKV/MP4)
+                        🎹 Video Files (MKV/MP4)
                     </button>
                     <button class="mode-btn" data-mode="xml" tabindex="0">
                         📄 XML Files
@@ -40,15 +40,22 @@
                 </div>
 
                 <div id="uploadSection">
-                    <div class="manual-path-section">
-                        <p class="manual-path-label">Enter file or folder path:</p>
+                    <!-- Manual path section - HIDDEN by default, only shown as emergency fallback -->
+                    <div class="manual-path-section" id="manualPathSection" style="display: none;">
+                        <p class="manual-path-label">⚠️ Fallback: Enter file or folder path manually</p>
                         <div class="manual-path-input-group">
-                            <input type="text" id="manualPath" class="manual-path-input" 
-                                placeholder="/path/to/file.xml or /path/to/folder">
-                            <button onclick="processManualPath()" class="btn" style="width: auto; margin: 0; white-space: nowrap;">
+                            <input type="text" id="manualPath" class="manual-path-input"
+                                placeholder="/path/to/file.xml or /path/to/folder" aria-label="Manual file path input">
+                            <button onclick="processManualPath()" class="btn"
+                                style="width: auto; margin: 0; white-space: nowrap;"
+                                aria-label="Process manually entered path">
                                 Process Path
                             </button>
                         </div>
+                        <p class="info-text"
+                            style="text-align: center; margin-top: 5px; font-size: 11px; color: rgba(255,255,255,0.5);">
+                            Use this only if file dialogs aren't working
+                        </p>
                     </div>
 
                     <div class="upload-area" id="uploadArea" tabindex="0" role="button"
@@ -118,10 +125,17 @@
                 <span aria-hidden="true">📊</span>
                 <span>Standards</span>
             </button>
-            
+
             <button class="license-btn" onclick="openLicenseModal()" role="menuitem" tabindex="0">
                 <span aria-hidden="true">ℹ️</span>
                 <span>License Info</span>
+            </button>
+
+            <!-- Emergency fallback option hidden in menu -->
+            <button class="fallback-btn" onclick="toggleManualPathInput()" role="menuitem" tabindex="0"
+                style="border-top: 1px solid rgba(168, 85, 247, 0.3); margin-top: 5px; padding-top: 10px;">
+                <span aria-hidden="true">⚠️</span>
+                <span>Manual Path Input</span>
             </button>
         </div>
 
@@ -130,12 +144,13 @@
             <button class="accessibility-btn" id="contrastBtn" aria-pressed="false" title="Toggle High Contrast">
                 <span id="contrastIcon" aria-hidden="true">◐</span>
             </button>
-            
+
             <button class="accessibility-btn" id="colorblindBtn" aria-pressed="false" title="Toggle Colorblind Mode">
                 <span id="colorblindIcon" aria-hidden="true">👁️</span>
             </button>
         </div>
-       
+
+        <!-- License Modal -->
         <div id="licenseModal" class="modal-overlay" style="display: none;"
             onclick="if(event.target.id==='licenseModal') { closeLicenseModal(); }" role="dialog" aria-modal="true"
             aria-labelledby="modalTitle">
@@ -205,6 +220,7 @@
             </div>
         </div>
 
+        <!-- Standards Modal -->
         <div id="standardsModal" class="modal-overlay" style="display: none;"
             onclick="if(event.target.id==='standardsModal') { closeStandardsModal(); }" role="dialog" aria-modal="true"
             aria-labelledby="standardsModalTitle">

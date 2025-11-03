@@ -18,11 +18,25 @@ def analyze_region_saturation(video_path, crop_value, sample_frames=30):
     Returns:
         dict with saturation statistics
     """
-    # Build lavfi filter
+    # FFmpeg movie filter on Windows needs special handling
+    # Instead of using lavfi with movie filter, use direct file input with filter_complex
+    
+    # Build filter chain
     if crop_value:
-        lavfi_input = f"movie={video_path},crop={crop_value},select='not(mod(n\\,30))',signalstats"
+        filter_chain = f"[0:v]crop={crop_value},select='not(mod(n\\,30))',signalstats[out]"
     else:
-        lavfi_input = f"movie={video_path},select='not(mod(n\\,30))',signalstats"
+        filter_chain = f"[0:v]select='not(mod(n\\,30))',signalstats[out]"
+    
+    cmd = [
+        'ffprobe',
+        '-i', video_path,  # Use -i for input instead of lavfi movie
+        '-filter_complex', filter_chain,
+        '-map', '[out]',
+        '-show_entries', 
+        'frame_tags=lavfi.signalstats.SATMAX,lavfi.signalstats.SATAVG',
+        '-of', 'csv=p=0',
+        '-v', 'quiet'
+    ]
     
     cmd = [
         'ffprobe',
@@ -276,7 +290,7 @@ def detect_crop(video_path, use_most_frequent=True, sample_interval=900):
 def extract_video_stats_cropped(video_path, crop_value=None, output_csv=None):
     """
     Extract frame-by-frame video statistics using ffprobe with optional cropping.
-    Uses updated ffprobe schema (pts_time instead of pkt_pts_time).
+    Uses direct file input instead of lavfi movie filter to avoid Windows path issues.
     
     Args:
         video_path: Path to the video file
@@ -290,17 +304,18 @@ def extract_video_stats_cropped(video_path, crop_value=None, output_csv=None):
     if crop_value:
         print(f"Applying crop: {crop_value}")
     
-    # Build the lavfi filter chain
+    # Build filter chain using filter_complex instead of lavfi movie
     if crop_value:
-        lavfi_input = f"movie={video_path},crop={crop_value},signalstats"
+        filter_chain = f"[0:v]crop={crop_value},signalstats[out]"
     else:
-        lavfi_input = f"movie={video_path},signalstats"
+        filter_chain = "[0:v]signalstats[out]"
     
-    # Build ffprobe command with UPDATED schema
+    # Build ffprobe command using -i input and -filter_complex
     cmd = [
         'ffprobe',
-        '-f', 'lavfi',
-        '-i', lavfi_input,
+        '-i', video_path,  # Direct file input - Windows paths work here
+        '-filter_complex', filter_chain,
+        '-map', '[out]',
         '-show_entries', 
         'frame=pts_time:frame_tags=lavfi.signalstats.YMIN,lavfi.signalstats.YMAX,lavfi.signalstats.YLOW,lavfi.signalstats.YHIGH,lavfi.signalstats.YAVG,lavfi.signalstats.UMIN,lavfi.signalstats.UMAX,lavfi.signalstats.ULOW,lavfi.signalstats.UHIGH,lavfi.signalstats.UAVG,lavfi.signalstats.VMIN,lavfi.signalstats.VMAX,lavfi.signalstats.VLOW,lavfi.signalstats.VHIGH,lavfi.signalstats.VAVG,lavfi.signalstats.SATMAX',
         '-of', 'csv=p=0'
@@ -335,7 +350,7 @@ def extract_video_stats_cropped(video_path, crop_value=None, output_csv=None):
             'vlow',
             'vhigh',
             'vavg',
-            'sathigh'  # SATMAX in signalstats
+            'satmax'  # SATMAX in signalstats
         ]
         
         # Create DataFrame from CSV output
@@ -348,6 +363,9 @@ def extract_video_stats_cropped(video_path, crop_value=None, output_csv=None):
         # Convert all stat columns to numeric
         for col in column_names[1:]:
             df[col] = pd.to_numeric(df[col], errors='coerce')
+        
+        # Rename satmax to sathigh for consistency with analysis code expectations
+        df.rename(columns={'satmax': 'sathigh'}, inplace=True)
         
         print(f"Extracted {len(df)} frames of data")
         
@@ -364,6 +382,8 @@ def extract_video_stats_cropped(video_path, crop_value=None, output_csv=None):
         return None
     except Exception as e:
         print(f"Error extracting video stats: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 

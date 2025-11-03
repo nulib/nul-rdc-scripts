@@ -32,72 +32,118 @@ if not os.path.exists(uploads_dir):
 # Now import medusight - should work!
 try:
     from medusight import processfile
+    from medusight.mainprocessing import params
     print("✓ Successfully imported medusight.processfile")
 except ImportError as e:
     print(f"✗ Failed to import medusight: {e}")
     print(f"   Check that medusight folder exists at: {parent_dir / 'medusight'}")
     sys.exit(1)
 
-# ... rest of your app.py code stays the same ...
-def process_single_video(file_path):
-    """Process a single video file"""
+# ============================================================================
+# PROCESSING FUNCTIONS WITH SETTINGS SUPPORT
+# ============================================================================
+
+def process_single_video(file_path, crop_mode='auto', manual_crop=None, 
+                        sample_interval=900, analyze_audio=True,
+                        audio_standard='broadcast', target_lufs=None, 
+                        max_true_peak=None):
+    """
+    Process a single video file with settings.
+    
+    Args:
+        file_path: Path to video file
+        crop_mode: 'auto', 'combined', 'headswitching', 'off', 'manual'
+        manual_crop: Manual crop string (if crop_mode='manual')
+        sample_interval: Frame sampling interval for crop detection
+        analyze_audio: Whether to run audio analysis
+        audio_standard: 'broadcast', 'streaming', or 'film'
+        target_lufs: Custom target LUFS (overrides standard)
+        max_true_peak: Custom max true peak (overrides standard)
+    """
     try:
-        # Import directly from medusight package
-        from medusight import processfile
+        # Update params with settings
+        params.args.crop_mode = crop_mode
+        params.args.manual_crop = manual_crop
+        params.args.sample_interval = sample_interval
+        params.args.analyze_audio = analyze_audio
+        params.args.audio_standard = audio_standard
+        params.args.target_lufs = target_lufs
+        params.args.max_true_peak = max_true_peak
+        
+        # Process the file
         result = processfile(str(file_path), 'input')
         
+        # Build response with report paths
         path = Path(file_path)
         base_name = path.stem.replace('.mkv.qctools', '').replace('.xml', '').replace('.json', '')
         output_dir = path.parent
+        
         video_report = output_dir / f"{base_name}_video_level_report.txt"
-        detailed_report = output_dir / f"{base_name}_failing_frames_by_criteria.txt"
+        frames_report = output_dir / f"{base_name}_failing_frames_by_criteria.txt"
+        audio_report = output_dir / f"{base_name}_audio_report.txt"
+        
+        # Determine pass/fail status
+        status = 'PASS'
+        issues = []
+        
+        if video_report.exists():
+            with open(video_report, 'r') as f:
+                content = f.read()
+                if 'FAIL' in content or 'out_of_range' in content or 'clipping' in content:
+                    status = 'FAIL'
+                    # Extract issues from report
+                    for line in content.split('\n'):
+                        if 'Criteria:' in line and ('FAIL' in line or 'out_of_range' in line):
+                            issues.append(line.strip())
         
         return {
+            'success': True,
             'filename': path.name,
             'path': str(path),
-            'status': 'PASS' if result else 'FAIL',
-            'issues': [],
+            'status': status,
+            'issues': issues,
+            'size': path.stat().st_size,
+            'extension': path.suffix.lower(),
             'processed': True,
-            'report_path': str(video_report),
-            'detailed_report_path': str(detailed_report) if detailed_report.exists() else None,
-            'extension': path.suffix.lower()
+            'report_path': str(video_report) if video_report.exists() else None,
+            'frames_report_path': str(frames_report) if frames_report.exists() else None,
+            'audio_report_path': str(audio_report) if (analyze_audio and audio_report.exists()) else None
         }
+        
     except Exception as e:
         print(f"Error processing {file_path}:")
         traceback.print_exc()
         return {
+            'success': False,
             'filename': os.path.basename(file_path),
             'path': str(file_path),
             'status': 'ERROR',
             'issues': [str(e)],
+            'size': 0,
+            'extension': os.path.splitext(file_path)[1].lower(),
             'processed': False,
-            'extension': os.path.splitext(file_path)[1].lower()
+            'report_path': None,
+            'frames_report_path': None,
+            'audio_report_path': None,
+            'error': str(e)
         }
+
+# ============================================================================
+# EEL EXPOSED FUNCTIONS
+# ============================================================================
 
 @eel.expose
 def process_video(file_path):
-    """Process video file - your QC logic here"""
-    try:
-        print(f"Processing: {file_path}")
-        
-        return {
-            'success': True,
-            'message': f"Successfully processed: {os.path.basename(file_path)}",
-            'details': {
-                'filename': os.path.basename(file_path),
-                'size': os.path.getsize(file_path) if os.path.exists(file_path) else 0
-            }
-        }
-    except Exception as e:
-        return {
-            'success': False,
-            'message': f"Error: {str(e)}"
-        }
+    """Legacy function - redirects to process_single_video"""
+    return process_single_video(file_path)
 
 @eel.expose
 def test_connection():
     print("Test connection called!")
-    return "Connection works!"
+    return {
+        'status': 'connected',
+        'message': 'MeduSight backend ready'
+    }
 
 @eel.expose
 def get_file_info(file_path):
@@ -375,13 +421,28 @@ def get_folder_contents(folder_path):
         }
 
 @eel.expose
-def process_single_file(file_path):
-    """Process a single file - exposed to JavaScript"""
-    return process_single_video(file_path)
+def process_single_file(file_path, crop_mode='auto', manual_crop=None, 
+                       sample_interval=900, analyze_audio=True,
+                       audio_standard='broadcast', target_lufs=None, 
+                       max_true_peak=None):
+    """
+    Process a single file with settings - exposed to JavaScript.
+    Matches the signature expected by main.js
+    """
+    return process_single_video(
+        file_path, crop_mode, manual_crop, sample_interval,
+        analyze_audio, audio_standard, target_lufs, max_true_peak
+    )
 
 @eel.expose
-def process_manual_path(path_input):
-    """Process single file or folder from manual path input"""
+def process_manual_path(path_input, crop_mode='auto', manual_crop=None,
+                       sample_interval=900, analyze_audio=True,
+                       audio_standard='broadcast', target_lufs=None,
+                       max_true_peak=None):
+    """
+    BACKUP ONLY: Process single file or folder from manual path input.
+    This is a fallback for when file dialogs fail.
+    """
     try:
         global current_file_mode
         from pathlib import Path
@@ -403,14 +464,15 @@ def process_manual_path(path_input):
             # Check if it's a supported file type for current mode
             ext = path.suffix.lower()
             if ext in valid_extensions:
+                # Process the file and return results
+                result = process_single_video(
+                    path, crop_mode, manual_crop, sample_interval,
+                    analyze_audio, audio_standard, target_lufs, max_true_peak
+                )
                 return {
                     'success': True,
                     'is_folder': False,
-                    'file': {
-                        'filename': path.name,
-                        'path': str(path),
-                        'size': path.stat().st_size
-                    }
+                    'result': result
                 }
             else:
                 return {
@@ -419,7 +481,7 @@ def process_manual_path(path_input):
                 }
         
         elif path.is_dir():
-            # Get all supported files in folder
+            # Get all supported files in folder (don't process yet, let JS handle that)
             files_found = []
             for f in path.iterdir():
                 if f.is_file() and f.suffix.lower() in valid_extensions:
@@ -454,49 +516,8 @@ def process_manual_path(path_input):
 
 @eel.expose
 def process_path(path_input):
-    """Process single file or folder from path string"""
-    try:
-        from pathlib import Path
-        path = Path(path_input)
-        
-        if not path.exists():
-            return {'success': False, 'message': 'Path does not exist', 'results': []}
-        
-        results = []
-        
-        if path.is_file():
-            # Check if it's a supported file type
-            if path.suffix.lower() in ['.xml', '.json', '.mkv', '.mp4'] or str(path).lower().endswith('.mkv.qctools.xml'):
-                result = process_single_video(path)
-                results.append(result)
-            else:
-                return {'success': False, 'message': f'Unsupported file type: {path.suffix}', 'results': []}
-        
-        elif path.is_dir():
-            # Process all supported files in folder
-            for f in path.glob('*'):
-                if f.suffix.lower() in ['.xml', '.json', '.mkv', '.mp4'] or str(f).lower().endswith('.mkv.qctools.xml'):
-                    result = process_single_video(f)
-                    results.append(result)
-            
-            if not results:
-                return {'success': False, 'message': 'No supported files found in folder', 'results': []}
-        
-        return {
-            'success': True, 
-            'message': f'Processed {len(results)} file(s)', 
-            'results': results
-        }
-    
-    except Exception as e:
-        import traceback
-        print(f"Error in process_path:")
-        print(traceback.format_exc())
-        return {
-            'success': False, 
-            'message': str(e), 
-            'results': []
-        }
+    """Legacy function - redirects to process_manual_path"""
+    return process_manual_path(path_input)
 
 @eel.expose
 def open_report_file(report_path):

@@ -45,8 +45,15 @@ def setVideoBitDepth(videobitdepth):
 def setInputFileType(inputPath):
     """Sets the file type of the input file"""
     fileExt = pathlib.Path(inputPath).suffix
-    elif fileExt == ".xml":
+    
+    # Fixed: Added proper if/elif/else structure
+    if fileExt == ".xml":
         fileType = "XML"
+    elif fileExt == ".csv":
+        fileType = "CSV"
+    elif fileExt in ['.mkv', '.mov', '.mp4', '.avi', '.mxf', '.dv']:
+        fileType = "VIDEO"
     else:
-        raise ValueError("This filetype is not currently supported.")
+        raise ValueError(f"This filetype is not currently supported: {fileExt}")
+    
     return fileType

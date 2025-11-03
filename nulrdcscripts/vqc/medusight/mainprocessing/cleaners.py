@@ -1,4 +1,4 @@
-def criteriacleaner(criteria):
+def criteriacleaners(criteria):
     criteriaclean1 = criteria.replace("lavfi.astats", "")
     criteriaclean2 = criteriaclean1.replace("lavfi.", "")
     criteriaclean3 = criteriaclean2.replace("signalstats.", "")
@@ -41,9 +41,4 @@ def cleanCriteria(criteria):
         elif criteria.conains("VREP"):
             criteria = criteria.replace("VREP", "Vertical Line Repetitions")
 
-    return criteria
-
-def cleaners(criteria):
-    criteria=criteriacleaner(criteria)
-    criteria = cleanCriteria(criteria)
     return criteria
