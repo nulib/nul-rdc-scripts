@@ -54,7 +54,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Warning for single large file (>2GB)
             if (file.size > 2 * 1024 * 1024 * 1024) {
-                if (!confirm(`This file is ${fileSizeMB} MB, which may cause performance issues. Continue?`)) {
+                if (!confirm(`⚠️ Large File Warning\n\nThis file is ${fileSizeMB} MB, which may cause performance issues.\n\nContinue loading?`)) {
+                    e.target.value = ''; // Clear the file input
                     return;
                 }
             }
@@ -124,16 +125,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 audio.style.display = 'block';
                 timeDisplay.style.display = 'block';
                 audioUploadBox.style.display = 'none';
-                console.log(`Audio loaded successfully. Duration: ${Math.floor(audio.duration / 60)}m ${Math.floor(audio.duration % 60)}s`);
+                const minutes = Math.floor(audio.duration / 60);
+                const seconds = Math.floor(audio.duration % 60);
+                console.log(`✅ Audio loaded successfully. Duration: ${minutes}m ${seconds}s`);
             }, { once: true });
 
             audio.addEventListener('error', (err) => {
-                console.error('Error loading audio:', err);
-                alert('Error loading audio file.');
+                console.error('❌ Error loading audio:', err);
+                alert('❌ Error loading audio file!\n\nPlease check:\n• File format (MP3, WAV, OGG, M4A)\n• File is not corrupted\n• Sufficient system memory');
                 audioUploadBox.innerHTML = `
                 <div><span style="color: var(--accent); font-size: 24px;">♪</span> Click or Drop Audio File</div>
                 <div style="font-size: 11px; color: var(--text-secondary); margin-top: 5px;">MP3, WAV, OGG, M4A</div>
             `;
+                e.target.value = ''; // Clear the file input
             }, { once: true });
         }
     });
@@ -299,8 +303,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const title = document.getElementById('contextTitle').value.trim();
         const performers = document.getElementById('contextPerformers').value.trim();
 
-        if (!title || !performers) {
-            alert('Title and Performers are required');
+        if (!title) {
+            alert('⚠️ Title is required!\n\nPlease enter the title of the piece.');
             return;
         }
 
@@ -315,6 +319,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         updateContextDisplay();
         closeModal('contextModal');
+        console.log('Context saved:', currentContext);
     }
 
     document.querySelectorAll('[data-modal-close]').forEach(btn => {
@@ -359,7 +364,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function addCue() {
         if (!currentContext) {
-            alert('Please set piece context first');
+            alert('⚠️ Please set piece context first!\n\nClick "Edit Piece Context" to enter the title and performers.');
             document.getElementById('contextModal').classList.add('show');
             return;
         }
@@ -369,7 +374,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const end = document.getElementById('endTime').value.trim();
 
         if (!start || !end) {
-            alert('Start and end times are required');
+            alert('⚠️ Start and end times are required!\n\nUse the I and O keys to mark times while playing audio.');
             return;
         }
 
@@ -377,12 +382,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const endSec = parseTime(end);
 
         if (startSec === null || endSec === null) {
-            alert('Invalid time format. Use HH:MM:SS.mmm');
+            alert('⚠️ Invalid time format!\n\nPlease use HH:MM:SS.mmm format\n\nExample: 00:03:45.250');
             return;
         }
 
         if (endSec <= startSec) {
-            alert('End time must be after start time');
+            alert('⚠️ End time must be after start time!\n\nStart: ' + start + '\nEnd: ' + end);
             return;
         }
 
@@ -420,6 +425,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         renderCues();
         generateVTT();
+
+        console.log('Caption added:', cue);
     }
 
     function parseTime(str) {
@@ -485,7 +492,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 div.innerHTML = `
                 <div class="cue-header">
-                    <span class="cue-time">${cue.startStr} → ${cue.endStr}</span>
+                    <span class="cue-time clickable-time" data-start-time="${cue.start}" title="Click to jump to ${cue.startStr}">${cue.startStr} → ${cue.endStr}</span>
                     <div style="display: flex; gap: 4px;">
                         <button class="btn-small btn-edit" data-cue-id="${cue.id}">✏️</button>
                         <button class="btn-small btn-danger btn-delete" data-cue-id="${cue.id}">✕</button>
@@ -503,6 +510,7 @@ document.addEventListener('DOMContentLoaded', function () {
     cueList.addEventListener('click', (e) => {
         const deleteBtn = e.target.closest('.btn-delete');
         const editBtn = e.target.closest('.btn-edit');
+        const timeStamp = e.target.closest('.clickable-time');
 
         if (deleteBtn) {
             e.stopPropagation();
@@ -512,6 +520,13 @@ document.addEventListener('DOMContentLoaded', function () {
             e.stopPropagation();
             const id = parseInt(editBtn.dataset.cueId);
             editCue(id);
+        } else if (timeStamp) {
+            e.stopPropagation();
+            const startTime = parseFloat(timeStamp.dataset.startTime);
+            if (audio.src && !isNaN(startTime)) {
+                audio.currentTime = startTime;
+                audio.play();
+            }
         }
     });
 
@@ -553,12 +568,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const performers = document.getElementById('editPerformers').value.trim();
 
         if (!start || !end) {
-            alert('Start and end times are required');
+            alert('⚠️ Start and end times are required!');
             return;
         }
 
-        if (!title || !performers) {
-            alert('Title and Performers are required');
+        if (!title) {
+            alert('⚠️ Title is required!');
             return;
         }
 
@@ -566,12 +581,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const endSec = parseTime(end);
 
         if (startSec === null || endSec === null) {
-            alert('Invalid time format. Use HH:MM:SS.mmm');
+            alert('⚠️ Invalid time format!\n\nPlease use HH:MM:SS.mmm format\n\nExample: 00:03:45.250');
             return;
         }
 
         if (endSec <= startSec) {
-            alert('End time must be after start time');
+            alert('⚠️ End time must be after start time!\n\nStart: ' + start + '\nEnd: ' + end);
             return;
         }
 
@@ -596,6 +611,7 @@ document.addEventListener('DOMContentLoaded', function () {
             cues.sort((a, b) => a.start - b.start);
             renderCues();
             generateVTT();
+            console.log('Caption updated:', cues[cueIndex]);
         }
 
         editingCueId = null;
@@ -615,11 +631,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         cues.forEach((cue, i) => {
             let text = '';
-
+            
             if (cue.movement) {
                 text = cue.title;
-                text += `. ${cue.movement}`;
-                text += `. ${cue.performers}`;
+                text += `. <i>${cue.movement}</i>`;
+                if (cue.performers) {
+                    text += `. ${cue.performers}`;
+                }
                 if (cue.conductor) {
                     text += `. ${cue.conductor}, Conductor`;
                 }
@@ -628,7 +646,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             } else {
                 text = cue.title;
-                text += `. ${cue.performers}`;
+                if (cue.performers) {
+                    text += `. ${cue.performers}`;
+                }
                 if (cue.conductor) {
                     text += `. ${cue.conductor}, Conductor`;
                 }
@@ -688,7 +708,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     movementDisplay = '<em style="color: var(--accent-light);">Entire piece</em>';
                 }
                 div.innerHTML = `
-                <div class="cue-time">${cue.startStr} → ${cue.endStr}</div>
+                <div class="cue-time clickable-time" data-start-time="${cue.start}" title="Click to jump to ${cue.startStr}">${cue.startStr} → ${cue.endStr}</div>
                 <div class="cue-text">${movementDisplay}</div>
             `;
                 previewContent.appendChild(div);
@@ -706,6 +726,19 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // Add click handler for timestamps in Preview tab
+    previewContent.addEventListener('click', (e) => {
+        const timeStamp = e.target.closest('.clickable-time');
+        if (timeStamp) {
+            e.stopPropagation();
+            const startTime = parseFloat(timeStamp.dataset.startTime);
+            if (audio.src && !isNaN(startTime)) {
+                audio.currentTime = startTime;
+                audio.play();
+            }
+        }
+    });
+
     // Fallback save function for older browsers
     function fallbackSave(blob, filename) {
         const url = URL.createObjectURL(blob);
@@ -718,87 +751,113 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Save session with timestamp to prevent overwrites
     document.getElementById('saveBtn').addEventListener('click', async () => {
-        const session = { cues, currentContext, cueIdCounter };
-        const jsonString = JSON.stringify(session, null, 2);
-        const blob = new Blob([jsonString], { type: 'application/json' });
+        try {
+            const session = { cues, currentContext, cueIdCounter };
+            const jsonString = JSON.stringify(session, null, 2);
 
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-        let baseFilename = 'tessera_session';
-
-        if (currentContext && currentContext.title) {
-            const cleanTitle = currentContext.title
-                .replace(/[<>:"/\\|?*]/g, '')
-                .replace(/\s+/g, '_')
-                .substring(0, 40);
-            baseFilename = cleanTitle;
-        }
-
-        const suggestedName = `${baseFilename}_${timestamp}.json`;
-
-        if ('showSaveFilePicker' in window) {
-            try {
-                const handle = await window.showSaveFilePicker({
-                    suggestedName: suggestedName,
-                    types: [{
-                        description: 'JSON Session File',
-                        accept: { 'application/json': ['.json'] }
-                    }],
-                    startIn: 'documents'
-                });
-                const writable = await handle.createWritable();
-                await writable.write(blob);
-                await writable.close();
-                console.log('Session saved successfully as:', suggestedName);
-            } catch (err) {
-                if (err.name !== 'AbortError') {
-                    console.error('Error saving session:', err);
-                    fallbackSave(blob, suggestedName);
-                }
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            let baseFilename = 'tessera_session';
+            
+            if (currentContext && currentContext.title) {
+                const cleanTitle = currentContext.title
+                    .replace(/[<>:"/\\|?*]/g, '')
+                    .replace(/\s+/g, '_')
+                    .substring(0, 40);
+                baseFilename = cleanTitle;
             }
-        } else {
-            fallbackSave(blob, suggestedName);
+            
+            const suggestedName = `${baseFilename}_${timestamp}.json`;
+
+            if ('showSaveFilePicker' in window) {
+                try {
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: suggestedName,
+                        types: [{
+                            description: 'JSON Session File',
+                            accept: { 'application/json': ['.json'] }
+                        }],
+                        startIn: 'documents'
+                    });
+                    const writable = await handle.createWritable();
+                    await writable.write(jsonString);
+                    await writable.close();
+                    console.log('Session saved successfully as:', suggestedName);
+                    alert('✅ Session saved successfully!\n\nFile: ' + suggestedName);
+                } catch (err) {
+                    if (err.name === 'AbortError') {
+                        console.log('Save cancelled by user');
+                    } else {
+                        console.error('Error saving session with file picker:', err);
+                        alert('⚠️ File picker failed. Falling back to download method.');
+                        const blob = new Blob([jsonString], { type: 'application/json' });
+                        fallbackSave(blob, suggestedName);
+                    }
+                }
+            } else {
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                fallbackSave(blob, suggestedName);
+            }
+        } catch (err) {
+            console.error('Critical error in save function:', err);
+            alert('❌ Error saving session: ' + err.message + '\n\nPlease check console for details.');
         }
     });
 
     // Export VTT with timestamp to prevent overwrites
     document.getElementById('exportBtn').addEventListener('click', async () => {
-        const blob = new Blob([vttOutput.value], { type: 'text/vtt' });
-
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-        let baseFilename = 'captions';
-
-        if (currentContext && currentContext.title) {
-            const cleanTitle = currentContext.title
-                .replace(/[<>:"/\\|?*]/g, '')
-                .replace(/\s+/g, '_')
-                .substring(0, 40);
-            baseFilename = cleanTitle;
-        }
-
-        const suggestedName = `${baseFilename}_${timestamp}.vtt`;
-
-        if ('showSaveFilePicker' in window) {
-            try {
-                const handle = await window.showSaveFilePicker({
-                    suggestedName: suggestedName,
-                    types: [{
-                        description: 'WebVTT Caption File',
-                        accept: { 'text/vtt': ['.vtt'] }
-                    }],
-                    startIn: 'documents'
-                });
-                const writable = await handle.createWritable();
-                await writable.write(blob);
-                await writable.close();
-                console.log('VTT exported successfully as:', suggestedName);
-            } catch (err) {
-                if (err.name !== 'AbortError') {
-                    console.error('Error exporting VTT:', err);
-                    fallbackSave(blob, suggestedName);
-                }
+        try {
+            if (cues.length === 0) {
+                alert('⚠️ No captions to export!\n\nPlease add at least one caption before exporting.');
+                return;
             }
-        } else {
-            fallbackSave(blob, suggestedName);
+
+            const vttContent = vttOutput.value;
+
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            let baseFilename = 'captions';
+            
+            if (currentContext && currentContext.title) {
+                const cleanTitle = currentContext.title
+                    .replace(/[<>:"/\\|?*]/g, '')
+                    .replace(/\s+/g, '_')
+                    .substring(0, 40);
+                baseFilename = cleanTitle;
+            }
+            
+            const suggestedName = `${baseFilename}_${timestamp}.vtt`;
+
+            if ('showSaveFilePicker' in window) {
+                try {
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: suggestedName,
+                        types: [{
+                            description: 'WebVTT Caption File',
+                            accept: { 'text/vtt': ['.vtt'] }
+                        }],
+                        startIn: 'documents'
+                    });
+                    const writable = await handle.createWritable();
+                    await writable.write(vttContent);
+                    await writable.close();
+                    console.log('VTT exported successfully as:', suggestedName);
+                    alert('✅ WebVTT exported successfully!\n\nFile: ' + suggestedName + '\n\nCaptions: ' + cues.length);
+                } catch (err) {
+                    if (err.name === 'AbortError') {
+                        console.log('Export cancelled by user');
+                    } else {
+                        console.error('Error exporting VTT with file picker:', err);
+                        alert('⚠️ File picker failed. Falling back to download method.');
+                        const blob = new Blob([vttContent], { type: 'text/vtt' });
+                        fallbackSave(blob, suggestedName);
+                    }
+                }
+            } else {
+                const blob = new Blob([vttContent], { type: 'text/vtt' });
+                fallbackSave(blob, suggestedName);
+            }
+        } catch (err) {
+            console.error('Critical error in export function:', err);
+            alert('❌ Error exporting VTT: ' + err.message + '\n\nPlease check console for details.');
         }
     });
 
@@ -811,7 +870,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('loadFile').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
+        
         if (!file.name.endsWith('.json')) {
             alert('Please select a valid JSON session file');
             return;
@@ -821,7 +880,7 @@ document.addEventListener('DOMContentLoaded', function () {
         reader.onload = (e) => {
             try {
                 const session = JSON.parse(e.target.result);
-
+                
                 if (!session.hasOwnProperty('cues') || !Array.isArray(session.cues)) {
                     throw new Error('Invalid session file structure');
                 }
@@ -829,24 +888,24 @@ document.addEventListener('DOMContentLoaded', function () {
                 cues = session.cues || [];
                 currentContext = session.currentContext || null;
                 cueIdCounter = session.cueIdCounter || 0;
-
+                
                 updateContextDisplay();
                 renderCues();
                 generateVTT();
-
+                
                 alert(`Session loaded successfully!\n\n• ${cues.length} caption(s) loaded\n• Context: ${currentContext ? currentContext.title : 'None'}\n\nDon't forget to reload your audio file if needed.`);
-
+                
                 console.log(`Session loaded: ${cues.length} cues, context: ${currentContext ? 'Yes' : 'No'}`);
             } catch (err) {
                 console.error('Error loading session:', err);
                 alert('Error loading session file. Please make sure this is a valid Tessera session file.\n\nError: ' + err.message);
             }
         };
-
+        
         reader.onerror = () => {
             alert('Error reading file. Please try again.');
         };
-
+        
         reader.readAsText(file);
         e.target.value = '';
     });
