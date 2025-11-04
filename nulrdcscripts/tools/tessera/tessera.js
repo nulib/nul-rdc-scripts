@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentContext = null;
     let cueIdCounter = 0;
     let currentAudioURL = null;
+    let editingCueId = null;
 
     // Memory protection variables
     let sessionStartTime = Date.now();
@@ -66,18 +67,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Auto-save session before showing warning
                 if (cues.length > 0) {
                     const session = { cues, currentContext, cueIdCounter };
+                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
                     const blob = new Blob([JSON.stringify(session, null, 2)], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = 'tessera_autosave_session.json';
+                    a.download = `tessera_autosave_${timestamp}.json`;
                     a.click();
                     URL.revokeObjectURL(url);
 
                     const userResponse = confirm(
                         '💾 Auto-Save Complete!\n\n' +
                         'Your session has been automatically saved as:\n' +
-                        '"tessera_autosave_session.json"\n\n' +
+                        `"tessera_autosave_${timestamp}.json"\n\n` +
                         '⚠️ MEMORY WARNING ⚠️\n' +
                         'To prevent performance issues and potential data loss, this application will automatically close in 2 minutes.\n\n' +
                         'Click OK to close now, or Cancel to continue working.\n' +
@@ -85,19 +87,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     );
 
                     if (userResponse) {
-                        // User clicked OK - close immediately
                         window.close();
                     } else {
-                        // User clicked Cancel - set 2 minute timer to auto-close
-                        let countdown = 120; // 2 minutes in seconds
+                        let countdown = 120;
                         const countdownInterval = setInterval(() => {
                             countdown--;
-
-                            // Show warning at 1 minute, 30 seconds, and 10 seconds
                             if (countdown === 60) {
                                 alert('⏱️ 1 minute until automatic close.\n\nYour work is saved. Please close the application and reopen to load your session.');
                             } else if (countdown === 30) {
-                                alert('⏱️ 30 seconds until automatic close.\n\nYour work is saved as: tessera_autosave_session.json');
+                                alert('⏱️ 30 seconds until automatic close.\n\nYour work is saved.');
                             } else if (countdown === 10) {
                                 alert('⏱️ 10 seconds until automatic close.\n\nClosing to protect your system memory...');
                             } else if (countdown <= 0) {
@@ -147,11 +145,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const s = Math.floor(t % 60);
         const ms = Math.floor((t % 1) * 1000);
         timeDisplay.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
-
-        const startInput = document.getElementById('startTime');
-        const endInput = document.getElementById('endTime');
-        if (!startInput.value) startInput.value = formatTime(t);
-        if (!endInput.value) endInput.value = formatTime(t + 5);
     });
 
     // Cleanup on unload
@@ -186,7 +179,6 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('themeDropdownBtn').setAttribute('aria-expanded', 'false');
         });
 
-        // Keyboard support
         opt.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
@@ -231,7 +223,6 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('hamburgerBtn').setAttribute('aria-expanded', 'false');
     });
 
-    // Keyboard support for hamburger menu
     document.querySelectorAll('.menu-option').forEach(opt => {
         opt.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -272,6 +263,33 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('contextModal').classList.add('show');
     });
 
+    // New Context button - clears ONLY the context, NOT the captions
+    // This is for adding a new piece on the same recording (e.g., next song on a tape)
+    document.getElementById('newContextBtn').addEventListener('click', () => {
+        // Clear the current context (but keep all captions!)
+        currentContext = null;
+        updateContextDisplay();
+
+        // Clear the add caption form
+        document.getElementById('movementName').value = '';
+        document.getElementById('startTime').value = '';
+        document.getElementById('endTime').value = '';
+        document.getElementById('overridePerformers').value = '';
+        document.getElementById('overrideDate').value = '';
+        document.getElementById('overrideConductor').value = '';
+        document.getElementById('notes').value = '';
+        document.getElementById('overrideDetails').removeAttribute('open');
+
+        // Open context modal for new piece context
+        document.getElementById('contextTitle').value = '';
+        document.getElementById('contextPerformers').value = '';
+        document.getElementById('contextDate').value = '';
+        document.getElementById('contextConductor').value = '';
+        document.getElementById('contextComposer').value = '';
+        document.getElementById('contextInfo').value = '';
+        document.getElementById('contextModal').classList.add('show');
+    });
+
     // Modal functions
     function closeModal(id) {
         document.getElementById(id).classList.remove('show');
@@ -299,14 +317,12 @@ document.addEventListener('DOMContentLoaded', function () {
         closeModal('contextModal');
     }
 
-    // Modal close button handlers
     document.querySelectorAll('[data-modal-close]').forEach(btn => {
         btn.addEventListener('click', () => {
             closeModal(btn.getAttribute('data-modal-close'));
         });
     });
 
-    // Save context button
     document.getElementById('saveContextBtn').addEventListener('click', saveContext);
 
     function updateContextDisplay() {
@@ -370,7 +386,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // Use overrides if provided, otherwise use context
         const performers = document.getElementById('overridePerformers').value.trim() || currentContext.performers;
         const date = document.getElementById('overrideDate').value.trim() || currentContext.date;
         const conductor = document.getElementById('overrideConductor').value.trim() || currentContext.conductor;
@@ -394,7 +409,6 @@ document.addEventListener('DOMContentLoaded', function () {
         cues.push(cue);
         cues.sort((a, b) => a.start - b.start);
 
-        // Clear form
         document.getElementById('movementName').value = '';
         document.getElementById('startTime').value = '';
         document.getElementById('endTime').value = '';
@@ -431,7 +445,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         cueCount.textContent = cues.length;
 
-        // Group by piece
         const groups = {};
         cues.forEach(cue => {
             const key = cue.title;
@@ -450,7 +463,6 @@ document.addEventListener('DOMContentLoaded', function () {
         cueList.innerHTML = '';
 
         Object.values(groups).forEach(group => {
-            // Piece header
             const header = document.createElement('div');
             header.className = 'piece-group';
             let metaText = group.performers;
@@ -462,10 +474,15 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
             cueList.appendChild(header);
 
-            // Cues
             group.cues.forEach(cue => {
                 const div = document.createElement('div');
                 div.className = 'cue';
+                let movementDisplay;
+                if (cue.movement) {
+                    movementDisplay = cue.movement;
+                } else {
+                    movementDisplay = '<em style="color: var(--accent-light);">Entire piece</em>';
+                }
                 div.innerHTML = `
                 <div class="cue-header">
                     <span class="cue-time">${cue.startStr} → ${cue.endStr}</span>
@@ -474,7 +491,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         <button class="btn-small btn-danger btn-delete" data-cue-id="${cue.id}">✕</button>
                     </div>
                 </div>
-                <div class="cue-text">${cue.movement || '[No movement name]'}</div>
+                <div class="cue-text">${movementDisplay}</div>
             `;
                 cueList.appendChild(div);
             });
@@ -483,7 +500,6 @@ document.addEventListener('DOMContentLoaded', function () {
         renderPreview();
     }
 
-    // Event delegation for edit and delete buttons
     cueList.addEventListener('click', (e) => {
         const deleteBtn = e.target.closest('.btn-delete');
         const editBtn = e.target.closest('.btn-edit');
@@ -511,14 +527,83 @@ document.addEventListener('DOMContentLoaded', function () {
         const cue = cues.find(c => c.id === id);
         if (!cue) return;
 
-        document.getElementById('movementName').value = cue.movement || '';
-        document.getElementById('startTime').value = cue.startStr;
-        document.getElementById('endTime').value = cue.endStr;
-        document.getElementById('notes').value = cue.notes || '';
+        editingCueId = id;
 
-        deleteCue(id);
-        document.querySelector('.card:nth-child(2)').scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('editMovementName').value = cue.movement || '';
+        document.getElementById('editStartTime').value = cue.startStr;
+        document.getElementById('editEndTime').value = cue.endStr;
+        document.getElementById('editTitle').value = cue.title || '';
+        document.getElementById('editPerformers').value = cue.performers || '';
+        document.getElementById('editDate').value = cue.date || '';
+        document.getElementById('editConductor').value = cue.conductor || '';
+        document.getElementById('editComposer').value = cue.composer || '';
+        document.getElementById('editInfo').value = cue.info || '';
+        document.getElementById('editNotes').value = cue.notes || '';
+
+        document.getElementById('editModal').classList.add('show');
     }
+
+    function saveEdit() {
+        if (editingCueId === null) return;
+
+        const movementName = document.getElementById('editMovementName').value.trim();
+        const start = document.getElementById('editStartTime').value.trim();
+        const end = document.getElementById('editEndTime').value.trim();
+        const title = document.getElementById('editTitle').value.trim();
+        const performers = document.getElementById('editPerformers').value.trim();
+
+        if (!start || !end) {
+            alert('Start and end times are required');
+            return;
+        }
+
+        if (!title || !performers) {
+            alert('Title and Performers are required');
+            return;
+        }
+
+        const startSec = parseTime(start);
+        const endSec = parseTime(end);
+
+        if (startSec === null || endSec === null) {
+            alert('Invalid time format. Use HH:MM:SS.mmm');
+            return;
+        }
+
+        if (endSec <= startSec) {
+            alert('End time must be after start time');
+            return;
+        }
+
+        const cueIndex = cues.findIndex(c => c.id === editingCueId);
+        if (cueIndex !== -1) {
+            cues[cueIndex] = {
+                id: editingCueId,
+                start: startSec,
+                end: endSec,
+                startStr: start,
+                endStr: end,
+                title: title,
+                movement: movementName,
+                performers: performers,
+                date: document.getElementById('editDate').value.trim(),
+                conductor: document.getElementById('editConductor').value.trim(),
+                composer: document.getElementById('editComposer').value.trim(),
+                info: document.getElementById('editInfo').value.trim(),
+                notes: document.getElementById('editNotes').value.trim()
+            };
+
+            cues.sort((a, b) => a.start - b.start);
+            renderCues();
+            generateVTT();
+        }
+
+        editingCueId = null;
+        closeModal('editModal');
+    }
+
+    // IMPORTANT: Add event listener for saveEditBtn
+    document.getElementById('saveEditBtn').addEventListener('click', saveEdit);
 
     function generateVTT() {
         if (cues.length === 0) {
@@ -529,17 +614,27 @@ document.addEventListener('DOMContentLoaded', function () {
         let vtt = 'WEBVTT\n\n';
 
         cues.forEach((cue, i) => {
-            // Build caption text
-            let text = cue.title;
+            let text = '';
+
             if (cue.movement) {
+                text = cue.title;
                 text += `. ${cue.movement}`;
-            }
-            text += `. ${cue.performers}`;
-            if (cue.conductor) {
-                text += `. ${cue.conductor}, Conductor`;
-            }
-            if (cue.date) {
-                text += `. ${cue.date}`;
+                text += `. ${cue.performers}`;
+                if (cue.conductor) {
+                    text += `. ${cue.conductor}, Conductor`;
+                }
+                if (cue.date) {
+                    text += `. ${cue.date}`;
+                }
+            } else {
+                text = cue.title;
+                text += `. ${cue.performers}`;
+                if (cue.conductor) {
+                    text += `. ${cue.conductor}, Conductor`;
+                }
+                if (cue.date) {
+                    text += `. ${cue.date}`;
+                }
             }
 
             vtt += `${cue.startStr} --> ${cue.endStr}\n${text}\n\n`;
@@ -586,9 +681,15 @@ document.addEventListener('DOMContentLoaded', function () {
             group.cues.forEach(cue => {
                 const div = document.createElement('div');
                 div.className = 'cue';
+                let movementDisplay;
+                if (cue.movement) {
+                    movementDisplay = cue.movement;
+                } else {
+                    movementDisplay = '<em style="color: var(--accent-light);">Entire piece</em>';
+                }
                 div.innerHTML = `
                 <div class="cue-time">${cue.startStr} → ${cue.endStr}</div>
-                <div class="cue-text">${cue.movement || '[No movement name]'}</div>
+                <div class="cue-text">${movementDisplay}</div>
             `;
                 previewContent.appendChild(div);
             });
@@ -605,53 +706,149 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Export
-    document.getElementById('exportBtn').addEventListener('click', () => {
-        const blob = new Blob([vttOutput.value], { type: 'text/vtt' });
+    // Fallback save function for older browsers
+    function fallbackSave(blob, filename) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'captions.vtt';
+        a.download = filename;
         a.click();
         URL.revokeObjectURL(url);
-    });
+    }
 
-    // Save/Load session
-    document.getElementById('saveBtn').addEventListener('click', () => {
+    // Save session with timestamp to prevent overwrites
+    document.getElementById('saveBtn').addEventListener('click', async () => {
         const session = { cues, currentContext, cueIdCounter };
-        const blob = new Blob([JSON.stringify(session, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'session.json';
-        a.click();
-        URL.revokeObjectURL(url);
+        const jsonString = JSON.stringify(session, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+        let baseFilename = 'tessera_session';
+
+        if (currentContext && currentContext.title) {
+            const cleanTitle = currentContext.title
+                .replace(/[<>:"/\\|?*]/g, '')
+                .replace(/\s+/g, '_')
+                .substring(0, 40);
+            baseFilename = cleanTitle;
+        }
+
+        const suggestedName = `${baseFilename}_${timestamp}.json`;
+
+        if ('showSaveFilePicker' in window) {
+            try {
+                const handle = await window.showSaveFilePicker({
+                    suggestedName: suggestedName,
+                    types: [{
+                        description: 'JSON Session File',
+                        accept: { 'application/json': ['.json'] }
+                    }],
+                    startIn: 'documents'
+                });
+                const writable = await handle.createWritable();
+                await writable.write(blob);
+                await writable.close();
+                console.log('Session saved successfully as:', suggestedName);
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error('Error saving session:', err);
+                    fallbackSave(blob, suggestedName);
+                }
+            }
+        } else {
+            fallbackSave(blob, suggestedName);
+        }
     });
 
+    // Export VTT with timestamp to prevent overwrites
+    document.getElementById('exportBtn').addEventListener('click', async () => {
+        const blob = new Blob([vttOutput.value], { type: 'text/vtt' });
+
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+        let baseFilename = 'captions';
+
+        if (currentContext && currentContext.title) {
+            const cleanTitle = currentContext.title
+                .replace(/[<>:"/\\|?*]/g, '')
+                .replace(/\s+/g, '_')
+                .substring(0, 40);
+            baseFilename = cleanTitle;
+        }
+
+        const suggestedName = `${baseFilename}_${timestamp}.vtt`;
+
+        if ('showSaveFilePicker' in window) {
+            try {
+                const handle = await window.showSaveFilePicker({
+                    suggestedName: suggestedName,
+                    types: [{
+                        description: 'WebVTT Caption File',
+                        accept: { 'text/vtt': ['.vtt'] }
+                    }],
+                    startIn: 'documents'
+                });
+                const writable = await handle.createWritable();
+                await writable.write(blob);
+                await writable.close();
+                console.log('VTT exported successfully as:', suggestedName);
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error('Error exporting VTT:', err);
+                    fallbackSave(blob, suggestedName);
+                }
+            }
+        } else {
+            fallbackSave(blob, suggestedName);
+        }
+    });
+
+    // Load session button
     document.getElementById('loadBtn').addEventListener('click', () => {
         document.getElementById('loadFile').click();
     });
 
+    // Load session file handler
     document.getElementById('loadFile').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
+
+        if (!file.name.endsWith('.json')) {
+            alert('Please select a valid JSON session file');
+            return;
+        }
+
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
                 const session = JSON.parse(e.target.result);
+
+                if (!session.hasOwnProperty('cues') || !Array.isArray(session.cues)) {
+                    throw new Error('Invalid session file structure');
+                }
+
                 cues = session.cues || [];
                 currentContext = session.currentContext || null;
                 cueIdCounter = session.cueIdCounter || 0;
+
                 updateContextDisplay();
                 renderCues();
                 generateVTT();
-                alert('Session loaded successfully!');
+
+                alert(`Session loaded successfully!\n\n• ${cues.length} caption(s) loaded\n• Context: ${currentContext ? currentContext.title : 'None'}\n\nDon't forget to reload your audio file if needed.`);
+
+                console.log(`Session loaded: ${cues.length} cues, context: ${currentContext ? 'Yes' : 'No'}`);
             } catch (err) {
                 console.error('Error loading session:', err);
-                alert('Error loading session file');
+                alert('Error loading session file. Please make sure this is a valid Tessera session file.\n\nError: ' + err.message);
             }
         };
+
+        reader.onerror = () => {
+            alert('Error reading file. Please try again.');
+        };
+
         reader.readAsText(file);
+        e.target.value = '';
     });
 
     // Sort & Clear
@@ -672,18 +869,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
-        // Don't trigger shortcuts if user is typing in an input/textarea
         const isTyping = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
 
-        // ESC key to close modals and dropdowns (works always)
         if (e.key === 'Escape') {
-            // Close any open modals
             const modals = document.querySelectorAll('.modal.show');
             modals.forEach(modal => {
                 modal.classList.remove('show');
             });
 
-            // Close dropdowns
             const themeDropdown = document.getElementById('themeDropdown');
             const hamburgerDropdown = document.getElementById('hamburgerDropdown');
 
@@ -699,22 +892,31 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // Save session (works always)
         if ((e.ctrlKey || e.metaKey) && e.key === 's') {
             e.preventDefault();
             document.getElementById('saveBtn').click();
             return;
         }
-        // Export VTT (works always)
+
+        if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
+            e.preventDefault();
+            document.getElementById('loadBtn').click();
+            return;
+        }
+
         if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
             e.preventDefault();
             document.getElementById('exportBtn').click();
             return;
         }
 
-        // Audio controls (only when NOT typing)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+            e.preventDefault();
+            document.getElementById('newContextBtn').click();
+            return;
+        }
+
         if (!isTyping && audio.src) {
-            // Spacebar: Play/Pause
             if (e.key === ' ') {
                 e.preventDefault();
                 if (audio.paused) {
@@ -725,76 +927,66 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            // Arrow Left: Rewind (1s normal, 0.1s with Shift, 5s with Ctrl)
             if (e.key === 'ArrowLeft') {
                 e.preventDefault();
-                let skipAmount = 1; // Default: 1 second
-                if (e.shiftKey) skipAmount = 0.1; // Fine: 100ms
-                if (e.ctrlKey || e.metaKey) skipAmount = 5; // Coarse: 5 seconds
+                let skipAmount = 1;
+                if (e.shiftKey) skipAmount = 0.1;
+                if (e.ctrlKey || e.metaKey) skipAmount = 5;
                 audio.currentTime = Math.max(0, audio.currentTime - skipAmount);
                 return;
             }
 
-            // Arrow Right: Forward (1s normal, 0.1s with Shift, 5s with Ctrl)
             if (e.key === 'ArrowRight') {
                 e.preventDefault();
-                let skipAmount = 1; // Default: 1 second
-                if (e.shiftKey) skipAmount = 0.1; // Fine: 100ms
-                if (e.ctrlKey || e.metaKey) skipAmount = 5; // Coarse: 5 seconds
+                let skipAmount = 1;
+                if (e.shiftKey) skipAmount = 0.1;
+                if (e.ctrlKey || e.metaKey) skipAmount = 5;
                 audio.currentTime = Math.min(audio.duration, audio.currentTime + skipAmount);
                 return;
             }
 
-            // Arrow Up: Increase volume 10%
             if (e.key === 'ArrowUp') {
                 e.preventDefault();
                 audio.volume = Math.min(1, audio.volume + 0.1);
                 return;
             }
 
-            // Arrow Down: Decrease volume 10%
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
                 audio.volume = Math.max(0, audio.volume - 0.1);
                 return;
             }
 
-            // M: Mute/Unmute
             if (e.key === 'm' || e.key === 'M') {
                 e.preventDefault();
                 audio.muted = !audio.muted;
                 return;
             }
 
-            // I: Insert start time (current position)
             if (e.key === 'i' || e.key === 'I') {
                 e.preventDefault();
                 document.getElementById('startTime').value = formatTime(audio.currentTime);
                 return;
             }
 
-            // O: Insert end time (current position)
             if (e.key === 'o' || e.key === 'O') {
                 e.preventDefault();
                 document.getElementById('endTime').value = formatTime(audio.currentTime);
                 return;
             }
 
-            // J: Jump back 10 seconds
             if (e.key === 'j' || e.key === 'J') {
                 e.preventDefault();
                 audio.currentTime = Math.max(0, audio.currentTime - 10);
                 return;
             }
 
-            // L: Jump forward 10 seconds
             if (e.key === 'l' || e.key === 'L') {
                 e.preventDefault();
                 audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
                 return;
             }
 
-            // K: Toggle play/pause (alternative to spacebar)
             if (e.key === 'k' || e.key === 'K') {
                 e.preventDefault();
                 if (audio.paused) {
@@ -805,14 +997,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            // Comma (,): Frame back (0.033s ~1 frame at 30fps)
             if (e.key === ',') {
                 e.preventDefault();
                 audio.currentTime = Math.max(0, audio.currentTime - 0.033);
                 return;
             }
 
-            // Period (.): Frame forward (0.033s ~1 frame at 30fps)
             if (e.key === '.') {
                 e.preventDefault();
                 audio.currentTime = Math.min(audio.duration, audio.currentTime + 0.033);
@@ -821,7 +1011,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Initial render
     updateContextDisplay();
 
-}); // End DOMContentLoaded
+});
