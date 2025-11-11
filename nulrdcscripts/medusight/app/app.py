@@ -1,16 +1,45 @@
 import eel
 import os
 import sys
-import glob
 import platform
 import traceback
+import socket
+import time
+import subprocess
+import webbrowser
 from pathlib import Path
 
 # === FIX: Add PARENT directory to Python path ===
-# app.py is in app/ folder, medusight/ is in parent folder
-# So we need to go UP one level from app.py's location
-script_dir = Path(__file__).parent  # This is app/
-parent_dir = script_dir.parent       # This is nulrdcscripts/
+def get_base_path():
+    """Get the base path, accounting for PyInstaller bundling."""
+    if getattr(sys, 'frozen', False):
+        return Path(sys._MEIPASS)
+    else:
+        return Path(__file__).parent.parent
+
+def find_free_port():
+    """Find an available port for the Eel server."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(('', 0))
+        s.listen(1)
+        port = s.getsockname()[1]
+    return port
+
+def write_port_file(port):
+    """Write the port number to a file for Electron to read."""
+    if getattr(sys, 'frozen', False):
+        port_file = Path(sys.executable).parent / 'port.txt'
+    else:
+        port_file = Path(__file__).parent.parent / 'port.txt'
+    
+    with open(port_file, 'w') as f:
+        f.write(str(port))
+    print(f"Port file written: {port_file}")
+
+# Setup paths
+base_path = get_base_path()
+script_dir = Path(__file__).parent if not getattr(sys, 'frozen', False) else base_path / 'app'
+parent_dir = base_path
 
 # Add parent to path so we can import medusight
 if str(parent_dir) not in sys.path:
@@ -20,22 +49,33 @@ print(f"Script directory: {script_dir}")
 print(f"Parent directory (where medusight is): {parent_dir}")
 print(f"Python will look for medusight in: {parent_dir}")
 
-# Simplify web path (relative to app.py location)
-web_path = os.path.join(script_dir, 'web')
-eel.init(web_path)
+# Simplify web path
+if getattr(sys, 'frozen', False):
+    web_path = os.path.join(sys._MEIPASS, 'web')
+else:
+    web_path = os.path.join(script_dir, 'web')
 
-# Create uploads directory (relative to app.py location)
-uploads_dir = os.path.join(script_dir, 'uploads')
-if not os.path.exists(uploads_dir):
-    os.makedirs(uploads_dir)
+print(f"Web path: {web_path}")
+
+# Create uploads directory
+if getattr(sys, 'frozen', False):
+    uploads_dir = Path(sys.executable).parent / 'uploads'
+else:
+    uploads_dir = script_dir / 'uploads'
+
+if not uploads_dir.exists():
+    uploads_dir.mkdir(parents=True)
+
+# Initialize Eel
+eel.init(web_path)
 
 # Now import medusight - should work!
 try:
     from medusight import processfile
     from medusight.mainprocessing import params
-    print("✓ Successfully imported medusight.processfile")
+    print("Successfully imported medusight.processfile")
 except ImportError as e:
-    print(f"✗ Failed to import medusight: {e}")
+    print(f"Failed to import medusight: {e}")
     print(f"   Check that medusight folder exists at: {parent_dir / 'medusight'}")
     sys.exit(1)
 
@@ -43,25 +83,34 @@ except ImportError as e:
 # PROCESSING FUNCTIONS WITH SETTINGS SUPPORT
 # ============================================================================
 
-def process_single_video(file_path, crop_mode='auto', manual_crop=None, 
+def process_single_video(file_path, crop_mode='auto', manual_crop=None,
                         sample_interval=900, analyze_audio=True,
-                        audio_standard='broadcast', target_lufs=None, 
+                        audio_standard='broadcast', target_lufs=None,
                         max_true_peak=None):
-    """
-    Process a single video file with settings.
+    """Process a single video file with settings."""
+    start_time = time.time()
     
-    Args:
-        file_path: Path to video file
-        crop_mode: 'auto', 'combined', 'headswitching', 'off', 'manual'
-        manual_crop: Manual crop string (if crop_mode='manual')
-        sample_interval: Frame sampling interval for crop detection
-        analyze_audio: Whether to run audio analysis
-        audio_standard: 'broadcast', 'streaming', or 'film'
-        target_lufs: Custom target LUFS (overrides standard)
-        max_true_peak: Custom max true peak (overrides standard)
-    """
+    print(f"DEBUG: ========== PROCESSING START ==========", flush=True)
+    print(f"DEBUG: File path: {file_path}", flush=True)
+    print(f"DEBUG: File exists? {os.path.exists(file_path)}", flush=True)
+    print(f"DEBUG: Running from bundled exe? {getattr(sys, 'frozen', False)}", flush=True)
+    
+    if os.path.exists(file_path):
+        file_size = os.path.getsize(file_path)
+        print(f"DEBUG: File size: {file_size:,} bytes ({file_size / 1024 / 1024:.2f} MB)", flush=True)
+    else:
+        print(f"DEBUG: FILE NOT FOUND!", flush=True)
+        return {
+            'success': False,
+            'filename': os.path.basename(file_path),
+            'status': 'ERROR',
+            'issues': ['File not found'],
+            'error': 'File not found'
+        }
+    
     try:
         # Update params with settings
+        print(f"DEBUG: Setting parameters...", flush=True)
         params.args.crop_mode = crop_mode
         params.args.manual_crop = manual_crop
         params.args.sample_interval = sample_interval
@@ -69,23 +118,27 @@ def process_single_video(file_path, crop_mode='auto', manual_crop=None,
         params.args.audio_standard = audio_standard
         params.args.target_lufs = target_lufs
         params.args.max_true_peak = max_true_peak
-        
+
         # Process the file
+        print(f"DEBUG: Calling processfile()...", flush=True)
+        process_start = time.time()
         result = processfile(str(file_path), 'input')
-        
+        process_time = time.time() - process_start
+        print(f"DEBUG: processfile() completed in {process_time:.2f} seconds", flush=True)
+
         # Build response with report paths
         path = Path(file_path)
         base_name = path.stem.replace('.mkv.qctools', '').replace('.xml', '').replace('.json', '')
         output_dir = path.parent
-        
+
         video_report = output_dir / f"{base_name}_video_level_report.txt"
         frames_report = output_dir / f"{base_name}_failing_frames_by_criteria.txt"
         audio_report = output_dir / f"{base_name}_audio_report.txt"
-        
+
         # Determine pass/fail status
         status = 'PASS'
         issues = []
-        
+
         if video_report.exists():
             with open(video_report, 'r') as f:
                 content = f.read()
@@ -95,7 +148,11 @@ def process_single_video(file_path, crop_mode='auto', manual_crop=None,
                     for line in content.split('\n'):
                         if 'Criteria:' in line and ('FAIL' in line or 'out_of_range' in line):
                             issues.append(line.strip())
-        
+
+        total_time = time.time() - start_time
+        print(f"DEBUG: Total processing time: {total_time:.2f} seconds", flush=True)
+        print(f"DEBUG: ========== PROCESSING COMPLETE ==========", flush=True)
+
         return {
             'success': True,
             'filename': path.name,
@@ -109,8 +166,10 @@ def process_single_video(file_path, crop_mode='auto', manual_crop=None,
             'frames_report_path': str(frames_report) if frames_report.exists() else None,
             'audio_report_path': str(audio_report) if (analyze_audio and audio_report.exists()) else None
         }
-        
+
     except Exception as e:
+        error_time = time.time() - start_time
+        print(f"DEBUG: Error after {error_time:.2f} seconds", flush=True)
         print(f"Error processing {file_path}:")
         traceback.print_exc()
         return {
@@ -151,7 +210,7 @@ def get_file_info(file_path):
     try:
         if not os.path.exists(file_path):
             return {'error': 'File not found'}
-        
+
         return {
             'filename': os.path.basename(file_path),
             'size': os.path.getsize(file_path),
@@ -183,17 +242,17 @@ def select_files_dialog(file_types=None):
         # Use global mode if parameter is None
         global current_file_mode
         mode_to_use = file_types if file_types is not None else current_file_mode
-        
+
         print(f"DEBUG: select_files_dialog called with file_types='{file_types}' (type: {type(file_types)})")
         print(f"DEBUG: Using mode: '{mode_to_use}'")
-        
+
         system = platform.system()
-        
+
         if system == 'Darwin':  # macOS
             return _select_files_macos(mode_to_use)
         else:  # Windows or Linux
             return _select_files_windows(mode_to_use)
-            
+
     except Exception as e:
         print(f"Error: {e}")
         import traceback
@@ -203,7 +262,7 @@ def select_files_dialog(file_types=None):
 def _select_files_macos(file_types):
     """macOS file picker using AppleScript"""
     import subprocess
-    
+
     # Handle both 'video' and 'xml' modes
     if file_types == 'xml':
         # Use proper UTI for XML and JSON
@@ -212,7 +271,7 @@ def _select_files_macos(file_types):
     else:  # video mode
         file_type_list = '{"public.mpeg-4", "org.matroska.mkv"}'
         prompt_text = "Select Video Files (MKV/MP4)"
-    
+
     script = f'''
     tell application "System Events"
         activate
@@ -224,13 +283,13 @@ def _select_files_macos(file_types):
         return filePaths
     end tell
     '''
-    
+
     result = subprocess.run(
         ['osascript', '-e', script],
         capture_output=True,
         text=True
     )
-    
+
     if result.returncode == 0:
         files = [f.strip() for f in result.stdout.strip().split(',') if f.strip()]
         print(f"Selected files: {files}")
@@ -244,11 +303,11 @@ def _select_files_windows(file_types):
     try:
         import tkinter as tk
         from tkinter import filedialog
-        
+
         root = tk.Tk()
         root.withdraw()
         root.attributes('-topmost', True)
-        
+
         # Handle both 'video' and 'xml' modes
         if file_types == 'xml':
             filetypes = [
@@ -266,42 +325,42 @@ def _select_files_windows(file_types):
                 ("All files", "*.*")
             ]
             title = "Select Video Files"
-        
+
         files = filedialog.askopenfilenames(
             title=title,
             filetypes=filetypes
         )
-        
+
         root.destroy()
-        
+
         files_list = list(files) if files else []
         print(f"Selected files: {files_list}")
         return files_list
-        
+
     except Exception as e:
         print(f"Error in Windows file dialog: {e}")
         import traceback
         traceback.print_exc()
         return []
 
-@eel.expose  
+@eel.expose
 def select_folder_dialog():
     """Open native folder picker and return the folder path - cross-platform"""
     try:
         system = platform.system()
-        
+
         if system == 'Darwin':  # macOS
             folder = _select_folder_macos()
         else:  # Windows or Linux
             folder = _select_folder_windows()
-        
+
         if not folder:
             print("No folder selected")
             return None
-        
+
         print(f"Selected folder: {folder}")
         return folder
-        
+
     except Exception as e:
         print(f"Error opening folder dialog: {e}")
         import traceback
@@ -311,7 +370,7 @@ def select_folder_dialog():
 def _select_folder_macos():
     """macOS folder picker using AppleScript"""
     import subprocess
-    
+
     script = '''
     tell application "System Events"
         activate
@@ -319,13 +378,13 @@ def _select_folder_macos():
         return POSIX path of theFolder
     end tell
     '''
-    
+
     result = subprocess.run(
         ['osascript', '-e', script],
         capture_output=True,
         text=True
     )
-    
+
     if result.returncode == 0:
         folder = result.stdout.strip()
         return folder if folder else None
@@ -337,18 +396,18 @@ def _select_folder_windows():
     try:
         import tkinter as tk
         from tkinter import filedialog
-        
+
         root = tk.Tk()
         root.withdraw()
         root.attributes('-topmost', True)
-        
+
         folder = filedialog.askdirectory(
             title="Select folder containing files"
         )
-        
+
         root.destroy()
         return folder if folder else None
-        
+
     except Exception as e:
         print(f"Error in Windows folder dialog: {e}")
         return None
@@ -364,10 +423,10 @@ def get_folder_contents(folder_path):
         global current_file_mode
         from pathlib import Path
         path = Path(folder_path)
-        
+
         print(f"DEBUG: get_folder_contents called with: {folder_path}")
         print(f"DEBUG: Current mode: {current_file_mode}")
-        
+
         if not path.exists() or not path.is_dir():
             print(f"DEBUG: Path doesn't exist or is not a directory")
             return {
@@ -375,7 +434,7 @@ def get_folder_contents(folder_path):
                 'message': 'Invalid folder path',
                 'files': []
             }
-        
+
         # Determine which extensions to look for based on mode
         if current_file_mode == 'xml':
             valid_extensions = ['.xml', '.json']
@@ -383,13 +442,13 @@ def get_folder_contents(folder_path):
         else:  # video mode
             valid_extensions = ['.mkv', '.mp4']
             print(f"DEBUG: Looking for video files (MKV/MP4)")
-        
+
         files_found = []
         for f in path.iterdir():
             if f.is_file():
                 ext = f.suffix.lower()
                 print(f"DEBUG: Checking file: {f.name}, extension: {ext}")
-                
+
                 # Check if file matches current mode
                 if ext in valid_extensions:
                     files_found.append({
@@ -398,18 +457,18 @@ def get_folder_contents(folder_path):
                         'size': f.stat().st_size,
                         'extension': ext
                     })
-                    print(f"DEBUG: ✓ Added: {f.name}")
+                    print(f"DEBUG: Added: {f.name}")
                 else:
-                    print(f"DEBUG: ✗ Skipped: {f.name} (extension '{ext}' not in {valid_extensions})")
-        
+                    print(f"DEBUG: Skipped: {f.name} (extension '{ext}' not in {valid_extensions})")
+
         print(f"DEBUG: Total files found: {len(files_found)}")
-        
+
         return {
             'success': len(files_found) > 0,
             'files': files_found,
             'count': len(files_found)
         }
-    
+
     except Exception as e:
         print(f"ERROR in get_folder_contents: {e}")
         import traceback
@@ -421,14 +480,11 @@ def get_folder_contents(folder_path):
         }
 
 @eel.expose
-def process_single_file(file_path, crop_mode='auto', manual_crop=None, 
+def process_single_file(file_path, crop_mode='auto', manual_crop=None,
                        sample_interval=900, analyze_audio=True,
-                       audio_standard='broadcast', target_lufs=None, 
+                       audio_standard='broadcast', target_lufs=None,
                        max_true_peak=None):
-    """
-    Process a single file with settings - exposed to JavaScript.
-    Matches the signature expected by main.js
-    """
+    """Process a single file with settings - exposed to JavaScript."""
     return process_single_video(
         file_path, crop_mode, manual_crop, sample_interval,
         analyze_audio, audio_standard, target_lufs, max_true_peak
@@ -439,27 +495,24 @@ def process_manual_path(path_input, crop_mode='auto', manual_crop=None,
                        sample_interval=900, analyze_audio=True,
                        audio_standard='broadcast', target_lufs=None,
                        max_true_peak=None):
-    """
-    BACKUP ONLY: Process single file or folder from manual path input.
-    This is a fallback for when file dialogs fail.
-    """
+    """BACKUP ONLY: Process single file or folder from manual path input."""
     try:
         global current_file_mode
         from pathlib import Path
         path = Path(path_input)
-        
+
         print(f"DEBUG: process_manual_path called with: {path_input}")
         print(f"DEBUG: Current mode: {current_file_mode}")
-        
+
         if not path.exists():
             return {'success': False, 'error': 'Path does not exist'}
-        
+
         # Determine valid extensions based on mode
         if current_file_mode == 'xml':
             valid_extensions = ['.xml', '.json']
         else:
             valid_extensions = ['.mkv', '.mp4']
-        
+
         if path.is_file():
             # Check if it's a supported file type for current mode
             ext = path.suffix.lower()
@@ -476,12 +529,12 @@ def process_manual_path(path_input, crop_mode='auto', manual_crop=None,
                 }
             else:
                 return {
-                    'success': False, 
+                    'success': False,
                     'error': f'File type {ext} not supported in {current_file_mode} mode'
                 }
-        
+
         elif path.is_dir():
-            # Get all supported files in folder (don't process yet, let JS handle that)
+            # Get all supported files in folder
             files_found = []
             for f in path.iterdir():
                 if f.is_file() and f.suffix.lower() in valid_extensions:
@@ -490,7 +543,7 @@ def process_manual_path(path_input, crop_mode='auto', manual_crop=None,
                         'path': str(f),
                         'size': f.stat().st_size
                     })
-            
+
             if files_found:
                 return {
                     'success': True,
@@ -502,9 +555,9 @@ def process_manual_path(path_input, crop_mode='auto', manual_crop=None,
                     'success': False,
                     'error': f'No {current_file_mode} files found in folder'
                 }
-        
+
         return {'success': False, 'error': 'Invalid path'}
-    
+
     except Exception as e:
         print(f"ERROR in process_manual_path: {e}")
         import traceback
@@ -525,18 +578,18 @@ def open_report_file(report_path):
     try:
         import platform
         import subprocess
-        
+
         system = platform.system()
-        
+
         print(f"DEBUG: Opening report file: {report_path}")
-        
+
         if system == 'Darwin':  # macOS
             subprocess.run(['open', report_path])
         elif system == 'Windows':
-            os.startfile(report_path)  # More reliable for Windows
+            os.startfile(report_path)
         else:  # Linux
             subprocess.run(['xdg-open', report_path])
-        
+
         return {'success': True}
     except Exception as e:
         print(f"ERROR opening report file: {e}")
@@ -548,16 +601,16 @@ def read_report_file(report_path):
     try:
         from pathlib import Path
         path = Path(report_path)
-        
+
         print(f"DEBUG: read_report_file called with: {report_path}")
-        
+
         if not path.exists():
             print(f"DEBUG: File does not exist: {report_path}")
             return {'success': False, 'error': 'Report file not found'}
-        
+
         with open(path, 'r', encoding='utf-8') as f:
             content = f.read()
-        
+
         print(f"DEBUG: Successfully read {len(content)} characters")
         return {
             'success': True,
@@ -572,9 +625,82 @@ def read_report_file(report_path):
             'error': str(e)
         }
 
+# ============================================================================
+# BROWSER APP MODE LAUNCHER
+# ============================================================================
+
+def launch_browser_app_mode(url):
+    """Launch browser in app mode (chromeless window)."""
+    system = platform.system()
+    
+    try:
+        if system == 'Windows':
+            # Try Chrome first
+            chrome_paths = [
+                'C:/Program Files/Google/Chrome/Application/chrome.exe',
+                'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
+                os.path.expandvars('%LOCALAPPDATA%/Google/Chrome/Application/chrome.exe')
+            ]
+            
+            for chrome_path in chrome_paths:
+                if os.path.exists(chrome_path):
+                    print(f"Launching Chrome in app mode...")
+                    subprocess.Popen([chrome_path, f'--app={url}', '--window-size=1400,900'])
+                    return
+            
+            # Try Edge
+            print(f"Launching Edge in app mode...")
+            subprocess.Popen(['msedge', f'--app={url}', '--window-size=1400,900'])
+            
+        elif system == 'Darwin':  # macOS
+            # Try Chrome
+            chrome_path = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+            if os.path.exists(chrome_path):
+                print(f"Launching Chrome in app mode...")
+                subprocess.Popen([chrome_path, f'--app={url}', '--window-size=1400,900'])
+            else:
+                # Safari doesn't support app mode, so just open normally
+                webbrowser.open(url)
+        else:
+            # Linux - try Chrome
+            subprocess.Popen(['google-chrome', f'--app={url}', '--window-size=1400,900'])
+            
+    except Exception as e:
+        print(f"Error launching browser in app mode: {e}")
+        # Fallback to default browser
+        webbrowser.open(url)
+
+# ============================================================================
+# START APPLICATION
+# ============================================================================
+
+def start_app():
+    """Start the Eel application in browser app mode."""
+    port = find_free_port()
+    write_port_file(port)
+    
+    url = f'http://localhost:{port}'
+    print(f"Starting Eel on port {port}", flush=True)
+    print(f"Web folder: {web_path}", flush=True)
+    print(f"URL: {url}", flush=True)
+    
+    # Launch browser in app mode in a separate thread
+    import threading
+    threading.Timer(1.5, lambda: launch_browser_app_mode(url)).start()
+    
+    # Start Eel server
+    try:
+        eel.start('index.html',
+                  mode=None,  # Don't let Eel open a browser
+                  port=port,
+                  host='localhost',
+                  block=True)
+    except Exception as e:
+        print(f"ERROR starting Eel: {e}", flush=True)
+        traceback.print_exc()
+        import time
+        time.sleep(10)
+
 # Start the app
 if __name__ == '__main__':
-    eel.start('index.html', 
-              size=(1200, 900),
-              mode='chrome',
-              port=8080)
+    start_app()

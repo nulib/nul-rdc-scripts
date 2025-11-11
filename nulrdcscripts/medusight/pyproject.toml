@@ -16,7 +16,6 @@ lxml = "^6.0.0"
 progressbar2 = "^4.5.0"
 pandas = "^2.3.0"
 tk = "^0.1.0"
-eel = "^0.18.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"

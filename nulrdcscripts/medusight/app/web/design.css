@@ -1744,3 +1744,42 @@ body.colorblind-mode .utility-menu .fallback-btn:hover {
     background: rgba(251, 191, 36, 0.15);
     border-color: rgba(251, 191, 36, 0.4);
 }
+
+/* Construction tape for video mode button */
+.mode-btn[data-mode="video"] {
+    position: relative;
+    overflow: hidden;
+    cursor: not-allowed;
+}
+
+.mode-btn[data-mode="video"]::before {
+    content: "";
+    position: absolute;
+    top: -10%;
+    left: -20%;
+    right: -20%;
+    height: 120%;
+    background: repeating-linear-gradient(45deg,
+            rgba(255, 204, 0, 0.9),
+            rgba(255, 204, 0, 0.9) 15px,
+            rgba(0, 0, 0, 0.9) 15px,
+            rgba(0, 0, 0, 0.9) 30px);
+    transform: rotate(-15deg);
+    pointer-events: none;
+    z-index: 5;
+}
+
+.mode-btn[data-mode="video"]::after {
+    content: "🚧 UNDER CONSTRUCTION 🚧";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-weight: bold;
+    font-size: 11px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    z-index: 10;
+    pointer-events: none;
+    white-space: nowrap;
+}

@@ -724,6 +724,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 b.classList.remove('active');
                 b.setAttribute('aria-pressed', 'false');
             });
+            // Disable video mode - under construction
+            if (btn.dataset.mode === 'video') {
+                alert('🚧 Video mode is currently under construction.\n\nPlease use XML mode for now.');
+                return;
+            }
 
             btn.classList.add('active');
             btn.setAttribute('aria-pressed', 'true');
