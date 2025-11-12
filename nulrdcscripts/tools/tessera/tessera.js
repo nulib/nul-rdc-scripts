@@ -253,6 +253,7 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('contextTitle').value = currentContext.title || '';
             document.getElementById('contextPerformers').value = currentContext.performers || '';
             document.getElementById('contextDate').value = currentContext.date || '';
+            document.getElementById('contextLocation').value = currentContext.location || '';
             document.getElementById('contextConductor').value = currentContext.conductor || '';
             document.getElementById('contextComposer').value = currentContext.composer || '';
             document.getElementById('contextInfo').value = currentContext.info || '';
@@ -260,6 +261,7 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('contextTitle').value = '';
             document.getElementById('contextPerformers').value = '';
             document.getElementById('contextDate').value = '';
+            document.getElementById('contextLocation').value = '';
             document.getElementById('contextConductor').value = '';
             document.getElementById('contextComposer').value = '';
             document.getElementById('contextInfo').value = '';
@@ -280,6 +282,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('endTime').value = '';
         document.getElementById('overridePerformers').value = '';
         document.getElementById('overrideDate').value = '';
+        document.getElementById('overrideLocation').value = '';
         document.getElementById('overrideConductor').value = '';
         document.getElementById('notes').value = '';
         document.getElementById('overrideDetails').removeAttribute('open');
@@ -288,6 +291,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('contextTitle').value = '';
         document.getElementById('contextPerformers').value = '';
         document.getElementById('contextDate').value = '';
+        document.getElementById('contextLocation').value = '';
         document.getElementById('contextConductor').value = '';
         document.getElementById('contextComposer').value = '';
         document.getElementById('contextInfo').value = '';
@@ -312,6 +316,7 @@ document.addEventListener('DOMContentLoaded', function () {
             title,
             performers,
             date: document.getElementById('contextDate').value.trim(),
+            location: document.getElementById('contextLocation').value.trim(),
             conductor: document.getElementById('contextConductor').value.trim(),
             composer: document.getElementById('contextComposer').value.trim(),
             info: document.getElementById('contextInfo').value.trim()
@@ -345,6 +350,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         if (currentContext.date) {
             html += `<div class="context-row"><span class="context-label">Date:</span><span>${currentContext.date}</span></div>`;
+        }
+        if (currentContext.location) {
+            html += `<div class="context-row"><span class="context-label">Location:</span><span>${currentContext.location}</span></div>`;
         }
         if (currentContext.conductor) {
             html += `<div class="context-row"><span class="context-label">Conductor:</span><span>${currentContext.conductor}</span></div>`;
@@ -393,6 +401,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const performers = document.getElementById('overridePerformers').value.trim() || currentContext.performers;
         const date = document.getElementById('overrideDate').value.trim() || currentContext.date;
+        const location = document.getElementById('overrideLocation').value.trim() || currentContext.location;
         const conductor = document.getElementById('overrideConductor').value.trim() || currentContext.conductor;
 
         const cue = {
@@ -405,6 +414,7 @@ document.addEventListener('DOMContentLoaded', function () {
             movement: movementName,
             performers,
             date,
+            location,
             conductor,
             composer: currentContext.composer,
             info: currentContext.info,
@@ -419,6 +429,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('endTime').value = '';
         document.getElementById('overridePerformers').value = '';
         document.getElementById('overrideDate').value = '';
+        document.getElementById('overrideLocation').value = '';
         document.getElementById('overrideConductor').value = '';
         document.getElementById('notes').value = '';
         document.getElementById('overrideDetails').removeAttribute('open');
@@ -550,6 +561,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('editTitle').value = cue.title || '';
         document.getElementById('editPerformers').value = cue.performers || '';
         document.getElementById('editDate').value = cue.date || '';
+        document.getElementById('editLocation').value = cue.location || '';
         document.getElementById('editConductor').value = cue.conductor || '';
         document.getElementById('editComposer').value = cue.composer || '';
         document.getElementById('editInfo').value = cue.info || '';
@@ -602,6 +614,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 movement: movementName,
                 performers: performers,
                 date: document.getElementById('editDate').value.trim(),
+                location: document.getElementById('editLocation').value.trim(),
                 conductor: document.getElementById('editConductor').value.trim(),
                 composer: document.getElementById('editComposer').value.trim(),
                 info: document.getElementById('editInfo').value.trim(),
@@ -631,7 +644,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         cues.forEach((cue, i) => {
             let text = '';
-            
+
             if (cue.movement) {
                 text = cue.title;
                 text += `. <i>${cue.movement}</i>`;
@@ -644,6 +657,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (cue.date) {
                     text += `. ${cue.date}`;
                 }
+                if (cue.location) {
+                    text += `. ${cue.location}`;
+                }
+                if (cue.info) {
+                    text += `. ${cue.info}`;
+                }
+                if (cue.notes) {
+                    text += `. ${cue.notes}`;
+                }
             } else {
                 text = cue.title;
                 if (cue.performers) {
@@ -654,6 +676,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 if (cue.date) {
                     text += `. ${cue.date}`;
+                }
+                if (cue.location) {
+                    text += `. ${cue.location}`;
+                }
+                if (cue.info) {
+                    text += `. ${cue.info}`;
+                }
+                if (cue.notes) {
+                    text += `. ${cue.notes}`;
                 }
             }
 
@@ -757,7 +788,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
             let baseFilename = 'tessera_session';
-            
+
             if (currentContext && currentContext.title) {
                 const cleanTitle = currentContext.title
                     .replace(/[<>:"/\\|?*]/g, '')
@@ -765,7 +796,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     .substring(0, 40);
                 baseFilename = cleanTitle;
             }
-            
+
             const suggestedName = `${baseFilename}_${timestamp}.json`;
 
             if ('showSaveFilePicker' in window) {
@@ -779,8 +810,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         startIn: 'documents'
                     });
                     const writable = await handle.createWritable();
-                    await writable.write(jsonString);
-                    await writable.close();
+                    try {
+                        await writable.write(jsonString);
+                    } finally {
+                        await writable.close();
+                    }
                     console.log('Session saved successfully as:', suggestedName);
                     alert('✅ Session saved successfully!\n\nFile: ' + suggestedName);
                 } catch (err) {
@@ -815,7 +849,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
             let baseFilename = 'captions';
-            
+
             if (currentContext && currentContext.title) {
                 const cleanTitle = currentContext.title
                     .replace(/[<>:"/\\|?*]/g, '')
@@ -823,7 +857,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     .substring(0, 40);
                 baseFilename = cleanTitle;
             }
-            
+
             const suggestedName = `${baseFilename}_${timestamp}.vtt`;
 
             if ('showSaveFilePicker' in window) {
@@ -837,8 +871,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         startIn: 'documents'
                     });
                     const writable = await handle.createWritable();
-                    await writable.write(vttContent);
-                    await writable.close();
+                    try {
+                        await writable.write(vttContent);
+                    } finally {
+                        await writable.close();
+                    }
                     console.log('VTT exported successfully as:', suggestedName);
                     alert('✅ WebVTT exported successfully!\n\nFile: ' + suggestedName + '\n\nCaptions: ' + cues.length);
                 } catch (err) {
@@ -870,7 +907,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('loadFile').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        
+
         if (!file.name.endsWith('.json')) {
             alert('Please select a valid JSON session file');
             return;
@@ -880,7 +917,7 @@ document.addEventListener('DOMContentLoaded', function () {
         reader.onload = (e) => {
             try {
                 const session = JSON.parse(e.target.result);
-                
+
                 if (!session.hasOwnProperty('cues') || !Array.isArray(session.cues)) {
                     throw new Error('Invalid session file structure');
                 }
@@ -888,24 +925,24 @@ document.addEventListener('DOMContentLoaded', function () {
                 cues = session.cues || [];
                 currentContext = session.currentContext || null;
                 cueIdCounter = session.cueIdCounter || 0;
-                
+
                 updateContextDisplay();
                 renderCues();
                 generateVTT();
-                
+
                 alert(`Session loaded successfully!\n\n• ${cues.length} caption(s) loaded\n• Context: ${currentContext ? currentContext.title : 'None'}\n\nDon't forget to reload your audio file if needed.`);
-                
+
                 console.log(`Session loaded: ${cues.length} cues, context: ${currentContext ? 'Yes' : 'No'}`);
             } catch (err) {
                 console.error('Error loading session:', err);
                 alert('Error loading session file. Please make sure this is a valid Tessera session file.\n\nError: ' + err.message);
             }
         };
-        
+
         reader.onerror = () => {
             alert('Error reading file. Please try again.');
         };
-        
+
         reader.readAsText(file);
         e.target.value = '';
     });
