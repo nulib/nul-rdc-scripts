@@ -897,6 +897,17 @@ kbd {
     white-space: pre-wrap;
     word-wrap: break-word;
 }
+
+.clickable-time {
+    cursor: pointer;
+    transition: color 0.2s, text-decoration 0.2s;
+}
+
+.clickable-time:hover {
+    color: var(--accent-light);
+    text-decoration: underline;
+}
+
 .clickable-time {
     cursor: pointer;
     transition: color 0.2s, text-decoration 0.2s;

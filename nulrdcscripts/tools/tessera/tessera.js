@@ -13,6 +13,10 @@ document.addEventListener('DOMContentLoaded', function () {
     let totalAudioLoaded = 0;
     let hasShownMemoryWarning = false;
 
+    // Check if we're in Electron
+    const isElectron = typeof window.electronAPI !== 'undefined';
+    console.log('Running in Electron:', isElectron);
+
     const audio = document.getElementById('audio');
     const audioFile = document.getElementById('audioFile');
     const audioUploadBox = document.getElementById('audioUploadBox');
@@ -55,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Warning for single large file (>2GB)
             if (file.size > 2 * 1024 * 1024 * 1024) {
                 if (!confirm(`⚠️ Large File Warning\n\nThis file is ${fileSizeMB} MB, which may cause performance issues.\n\nContinue loading?`)) {
-                    e.target.value = ''; // Clear the file input
+                    e.target.value = '';
                     return;
                 }
             }
@@ -137,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div><span style="color: var(--accent); font-size: 24px;">♪</span> Click or Drop Audio File</div>
                 <div style="font-size: 11px; color: var(--text-secondary); margin-top: 5px;">MP3, WAV, OGG, M4A</div>
             `;
-                e.target.value = ''; // Clear the file input
+                e.target.value = '';
             }, { once: true });
         }
     });
@@ -270,13 +274,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // New Context button - clears ONLY the context, NOT the captions
-    // This is for adding a new piece on the same recording (e.g., next song on a tape)
     document.getElementById('newContextBtn').addEventListener('click', () => {
-        // Clear the current context (but keep all captions!)
         currentContext = null;
         updateContextDisplay();
 
-        // Clear the add caption form
         document.getElementById('movementName').value = '';
         document.getElementById('startTime').value = '';
         document.getElementById('endTime').value = '';
@@ -287,7 +288,6 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('notes').value = '';
         document.getElementById('overrideDetails').removeAttribute('open');
 
-        // Open context modal for new piece context
         document.getElementById('contextTitle').value = '';
         document.getElementById('contextPerformers').value = '';
         document.getElementById('contextDate').value = '';
@@ -305,7 +305,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function saveContext() {
         const title = document.getElementById('contextTitle').value.trim();
-        const performers = document.getElementById('contextPerformers').value.trim();
 
         if (!title) {
             alert('⚠️ Title is required!\n\nPlease enter the title of the piece.');
@@ -314,7 +313,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         currentContext = {
             title,
-            performers,
+            performers: document.getElementById('contextPerformers').value.trim(),
             date: document.getElementById('contextDate').value.trim(),
             location: document.getElementById('contextLocation').value.trim(),
             conductor: document.getElementById('contextConductor').value.trim(),
@@ -577,7 +576,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const start = document.getElementById('editStartTime').value.trim();
         const end = document.getElementById('editEndTime').value.trim();
         const title = document.getElementById('editTitle').value.trim();
-        const performers = document.getElementById('editPerformers').value.trim();
 
         if (!start || !end) {
             alert('⚠️ Start and end times are required!');
@@ -612,7 +610,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 endStr: end,
                 title: title,
                 movement: movementName,
-                performers: performers,
+                performers: document.getElementById('editPerformers').value.trim(),
                 date: document.getElementById('editDate').value.trim(),
                 location: document.getElementById('editLocation').value.trim(),
                 conductor: document.getElementById('editConductor').value.trim(),
@@ -631,7 +629,6 @@ document.addEventListener('DOMContentLoaded', function () {
         closeModal('editModal');
     }
 
-    // IMPORTANT: Add event listener for saveEditBtn
     document.getElementById('saveEditBtn').addEventListener('click', saveEdit);
 
     function generateVTT() {
@@ -747,16 +744,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Tabs
-    document.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            document.getElementById(tab.dataset.tab + 'Tab').classList.add('active');
-        });
-    });
-
     // Add click handler for timestamps in Preview tab
     previewContent.addEventListener('click', (e) => {
         const timeStamp = e.target.closest('.clickable-time');
@@ -770,6 +757,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(tab.dataset.tab + 'Tab').classList.add('active');
+        });
+    });
+
     // Fallback save function for older browsers
     function fallbackSave(blob, filename) {
         const url = URL.createObjectURL(blob);
@@ -778,6 +775,11 @@ document.addEventListener('DOMContentLoaded', function () {
         a.download = filename;
         a.click();
         URL.revokeObjectURL(url);
+    }
+
+    // Helper to get basename for display
+    function getBasename(filepath) {
+        return filepath.split(/[\\/]/).pop();
     }
 
     // Save session with timestamp to prevent overwrites
@@ -799,7 +801,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const suggestedName = `${baseFilename}_${timestamp}.json`;
 
-            if ('showSaveFilePicker' in window) {
+            if (isElectron) {
+                // Use Electron's native file dialog
+                const result = await window.electronAPI.saveFileDialog({
+                    title: 'Save Session',
+                    defaultPath: suggestedName,
+                    filters: [
+                        { name: 'JSON Files', extensions: ['json'] },
+                        { name: 'All Files', extensions: ['*'] }
+                    ]
+                });
+
+                if (!result.canceled && result.filePath) {
+                    const saveResult = await window.electronAPI.saveFile(result.filePath, jsonString);
+                    if (saveResult.success) {
+                        console.log('Session saved successfully as:', result.filePath);
+                        alert('✅ Session saved successfully!\n\nFile: ' + getBasename(result.filePath));
+                    } else {
+                        throw new Error(saveResult.error);
+                    }
+                }
+            } else if ('showSaveFilePicker' in window) {
+                // Browser API fallback
                 try {
                     const handle = await window.showSaveFilePicker({
                         suggestedName: suggestedName,
@@ -821,13 +844,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (err.name === 'AbortError') {
                         console.log('Save cancelled by user');
                     } else {
-                        console.error('Error saving session with file picker:', err);
-                        alert('⚠️ File picker failed. Falling back to download method.');
-                        const blob = new Blob([jsonString], { type: 'application/json' });
-                        fallbackSave(blob, suggestedName);
+                        throw err;
                     }
                 }
             } else {
+                // Final fallback - download
                 const blob = new Blob([jsonString], { type: 'application/json' });
                 fallbackSave(blob, suggestedName);
             }
@@ -860,7 +881,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const suggestedName = `${baseFilename}_${timestamp}.vtt`;
 
-            if ('showSaveFilePicker' in window) {
+            if (isElectron) {
+                // Use Electron's native file dialog
+                const result = await window.electronAPI.saveFileDialog({
+                    title: 'Export WebVTT',
+                    defaultPath: suggestedName,
+                    filters: [
+                        { name: 'WebVTT Files', extensions: ['vtt'] },
+                        { name: 'All Files', extensions: ['*'] }
+                    ]
+                });
+
+                if (!result.canceled && result.filePath) {
+                    const saveResult = await window.electronAPI.saveFile(result.filePath, vttContent);
+                    if (saveResult.success) {
+                        console.log('VTT exported successfully as:', result.filePath);
+                        alert('✅ WebVTT exported successfully!\n\nFile: ' + getBasename(result.filePath) + '\n\nCaptions: ' + cues.length);
+                    } else {
+                        throw new Error(saveResult.error);
+                    }
+                }
+            } else if ('showSaveFilePicker' in window) {
+                // Browser API fallback
                 try {
                     const handle = await window.showSaveFilePicker({
                         suggestedName: suggestedName,
@@ -882,13 +924,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (err.name === 'AbortError') {
                         console.log('Export cancelled by user');
                     } else {
-                        console.error('Error exporting VTT with file picker:', err);
-                        alert('⚠️ File picker failed. Falling back to download method.');
-                        const blob = new Blob([vttContent], { type: 'text/vtt' });
-                        fallbackSave(blob, suggestedName);
+                        throw err;
                     }
                 }
             } else {
+                // Final fallback - download
                 const blob = new Blob([vttContent], { type: 'text/vtt' });
                 fallbackSave(blob, suggestedName);
             }

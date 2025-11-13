@@ -1,5 +1,6 @@
-const { app, BrowserWindow, Menu } = require('electron');
+const { app, BrowserWindow, Menu, dialog, ipcMain } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 let mainWindow;
 
@@ -13,7 +14,8 @@ function createWindow() {
             nodeIntegration: false,
             contextIsolation: true,
             enableRemoteModule: false,
-            cache: false  // Disable cache entirely
+            cache: false,
+            preload: path.join(__dirname, 'preload.js')
         },
         icon: path.join(__dirname, 'icon.png')
     });
@@ -32,7 +34,6 @@ function createWindow() {
 
     mainWindow.loadFile('index.html');
 
-    // Rest of your code...
     // Optional: Open DevTools in development
     // mainWindow.webContents.openDevTools();
 
@@ -125,6 +126,38 @@ function createWindow() {
         mainWindow = null;
     });
 }
+
+// Handle save file dialog
+ipcMain.handle('save-file-dialog', async (event, options) => {
+    const result = await dialog.showSaveDialog(mainWindow, options);
+    return result;
+});
+
+// Handle save file
+ipcMain.handle('save-file', async (event, filePath, content) => {
+    try {
+        fs.writeFileSync(filePath, content, 'utf8');
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+// Handle open file dialog
+ipcMain.handle('open-file-dialog', async (event, options) => {
+    const result = await dialog.showOpenDialog(mainWindow, options);
+    return result;
+});
+
+// Handle read file
+ipcMain.handle('read-file', async (event, filePath) => {
+    try {
+        const content = fs.readFileSync(filePath, 'utf8');
+        return { success: true, content };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
 
 app.whenReady().then(createWindow);
 

@@ -104,6 +104,9 @@
                     <label for="overrideDate">Different Date</label>
                     <input type="text" id="overrideDate" placeholder="Leave blank to use current context">
 
+                    <label for="overrideLocation">Different Location</label>
+                    <input type="text" id="overrideLocation" placeholder="Leave blank to use current context">
+
                     <label for="overrideConductor">Different Conductor</label>
                     <input type="text" id="overrideConductor" placeholder="Leave blank to use current context">
                 </details>
@@ -221,6 +224,9 @@ Set piece context and add captions...</textarea>
             <label for="editDate">Date</label>
             <input type="text" id="editDate" placeholder="Date">
 
+            <label for="editLocation">Location</label>
+            <input type="text" id="editLocation" placeholder="Location">
+
             <label for="editConductor">Conductor</label>
             <input type="text" id="editConductor" placeholder="Conductor">
 
@@ -316,12 +322,13 @@ Set piece context and add captions...</textarea>
                 <p><strong>Required Fields:</strong></p>
                 <ul>
                     <li>Title: Full title of the work</li>
-                    <li>Performers: Primary performing ensemble</li>
                 </ul>
 
                 <p><strong>Optional Fields:</strong></p>
                 <ul>
+                    <li>Performers: Primary performing ensemble</li>
                     <li>Date: Performance date</li>
+                    <li>Location: Performance or lecture venue</li>
                     <li>Conductor: Conductor name</li>
                     <li>Composer: Composer name</li>
                     <li>Additional Info: Any other relevant context</li>
@@ -332,23 +339,25 @@ Set piece context and add captions...</textarea>
                     <li>Play the audio using the built-in player controls</li>
                     <li>Note the start time when a movement begins (or when the piece starts)</li>
                     <li>Fill in: Movement Name (optional), Start Time, End Time</li>
-                    <li>Add Notes (optional, for your reference only)</li>
+                    <li>Add Notes (optional, will appear in WebVTT output)</li>
                     <li>Click "Add Caption"</li>
                 </ol>
 
                 <p><strong>Time Format:</strong> HH:MM:SS.mmm (e.g., 00:03:45.250 = 3 minutes, 45.25 seconds)</p>
 
                 <p><strong>Movement Name:</strong> Leave blank for entire pieces, introductions, or spoken content. The
-                    timestamps will apply to the whole piece/section.</p>
+                    timestamps will apply to the whole piece/section. Movement names appear in italics in the WebVTT
+                    output.</p>
 
                 <h3>Using Override Fields</h3>
                 <p>Sometimes you need to override the piece context for specific movements. Common scenarios:</p>
                 <ul>
                     <li>Multiple pieces on one recording with different performers</li>
                     <li>Guest artists joining for one movement</li>
-                    <li>Movements recorded on different dates</li>
+                    <li>Movements recorded on different dates or locations</li>
                 </ul>
-                <p>Click "Override Details" in the Add Caption section to override Performers, Date, or Conductor for
+                <p>Click "Override Details" in the Add Caption section to override Performers, Date, Location, or
+                    Conductor for
                     individual captions.</p>
 
                 <h3>Editing Captions</h3>
@@ -357,8 +366,13 @@ Set piece context and add captions...</textarea>
                     piece context.</p>
 
                 <h3>Starting a New Piece</h3>
-                <p>Click the "🆕 New" button next to "Edit Piece Context" to clear all captions and context and start
-                    fresh. Make sure to save your current session first!</p>
+                <p>Click the "🆕 New" button next to "Edit Piece Context" to clear the context and start a new piece.
+                    All existing captions are preserved - this is for adding subsequent pieces to the same recording.
+                </p>
+
+                <h3>Clickable Timestamps</h3>
+                <p>In both the Caption Timeline and Preview tab, you can click any timestamp to jump to that point in
+                    the audio. The audio will automatically start playing from that position.</p>
 
                 <h3>Keyboard Shortcuts</h3>
 
@@ -411,6 +425,7 @@ Set piece context and add captions...</textarea>
                     <li>Save frequently (every 10-15 minutes)</li>
                     <li>Review the Preview tab before exporting</li>
                     <li>Timestamped filenames prevent overwrites - save as often as you like!</li>
+                    <li>Use Notes field for additional context that should appear in captions</li>
                 </ul>
 
                 <h3>Troubleshooting</h3>
@@ -428,23 +443,24 @@ Set piece context and add captions...</textarea>
 
                 <p><strong>Can't add caption:</strong></p>
                 <ul>
-                    <li>"Please set piece context first" - Click "Edit Piece Context" and fill in Title and Performers
-                    </li>
+                    <li>"Please set piece context first" - Click "Edit Piece Context" and fill in Title</li>
                     <li>"Invalid time format" - Use HH:MM:SS.mmm format</li>
                     <li>"End time must be after start time" - Check your timestamps</li>
                 </ul>
 
                 <h3>Output Format</h3>
-                <p><strong>With movement name:</strong> Title. Movement. Performers. Conductor. Date</p>
+                <p><strong>With movement name:</strong> Title. <em>Movement</em>. Performers. Conductor. Date. Location.
+                    Info. Notes</p>
                 <p class="example-text">
                     Example:
-                    <code>Symphony No. 5 in C minor, Op. 67. I. Allegro con brio. Chicago Symphony Orchestra. Riccardo Muti, Conductor. March 15, 2024</code>
+                    <code>Symphony No. 5 in C minor, Op. 67. <i>I. Allegro con brio</i>. Chicago Symphony Orchestra. Riccardo Muti, Conductor. March 15, 2024. Carnegie Hall. Live recording. Opening night</code>
                 </p>
 
-                <p><strong>Without movement name (entire piece):</strong> Title. Performers. Conductor. Date</p>
+                <p><strong>Without movement name (entire piece):</strong> Title. Performers. Conductor. Date. Location.
+                    Info. Notes</p>
                 <p class="example-text">
                     Example:
-                    <code>Remarks by Director James Anderson. James Anderson</code>
+                    <code>Remarks by Director James Anderson. James Anderson. March 15, 2024. Northwestern University. Pre-concert talk</code>
                 </p>
 
                 <hr>
