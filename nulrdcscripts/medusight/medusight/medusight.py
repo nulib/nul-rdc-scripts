@@ -53,57 +53,6 @@ def safe_bitdepth(bitdepth):
         return "UNKNOWN"
 
 
-def get_fail_percentages(errors, videodata, standardDF):
-    """
-    Returns a dict: {criteria: percentage_failed}
-    """
-    fail_percentages = {}
-    try:
-        total_frames = len(videodata)
-    except Exception:
-        total_frames = 0
-
-    for err in errors:
-        if not hasattr(err, "criteria"):
-            continue
-        crit = err.criteria
-        if crit not in videodata.columns:
-            continue
-
-        # Fallback: count NaNs as fails
-        fail_count = videodata[crit].isna().sum()
-        percent = (fail_count / total_frames) * 100 if total_frames else 0
-        fail_percentages[crit] = percent
-    return fail_percentages
-
-
-def get_passing_stats(all_criteria, errors, videoDSDF, standardDF):
-    """Generate statistics for criteria that passed."""
-    error_criteria = set()
-    for err in errors:
-        if not isinstance(err, str):
-            error_criteria.add(err.criteria)
-    passing = [c for c in all_criteria if c not in error_criteria]
-
-    passing_lines = []
-    for crit in passing:
-        stat_row = "min" if "low" in crit else "max"
-        try:
-            video_value = videoDSDF.at[stat_row, crit]
-        except Exception:
-            video_value = "N/A"
-        try:
-            standard_value = standardDF.at[crit, "brngout"]
-        except Exception:
-            standard_value = "N/A"
-        passing_lines.append(
-            f"Criteria: {crit}\n"
-            f"  Video Value: {video_value}\n"
-            f"  Standard Value: {standard_value}\n"
-        )
-    return "\n".join(passing_lines) if passing_lines else "None"
-
-
 # ============================================================================
 # TEMPLATE VALIDATION
 # ============================================================================
@@ -184,16 +133,21 @@ def filter_errors_with_failed_frames(errors, videodata, standardDF):
                 filtered_errors.append(err)
                 continue
                 
-            # Check against thresholds
+            # Check against thresholds - using correct column names
             has_failures = False
             for label in ("illegal", "clippinglimit", "brnglimit"):
-                if criteria in standardDF.index and label in standardDF.columns:
-                    threshold = standardDF.loc[criteria, label]
+                try:
+                    threshold = standardDF.loc["sat", label]
+                    if pd.isna(threshold):
+                        continue
                     failing_count = (videodata[sat_column] > threshold).sum()
                     print(f"DEBUG FILTER:   {sat_column} > {threshold}: {failing_count} failures")
                     if failing_count > 0:
                         has_failures = True
                         break
+                except Exception as e:
+                    print(f"DEBUG FILTER:   Could not check {label}: {e}")
+                    continue
             
             if has_failures:
                 print(f"DEBUG FILTER:   ✓ Keeping {criteria} (has failures)")
@@ -201,24 +155,15 @@ def filter_errors_with_failed_frames(errors, videodata, standardDF):
             else:
                 print(f"DEBUG FILTER:   ✗ Removing {criteria} (no failures)")
         else:
-            # For other criteria (ymin, ymax, umin, umax, vmin, vmax)
+            # For Y/U/V criteria (ymin, ymax, umin, umax, vmin, vmax)
             if criteria not in videodata.columns:
                 print(f"DEBUG FILTER:   ! Column {criteria} not found in videodata")
                 filtered_errors.append(err)
                 continue
             
-            # Map criteria to standardDF row names
-            if 'min' in criteria.lower():
-                standards_row = criteria.replace('min', 'low')
-            elif 'max' in criteria.lower():
-                standards_row = criteria.replace('max', 'high')
-            else:
-                print(f"DEBUG FILTER:   ! Unknown criteria type {criteria}, keeping to be safe")
-                filtered_errors.append(err)
-                continue
-            
-            if standards_row not in standardDF.index:
-                print(f"DEBUG FILTER:   ! {standards_row} not in standardDF index")
+            # Use criteria name directly for standards lookup
+            if criteria not in standardDF.index:
+                print(f"DEBUG FILTER:   ! {criteria} not in standardDF index")
                 filtered_errors.append(err)
                 continue
             
@@ -227,10 +172,10 @@ def filter_errors_with_failed_frames(errors, videodata, standardDF):
                 filtered_errors.append(err)
                 continue
             
-            threshold = standardDF.loc[standards_row, "brngout"]
+            threshold = standardDF.loc[criteria, "brngout"]
             
             # Count failures based on min/max
-            if 'min' in criteria.lower():
+            if 'min' in criteria:
                 failing_count = (videodata[criteria] <= threshold).sum()
                 print(f"DEBUG FILTER:   {criteria} <= {threshold}: {failing_count} failures")
             else:  # max
@@ -245,6 +190,75 @@ def filter_errors_with_failed_frames(errors, videodata, standardDF):
     
     print(f"DEBUG FILTER: Filtered {len(errors)} errors down to {len(filtered_errors)}")
     return filtered_errors
+
+
+def get_passing_stats(all_criteria, errors, videoDSDF, standardDF):
+    """
+    Generate statistics text for criteria that passed.
+    
+    Args:
+        all_criteria: List of all criteria names (ymin, ymax, sat, etc.)
+        errors: List of error objects
+        videoDSDF: Video descriptive statistics
+        standardDF: Standards dataframe
+    
+    Returns:
+        Formatted string with passing criteria stats
+    """
+    # Extract error criteria
+    error_criteria = set()
+    for err in errors:
+        if not isinstance(err, str) and hasattr(err, 'criteria'):
+            # For saturation, match any sat variant
+            if err.criteria in ("sat", "sathigh", "satmax"):
+                error_criteria.add("sat")
+            else:
+                error_criteria.add(err.criteria)
+    
+    passing = [c for c in all_criteria if c not in error_criteria]
+
+    passing_lines = []
+    for crit in passing:
+        if crit == "sat":
+            # Special handling for saturation
+            try:
+                sat_column = get_saturation_column(videoDSDF)
+                video_value = videoDSDF.at["max", sat_column]
+            except Exception:
+                video_value = "N/A"
+                sat_column = "unknown"
+            
+            try:
+                standard_value = standardDF.at["sat", "brnglimit"]
+            except Exception:
+                standard_value = "N/A"
+            
+            passing_lines.append(
+                f"Criteria: sat [using {sat_column}]\n"
+                f"  Video Value (max): {video_value}\n"
+                f"  Standard Value (broadcast range): {standard_value}\n"
+            )
+        else:
+            # Regular Y/U/V criteria
+            stat_row = "min" if "min" in crit else "max"
+            
+            try:
+                video_value = videoDSDF.at[stat_row, crit]
+            except Exception:
+                video_value = "N/A"
+            
+            try:
+                standard_value = standardDF.at[crit, "brngout"]
+            except Exception:
+                standard_value = "N/A"
+            
+            passing_lines.append(
+                f"Criteria: {crit}\n"
+                f"  Video Value: {video_value}\n"
+                f"  Standard Value: {standard_value}\n"
+            )
+    
+    return "\n".join(passing_lines) if passing_lines else "None"
 
 
 # ============================================================================
@@ -281,15 +295,14 @@ def write_video_stats_to_txt(
     if errors:
         for err in errors:
             if not isinstance(err, str):
-                # Special handling for sat and sathigh/satmax
+                # Special handling for saturation - report only most severe level
                 if err.criteria in ("sat", "sathigh", "satmax"):
-                    # Only report the most severe level that has failures
                     levels = [
                         ("illegal", "Illegal"),
                         ("clipping", "Clipping"),
                         ("brng", "Broadcast Range"),
                     ]
-                    found_failure = False
+                    
                     for label, label_pretty in levels:
                         key = f"{err.criteria}_{label}"
                         count = fail_counts.get(key, 0) if fail_counts else 0
@@ -305,25 +318,30 @@ def write_video_stats_to_txt(
                                 video_value = "N/A"
                             
                             # Get the standard threshold
-                            if err.criteria in standardDF.index and label in standardDF.columns:
-                                standard_value = standardDF.loc[err.criteria, label]
-                            else:
+                            threshold_col = {
+                                "illegal": "illegal",
+                                "clipping": "clippinglimit",
+                                "brng": "brnglimit"
+                            }.get(label)
+                            
+                            try:
+                                standard_value = standardDF.loc["sat", threshold_col]
+                            except Exception:
                                 standard_value = "N/A"
                             
+                            # Report only this most severe level
                             error_lines.append(
-                                f"Criteria: {err.criteria} ({label_pretty}) [using {sat_column}]\n"
+                                f"Criteria: sat ({label_pretty}) [using {sat_column}]\n"
                                 f"  Status: {err.status}\n"
                                 f"  Video Value (max): {video_value}\n"
                                 f"  Standard Value (threshold): {standard_value}\n"
                                 f"  Failed Frames: {count} ({percent:.2f}% of {total_frames})\n"
                             )
-                            found_failure = True
-                            break
+                            break  # Only report most severe level
                     
-                    if not found_failure:
-                        print(f"DEBUG: No failures found for {err.criteria}, but error still in list!")
+                    continue
                 else:
-                    # Regular criteria (ylow, yhigh, ulow, uhigh, vlow, vhigh, etc.)
+                    # Regular criteria (ymin, ymax, umin, umax, vmin, vmax)
                     count = fail_counts.get(err.criteria, 0) if fail_counts else 0
                     percent = (count / total_frames) * 100 if total_frames else 0
                     
@@ -507,7 +525,7 @@ def processfile(inputPath, outputPath):
         # ==================================================================
         elif file_ext == '.csv':
             print("*****Parsing CSV Video Data*****")
-            videodata = inputPath
+            videodata = pd.read_csv(inputPath)
     
         # ==================================================================
         # BRANCH 3: QCTools XML - External preprocessing
@@ -553,8 +571,9 @@ def processfile(inputPath, outputPath):
         # Recalculate pass/fail status AFTER filtering
         passfail_video = "PASS" if not errors else "FAIL"
         
+        # All criteria we're checking (using min/max naming consistently, plus sat)
         all_criteria = [
-            "ylow", "yhigh", "ulow", "uhigh", "vlow", "vhigh",
+            "ymin", "ymax", "umin", "umax", "vmin", "vmax", "sat"
         ]
         
         # Get failing frames information

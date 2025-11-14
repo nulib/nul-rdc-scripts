@@ -160,7 +160,8 @@
                 <h2 id="modalTitle">📜 MeduSight License</h2>
 
                 <div class="license-content">
-                    <div class="license-badge">Non-Commercial Use Only</div>
+                    <div class="license-badge" style="background: rgba(20, 184, 166, 0.3); border: 2px solid #14b8a6;">
+                        MIT License - Open Source</div>
 
                     <h3>About MeduSight</h3>
                     <p>
@@ -168,53 +169,58 @@
                         Northwestern University
                     </p>
 
-                    <h3>License Terms</h3>
-                    <p>
-                        MeduSight is available for <strong>open use for non-commercial purposes</strong>.
-                        This software may be freely used, modified, and distributed for educational,
-                        research, and personal projects.
+                    <h3>MIT License</h3>
+                    <p style="font-size: 13px; color: rgba(255, 255, 255, 0.9); line-height: 1.6;">
+                        Copyright © 2025 Northwestern University
                     </p>
 
-                    <h3>Restrictions</h3>
-                    <p>
-                        <strong>Commercial use is prohibited</strong> without explicit written permission
-                        from Northwestern University. Commercial use includes, but is not limited to:
+                    <p style="font-size: 13px; color: rgba(255, 255, 255, 0.85); line-height: 1.6; margin-top: 15px;">
+                        Permission is hereby granted, free of charge, to any person obtaining a copy
+                        of this software and associated documentation files (the "Software"), to deal
+                        in the Software without restriction, including without limitation the rights
+                        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+                        copies of the Software, and to permit persons to whom the Software is
+                        furnished to do so, subject to the following conditions:
                     </p>
-                    <ul style="margin-left: 20px; margin-bottom: 15px;">
-                        <li>Using the software in a commercial product or service</li>
-                        <li>Using the software to generate revenue</li>
-                        <li>Incorporating the software into proprietary systems</li>
-                    </ul>
 
-                    <h3>Attribution</h3>
-                    <p>
-                        Users must retain all copyright notices and provide appropriate attribution
-                        when using or redistributing this software. Please cite as:
+                    <p style="font-size: 13px; color: rgba(255, 255, 255, 0.85); line-height: 1.6; margin-top: 15px;">
+                        The above copyright notice and this permission notice shall be included in all
+                        copies or substantial portions of the Software.
+                    </p>
+
+                    <p
+                        style="font-size: 13px; color: rgba(255, 255, 255, 0.85); line-height: 1.6; margin-top: 15px; font-weight: 600;">
+                        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+                        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+                        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+                        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+                        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+                        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+                        SOFTWARE.
+                    </p>
+
+                    <h3 style="margin-top: 25px;">Attribution</h3>
+                    <p style="font-size: 13px; color: rgba(255, 255, 255, 0.85);">
+                        When using or redistributing this software, please cite as:
                     </p>
                     <p
-                        style="background: rgba(168, 85, 247, 0.1); padding: 15px; border-radius: 8px; font-family: monospace; font-size: 13px; border-left: 3px solid #a855f7;">
+                        style="background: rgba(168, 85, 247, 0.1); padding: 15px; border-radius: 8px; font-family: monospace; font-size: 13px; border-left: 3px solid #a855f7; margin-top: 10px;">
                         MeduSight - Video Quality Control Software<br>
                         Developed by Sophia Francis<br>
                         Northwestern University<br>
-                        2025
-                    </p>
-
-                    <h3>Disclaimer</h3>
-                    <p style="font-size: 13px; color: #ffffff;">
-                        This software is provided "as is" without warranty of any kind, express or
-                        implied. Northwestern University shall not be liable for any damages arising
-                        from the use of this software.
+                        2025<br>
+                        Licensed under MIT License
                     </p>
 
                     <div class="copyright">
                         <strong>Developed by Sophia Francis</strong><br>
                         <strong>© 2025 Northwestern University</strong><br>
-                        All Rights Reserved
+                        Licensed under MIT License
                     </div>
 
                     <button class="btn" onclick="closeLicenseModal();" tabindex="0"
-                        style="margin-top: 20px; background: #ef4444; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">
-                        <span aria-hidden="true">✕</span> Close License
+                        style="margin-top: 20px; background: #14b8a6; box-shadow: 0 4px 15px rgba(20, 184, 166, 0.4);">
+                        <span aria-hidden="true">✓</span> Close License
                     </button>
                 </div>
             </div>
@@ -254,73 +260,26 @@
                         </tbody>
                     </table>
 
-                    <h3>10-Bit Video Formats</h3>
+                    <h3>8 Bit Depth Specifications</h3>
                     <table class="standards-table">
                         <thead>
                             <tr>
-                                <th>Format</th>
-                                <th>Codec</th>
-                                <th>Common Use</th>
+                                <th>Criteria</th>
+                                <th>Standard Value</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td><strong>ProRes 422 HQ</strong></td>
-                                <td>Apple ProRes</td>
-                                <td>Professional editing, broadcast</td>
+                                <td>Y</td>
+                                <td>15-236</td>
                             </tr>
                             <tr>
-                                <td><strong>ProRes 4444</strong></td>
-                                <td>Apple ProRes</td>
-                                <td>VFX, alpha channel support</td>
+                                <td>U</td>
+                                <td>15-241</td>
                             </tr>
                             <tr>
-                                <td><strong>DNxHR HQX</strong></td>
-                                <td>Avid DNxHR</td>
-                                <td>High-quality archival, editing</td>
-                            </tr>
-                            <tr>
-                                <td><strong>H.265/HEVC</strong></td>
-                                <td>HEVC Main 10</td>
-                                <td>Streaming, distribution, 4K/HDR</td>
-                            </tr>
-                            <tr>
-                                <td><strong>VP9 Profile 2</strong></td>
-                                <td>VP9</td>
-                                <td>Web video, YouTube, HDR</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <h3>Color Space Standards</h3>
-                    <table class="standards-table">
-                        <thead>
-                            <tr>
-                                <th>Color Space</th>
-                                <th>Application</th>
-                                <th>Range</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>Rec. 709</strong></td>
-                                <td>HD broadcast standard</td>
-                                <td>Limited (16-235)</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Rec. 2020</strong></td>
-                                <td>4K/UHD, HDR, wide color gamut</td>
-                                <td>Limited or Full</td>
-                            </tr>
-                            <tr>
-                                <td><strong>DCI-P3</strong></td>
-                                <td>Digital cinema projection</td>
-                                <td>Full (0-1023)</td>
-                            </tr>
-                            <tr>
-                                <td><strong>sRGB</strong></td>
-                                <td>Web, computer displays</td>
-                                <td>Full (0-255 @ 8-bit)</td>
+                                <td>V</td>
+                                <td>15-241</td>
                             </tr>
                         </tbody>
                     </table>
@@ -332,7 +291,6 @@
                 </div>
             </div>
         </div>
-    </div>
 
 </body>
 

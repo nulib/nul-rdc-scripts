@@ -28,25 +28,18 @@ def runyuvanalysis(videoDSDF, standardsDF, fullCriteria):
     
     Args:
         videoDSDF: DataFrame with video descriptive statistics (columns: ymin, ymax, etc.)
-        standardsDF: DataFrame with standards (index: ylow, yhigh, etc., column: brngout)
-        fullCriteria: Criteria name like 'ylow', 'yhigh', 'ulow', etc.
+        standardsDF: DataFrame with standards (index: ymin, ymax, etc., column: brngout)
+        fullCriteria: Criteria name like 'ymin', 'ymax', 'umin', etc.
     
     Returns:
         None if passing, list of error objects if failing
     """
-    # Map criteria to videoDSDF column names
-    # ylow -> ymin, yhigh -> ymax, etc.
-    if "low" in fullCriteria:
-        stat_row = "min"
-        videodata_column = fullCriteria.replace('low', 'min')
-    else:
-        stat_row = "max"
-        videodata_column = fullCriteria.replace('high', 'max')
+    # Determine which row to use from descriptive stats
+    stat_row = "min" if "min" in fullCriteria else "max"
     
     try:
-        # Extract the value from the descriptive stats DataFrame
-        # Use the mapped column name (ymin, ymax, etc.)
-        extractSumData = videoDSDF.at[stat_row, videodata_column]
+        # Extract values directly - no mapping needed
+        extractSumData = videoDSDF.at[stat_row, fullCriteria]
         extractStandDataBRNG = standardsDF.at[fullCriteria, "brngout"]
         
         # Clipping threshold (if available)
@@ -59,9 +52,9 @@ def runyuvanalysis(videoDSDF, standardsDF, fullCriteria):
         return [f"Data missing for {fullCriteria}: {e}"]
 
     # Broadcast range check
-    # LOW criteria: video value must be > threshold (fail if <=)
-    # HIGH criteria: video value must be < threshold (fail if >=)
-    if "low" in fullCriteria:
+    # MIN criteria: video value must be > threshold (fail if <=)
+    # MAX criteria: video value must be < threshold (fail if >=)
+    if "min" in fullCriteria:
         tfIR = extractSumData > extractStandDataBRNG
     else:
         tfIR = extractSumData < extractStandDataBRNG
@@ -73,7 +66,7 @@ def runyuvanalysis(videoDSDF, standardsDF, fullCriteria):
         # Failed broadcast range check
         # Check if it's clipping level failure (more severe)
         if extractStandDataClipping is not None:
-            if "low" in fullCriteria:
+            if "min" in fullCriteria:
                 tfCL = extractSumData <= extractStandDataClipping
             else:
                 tfCL = extractSumData >= extractStandDataClipping
@@ -81,7 +74,7 @@ def runyuvanalysis(videoDSDF, standardsDF, fullCriteria):
             if tfCL:
                 return [
                     error(
-                        videodata_column,  # Use ymin/ymax instead of ylow/yhigh
+                        fullCriteria,
                         "clipping",
                         extractSumData,
                         extractStandDataClipping,
@@ -91,7 +84,7 @@ def runyuvanalysis(videoDSDF, standardsDF, fullCriteria):
         # Out of broadcast range but not clipping
         return [
             error(
-                videodata_column,  # Use ymin/ymax instead of ylow/yhigh
+                fullCriteria,
                 "out_of_range",
                 extractSumData,
                 extractStandDataBRNG,
@@ -101,16 +94,16 @@ def runyuvanalysis(videoDSDF, standardsDF, fullCriteria):
 
 def runcheckyuv(videoDSDF, standardsDF):
     """
-    Runs the yuv checks by looping through each yuv value and level.
+    Runs the yuv checks by looping through each yuv value.
     
     Returns:
         List of error objects for failing criteria
     """
     criteria = ["y", "u", "v"]
-    levels = ["low", "high"]
+    minmax = ["min", "max"]
     errorsYUV = []
     
-    for fullCriteria in (f"{c}{l}" for c in criteria for l in levels):
+    for fullCriteria in (f"{c}{mm}" for c in criteria for mm in minmax):
         result = runyuvanalysis(videoDSDF, standardsDF, fullCriteria)
         if result:
             errorsYUV.extend(result)
@@ -130,7 +123,7 @@ def runsatanalysis(videoDSDF, standardsDF, error):
         error: The error namedtuple constructor
     
     Returns:
-        List with one error object indicating saturation status
+        List with one error object indicating saturation status, or empty list if passing
     """
     criteria = "sat"
     
@@ -142,7 +135,7 @@ def runsatanalysis(videoDSDF, standardsDF, error):
         # Get max saturation value from video stats using the determined column
         extractSumData = videoDSDF.at["max", sat_column]
         
-        # Get thresholds from standards - use correct column names from CSV
+        # Get thresholds from standards - column names from your CSV
         extractStandDataBRNG = standardsDF.at[criteria, "brnglimit"]
         extractStandDataClipping = standardsDF.at[criteria, "clippinglimit"]
         extractStandDataIllegal = standardsDF.at[criteria, "illegal"]
@@ -152,20 +145,19 @@ def runsatanalysis(videoDSDF, standardsDF, error):
     # Check saturation levels (from least to most severe)
     if extractSumData <= extractStandDataBRNG:
         # Passes - within broadcast range
-        status = "pass"
-        return [error(sat_column, status, extractSumData, extractStandDataBRNG)]
+        return []  # Return empty list for pass
     elif extractSumData > extractStandDataIllegal:
         # Most severe - illegal level
-        status = "fail"
+        status = "fail_illegal"
         return [error(sat_column, status, extractSumData, extractStandDataIllegal)]
     elif extractSumData > extractStandDataClipping:
         # Medium severity - clipping level
-        status = "fail"
+        status = "fail_clipping"
         return [error(sat_column, status, extractSumData, extractStandDataClipping)]
     else:
         # extractSumData > extractStandDataBRNG but <= extractStandDataClipping
         # Out of broadcast range but not clipping
-        status = "fail"
+        status = "fail_broadcast_range"
         return [error(sat_column, status, extractSumData, extractStandDataBRNG)]
 
 
@@ -189,62 +181,3 @@ def runstatsvideo(videoDSDF, standardsDF):
         errors.extend(errorsSat)
 
     return errors
-
-
-def get_passing_stats(all_criteria, errors, videoDSDF, standardDF):
-    """
-    Generate statistics text for criteria that passed.
-    
-    Args:
-        all_criteria: List of all criteria names (ylow, yhigh, etc.)
-        errors: List of error objects (with criteria like ymin, ymax, etc.)
-        videoDSDF: Video descriptive statistics
-        standardDF: Standards dataframe
-    
-    Returns:
-        Formatted string with passing criteria stats
-    """
-    # Extract error criteria - these are now ymin, ymax, etc.
-    error_criteria = set()
-    for err in errors:
-        if not isinstance(err, str) and hasattr(err, 'criteria'):
-            # Map back to ylow/yhigh format for comparison with all_criteria
-            crit = err.criteria
-            if 'min' in crit:
-                error_criteria.add(crit.replace('min', 'low'))
-            elif 'max' in crit:
-                error_criteria.add(crit.replace('max', 'high'))
-            else:
-                error_criteria.add(crit)
-    
-    passing = [c for c in all_criteria if c not in error_criteria]
-
-    passing_lines = []
-    for crit in passing:
-        # Map criteria to videoDSDF column names
-        if "low" in crit:
-            stat_row = "min"
-            videodata_column = crit.replace('low', 'min')
-        elif "high" in crit:
-            stat_row = "max"
-            videodata_column = crit.replace('high', 'max')
-        else:
-            continue
-        
-        try:
-            video_value = videoDSDF.at[stat_row, videodata_column]
-        except Exception:
-            video_value = "N/A"
-        
-        try:
-            standard_value = standardDF.at[crit, "brngout"]
-        except Exception:
-            standard_value = "N/A"
-        
-        passing_lines.append(
-            f"Criteria: {crit}\n"
-            f"  Video Value: {video_value}\n"
-            f"  Standard Value: {standard_value}\n"
-        )
-    
-    return "\n".join(passing_lines) if passing_lines else "None"

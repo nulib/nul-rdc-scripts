@@ -1,4 +1,5 @@
 import datetime
+import pandas as pd
 
 
 def format_seconds_to_hms(seconds):
@@ -67,73 +68,67 @@ def get_failing_frametimes(errors, videodata, standardDF):
             continue
         crit = err.criteria
         
-        # Special handling for 'sat' and 'sathigh'
-        if crit in ("sat", "sathigh"):
+        # Special handling for saturation - report only most severe level
+        if crit in ("sat", "sathigh", "satmax"):
             if sat_column is None:
                 print(f"WARNING: Cannot process {crit} - no saturation column available")
                 continue
                 
-            # Get thresholds from standardDF (these are threshold values, not column names)
-            illegal = get_threshold(crit, "illegal", standardDF)
-            clipping = get_threshold(crit, "clippinglimit", standardDF)
-            brng = get_threshold(crit, "brnglimit", standardDF)
+            # Get thresholds from standardDF - using your column names
+            try:
+                illegal = standardDF.at["sat", "illegal"]
+                clipping = standardDF.at["sat", "clippinglimit"]
+                brng = standardDF.at["sat", "brnglimit"]
+            except Exception as e:
+                print(f"WARNING: Could not read saturation thresholds: {e}")
+                continue
             
-            # Check the single saturation column (sathigh or satmax) against each threshold
+            # Check levels from most to least severe
+            # Only report the MOST SEVERE level that has failures
             for label, threshold in [
                 ("illegal", illegal),
                 ("clipping", clipping),
                 ("brng", brng),
             ]:
-                if threshold is None:
-                    frametimes_hms = []
-                else:
-                    # Compare sat_column (sathigh or satmax) against threshold
-                    failing = videodata[videodata[sat_column] > threshold]
+                if threshold is None or pd.isna(threshold):
+                    continue
+                    
+                failing = videodata[videodata[sat_column] > threshold]
+                count = len(failing)
+                
+                if count > 0:
+                    # Found failures at this level - report and stop
                     frametimes = (
                         failing["Frame Time"].tolist()
                         if "Frame Time" in failing.columns
                         else failing.index.tolist()
                     )
                     frametimes_hms = [format_seconds_to_hms(ft) for ft in frametimes]
-                
-                lines.append(
-                    f"Criteria: {crit} ({label}) [using {sat_column}]\n"
-                    f"  Failed Frames: {len(frametimes_hms)}\n"
-                    f"  Failing Frame Times: {frametimes_hms}\n"
-                )
-                fail_counts[f"{crit}_{label}"] = len(frametimes_hms)
+                    
+                    lines.append(
+                        f"Criteria: {crit} ({label}) [using {sat_column}]\n"
+                        f"  Failed Frames: {count}\n"
+                        f"  Failing Frame Times: {frametimes_hms}\n"
+                    )
+                    fail_counts[f"{crit}_{label}"] = count
+                    break  # Stop at most severe level
             
             continue
 
         # For Y/U/V criteria (ymin, ymax, umin, umax, vmin, vmax)
-        # The criteria name now matches the videodata column directly
-        
-        # Check if column exists in videodata
         if crit not in videodata.columns:
             continue
 
-        # Map criteria to standardDF row names
-        # ymin -> ylow, ymax -> yhigh, etc.
-        if 'min' in crit.lower():
-            standards_row = crit.replace('min', 'low')
-        elif 'max' in crit.lower():
-            standards_row = crit.replace('max', 'high')
-        else:
-            # Unknown criteria type, skip
-            continue
-
-        # Get threshold from standardDF using brngout column
+        # Get threshold from standardDF - use criteria name directly
         try:
-            standard_value = standardDF.at[standards_row, "brngout"]
+            standard_value = standardDF.at[crit, "brngout"]
         except Exception:
             standard_value = None
 
-        if standard_value is None:
+        if standard_value is None or pd.isna(standard_value):
             continue
 
         # Apply the correct comparison operators
-        # MIN criteria: fail if value <= threshold (must be > threshold to pass)
-        # MAX criteria: fail if value >= threshold (must be < threshold to pass)
         if "min" in crit:
             failing = videodata[videodata[crit] <= standard_value]
         else:  # max
@@ -145,7 +140,6 @@ def get_failing_frametimes(errors, videodata, standardDF):
             else failing.index.tolist()
         )
         
-        # Format frametimes to 00:00:00
         frametimes_hms = [format_seconds_to_hms(ft) for ft in frametimes]
         fail_counts[crit] = len(frametimes)
         
@@ -156,14 +150,3 @@ def get_failing_frametimes(errors, videodata, standardDF):
             )
     
     return ("\n".join(lines) if lines else "None"), fail_counts
-
-
-def get_threshold(crit, col, standardDF):
-    """Get threshold value from standardDF for saturation criteria."""
-    # If crit is 'sathigh', use 'sat' row in standardDF
-    lookup_crit = "sat" if crit == "sathigh" else crit
-    
-    try:
-        return standardDF.at[lookup_crit, col]
-    except Exception:
-        return None
