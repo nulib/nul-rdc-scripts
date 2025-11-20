@@ -49,17 +49,18 @@
     <div class="main">
         <div class="left">
             <section class="card">
-                <h3>Audio Player</h3>
+                <h3>Media Player</h3>
                 <div id="audioUploadBox" class="audio-upload" tabindex="0">
-                    <div><span style="color: var(--accent); font-size: 24px;">♪</span> Click or Drop Audio File
+                    <div><span style="color: var(--accent); font-size: 24px;">♪</span> Click or Drop Media File
                     </div>
-                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 5px;">MP3, WAV, OGG, M4A
+                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 5px;">Audio: MP3, WAV, OGG,
+                        M4A | Video: MP4, WEBM, MOV
                     </div>
-                    <input type="file" id="audioFile" accept="audio/*" style="display: none;"
-                        aria-label="Upload audio file">
+                    <input type="file" id="audioFile" accept="audio/*,video/*" style="display: none;"
+                        aria-label="Upload media file">
                 </div>
-                <audio id="audio" controls style="width: 100%; margin-top: 10px; display: none;"
-                    aria-label="Audio player"></audio>
+                <audio id="audio" controls style="width: 100%; display: none;" aria-label="Audio player"></audio>
+                <video id="video" controls style="display: none;" aria-label="Video player"></video>
                 <div class="time-display" id="timeDisplay" style="display: none;" role="timer" aria-live="off">
                     00:00.000
                 </div>
@@ -70,20 +71,15 @@
                 <div class="context-display" id="contextDisplay">
                     <div class="context-empty">No piece context set. Click "Edit Piece Context" to begin.</div>
                 </div>
-                <div style="display: flex; gap: 8px; margin-top: 12px;">
-                    <button class="btn-primary" id="editContextBtn" style="flex: 1;">📝 Edit Piece Context</button>
-                    <button class="btn-secondary" id="newContextBtn" style="flex: 0 0 auto;"
-                        title="Clear context and start fresh">🆕 New</button>
-                </div>
+                <button class="btn-primary" id="editContextBtn" style="width: 100%;">📝 Edit Piece Context</button>
             </section>
 
             <section class="card">
-                <h3>Add Caption</h3>
-                <p class="help-text">Add timestamps for movements or entire piece</p>
+                <h3>Add Movement/Caption</h3>
+                <p class="help-text">Inherits current piece context</p>
 
-                <label for="movementName">Movement/Section Name (Optional)</label>
-                <input type="text" id="movementName"
-                    placeholder="e.g., Allegro con brio (leave blank for entire piece)">
+                <label for="movementName">Movement/Section Name</label>
+                <input type="text" id="movementName" placeholder="e.g., Allegro con brio, Opening Remarks">
 
                 <div class="time-inputs">
                     <div>
@@ -103,9 +99,6 @@
 
                     <label for="overrideDate">Different Date</label>
                     <input type="text" id="overrideDate" placeholder="Leave blank to use current context">
-
-                    <label for="overrideLocation">Different Location</label>
-                    <input type="text" id="overrideLocation" placeholder="Leave blank to use current context">
 
                     <label for="overrideConductor">Different Conductor</label>
                     <input type="text" id="overrideConductor" placeholder="Leave blank to use current context">
@@ -156,7 +149,7 @@ Set piece context and add captions...</textarea>
         <span><kbd>Space/K</kbd> Play • <kbd>←/→</kbd> 1s • <kbd>Shift+←/→</kbd> 0.1s • <kbd>Ctrl+←/→</kbd> 5s •
             <kbd>,/.</kbd> Frame</span>
         <span><kbd>J/L</kbd> Skip 10s • <kbd>I</kbd> Mark Start • <kbd>O</kbd> Mark End • <kbd>M</kbd> Mute</span>
-        <span><kbd>Ctrl+S</kbd> Save • <kbd>Ctrl+O</kbd> Load • <kbd>Ctrl+E</kbd> Export • <kbd>Ctrl+N</kbd> New</span>
+        <span><kbd>Ctrl+S</kbd> Save • <kbd>Ctrl+E</kbd> Export</span>
     </footer>
 
     <!-- Context Modal -->
@@ -173,9 +166,6 @@ Set piece context and add captions...</textarea>
 
             <label for="contextDate">Date</label>
             <input type="text" id="contextDate" placeholder="e.g., 12/10/45">
-
-            <label for="contextLocation">Location</label>
-            <input type="text" id="contextLocation" placeholder="e.g., Carnegie Hall, New York">
 
             <label for="contextConductor">Conductor (Optional)</label>
             <input type="text" id="contextConductor" placeholder="e.g., Howard Barlow">
@@ -194,58 +184,6 @@ Set piece context and add captions...</textarea>
         </div>
     </div>
 
-    <!-- Edit Caption Modal -->
-    <div class="modal" id="editModal">
-        <div class="modal-content">
-            <h2>Edit Caption</h2>
-            <p class="help-text">Editing caption with its original context</p>
-
-            <label for="editMovementName">Movement/Section Name (Optional)</label>
-            <input type="text" id="editMovementName"
-                placeholder="e.g., Allegro con brio (leave blank for entire piece)">
-
-            <div class="time-inputs">
-                <div>
-                    <label for="editStartTime">Start Time</label>
-                    <input type="text" id="editStartTime" placeholder="00:00:00.000">
-                </div>
-                <div>
-                    <label for="editEndTime">End Time</label>
-                    <input type="text" id="editEndTime" placeholder="00:00:00.000">
-                </div>
-            </div>
-
-            <label for="editTitle">Title *</label>
-            <input type="text" id="editTitle" placeholder="Title of piece">
-
-            <label for="editPerformers">Performers</label>
-            <input type="text" id="editPerformers" placeholder="Performers">
-
-            <label for="editDate">Date</label>
-            <input type="text" id="editDate" placeholder="Date">
-
-            <label for="editLocation">Location</label>
-            <input type="text" id="editLocation" placeholder="Location">
-
-            <label for="editConductor">Conductor</label>
-            <input type="text" id="editConductor" placeholder="Conductor">
-
-            <label for="editComposer">Composer</label>
-            <input type="text" id="editComposer" placeholder="Composer">
-
-            <label for="editInfo">Additional Info</label>
-            <input type="text" id="editInfo" placeholder="Additional info">
-
-            <label for="editNotes">Notes (Optional)</label>
-            <textarea id="editNotes" rows="2" placeholder="Additional notes..."></textarea>
-
-            <div class="modal-actions">
-                <button class="btn-secondary" data-modal-close="editModal" aria-label="Cancel edit">Cancel</button>
-                <button class="btn-primary" id="saveEditBtn">Update Caption</button>
-            </div>
-        </div>
-    </div>
-
     <!-- README Modal -->
     <div class="modal" id="readmeModal">
         <div class="modal-content">
@@ -254,31 +192,42 @@ Set piece context and add captions...</textarea>
                 <p class="readme-subtitle">WebVTT Caption Editor for Classical Music Archival</p>
 
                 <h3>Memory Protection & Large Files</h3>
-                <p>Tessera is designed to work with preservation-quality audio files, which can be very large (often
-                    2GB+ for uncompressed WAV files). To protect your work and system performance, Tessera includes
+                <p>Tessera is designed to work with preservation-quality audio and video files, which can be very large
+                    (often
+                    2GB+ for uncompressed files). To protect your work and system performance, Tessera includes
                     automatic memory management.</p>
 
                 <h4>Understanding the Protections</h4>
 
-                <p><strong>Large File Warning (&gt;2GB)</strong></p>
-                <p>When you try to load a file larger than 2GB, you'll see a confirmation dialog. Click OK to proceed or
-                    Cancel to choose a different file. This is just a warning - you can still work with the file, but be
+                <p><strong>Large File Warning</strong></p>
+                <p>When you try to load a very large file, you'll see a confirmation dialog:</p>
+                <ul>
+                    <li>Audio files: Warning at >2GB</li>
+                    <li>Video files: Warning at >10GB</li>
+                </ul>
+                <p>Click OK to proceed or Cancel to choose a different file. This is just a warning - you can still work
+                    with the file, but be
                     aware it may slow down your system.</p>
 
-                <p><strong>3-Hour Session Timeout</strong></p>
+                <p><strong>Session Timeout</strong></p>
                 <p>Tessera automatically monitors:</p>
                 <ul>
                     <li>Total session time: How long you've had the application open</li>
-                    <li>Total audio loaded: Combined size of all audio files loaded this session</li>
+                    <li>Total media loaded: Combined size of all files loaded this session</li>
                 </ul>
-                <p>When EITHER session has been open for 3+ hours OR you've loaded 3+ GB of total audio files, Tessera
-                    will trigger its memory protection system.</p>
+                <p>When EITHER condition is met, Tessera will trigger its memory protection system:</p>
+                <ul>
+                    <li>Audio: 3+ hours OR 3+ GB total loaded</li>
+                    <li>Video: 4+ hours OR 15+ GB total loaded</li>
+                </ul>
 
                 <h4>What Happens During Memory Protection</h4>
 
                 <p><strong>Step 1: Automatic Save</strong></p>
-                <p>Before showing you any warning, Tessera automatically saves your work with a timestamped filename.
-                    Your work is safe!</p>
+                <p>Before showing you any warning, Tessera automatically saves your work as
+                    <code>tessera_autosave_session.json</code>.
+                    Your work is safe!
+                </p>
 
                 <p><strong>Step 2: Warning Dialog</strong></p>
                 <p>You have two choices:</p>
@@ -291,16 +240,16 @@ Set piece context and add captions...</textarea>
                 <h4>Resuming Your Work</h4>
                 <ol>
                     <li>Reopen Tessera</li>
-                    <li>Click "Load Session" or press Ctrl+O</li>
-                    <li>Select your timestamped autosave file</li>
+                    <li>Click "Load Session"</li>
+                    <li>Select your <code>tessera_autosave_session.json</code> file</li>
                     <li>All your captions and context will be restored</li>
-                    <li>Reload your audio file (audio files are not saved in sessions)</li>
+                    <li>Reload your media file (media files are not saved in sessions)</li>
                 </ol>
 
                 <h4>Memory Tips</h4>
                 <ul>
                     <li>Save frequently using Ctrl/Cmd+S</li>
-                    <li>Close and reopen every 2-3 hours for best performance</li>
+                    <li>Close and reopen every few hours for best performance</li>
                     <li>Work on one file at a time when possible</li>
                     <li>If Tessera starts feeling sluggish, save and restart</li>
                 </ul>
@@ -309,9 +258,10 @@ Set piece context and add captions...</textarea>
 
                 <h4>Basic Workflow</h4>
                 <ol>
-                    <li><strong>Load audio file</strong> → Click the upload area or drag &amp; drop</li>
+                    <li><strong>Load media file</strong> → Click the upload area or drag &amp; drop (supports audio and
+                        video)</li>
                     <li><strong>Set piece context</strong> → Click "Edit Piece Context"</li>
-                    <li><strong>Add captions</strong> → Mark timestamps for each movement (or entire piece)</li>
+                    <li><strong>Add captions</strong> → Mark timestamps for each movement</li>
                     <li><strong>Export WebVTT</strong> → Save your completed caption file</li>
                 </ol>
 
@@ -328,55 +278,35 @@ Set piece context and add captions...</textarea>
                 <ul>
                     <li>Performers: Primary performing ensemble</li>
                     <li>Date: Performance date</li>
-                    <li>Location: Performance or lecture venue</li>
                     <li>Conductor: Conductor name</li>
                     <li>Composer: Composer name</li>
                     <li>Additional Info: Any other relevant context</li>
                 </ul>
 
-                <h3>Adding Captions</h3>
+                <h3>Adding Movement Captions</h3>
                 <ol>
-                    <li>Play the audio using the built-in player controls</li>
-                    <li>Note the start time when a movement begins (or when the piece starts)</li>
-                    <li>Fill in: Movement Name (optional), Start Time, End Time</li>
-                    <li>Add Notes (optional, will appear in WebVTT output)</li>
+                    <li>Play the media using the built-in player controls</li>
+                    <li>Note the start time when a movement begins</li>
+                    <li>Fill in: Movement Name, Start Time, End Time</li>
+                    <li>Add Notes (optional, for your reference only)</li>
                     <li>Click "Add Caption"</li>
                 </ol>
 
                 <p><strong>Time Format:</strong> HH:MM:SS.mmm (e.g., 00:03:45.250 = 3 minutes, 45.25 seconds)</p>
-
-                <p><strong>Movement Name:</strong> Leave blank for entire pieces, introductions, or spoken content. The
-                    timestamps will apply to the whole piece/section. Movement names appear in italics in the WebVTT
-                    output.</p>
 
                 <h3>Using Override Fields</h3>
                 <p>Sometimes you need to override the piece context for specific movements. Common scenarios:</p>
                 <ul>
                     <li>Multiple pieces on one recording with different performers</li>
                     <li>Guest artists joining for one movement</li>
-                    <li>Movements recorded on different dates or locations</li>
+                    <li>Movements recorded on different dates</li>
                 </ul>
-                <p>Click "Override Details" in the Add Caption section to override Performers, Date, Location, or
-                    Conductor for
+                <p>Click "Override Details" in the Add Caption section to override Performers, Date, or Conductor for
                     individual captions.</p>
-
-                <h3>Editing Captions</h3>
-                <p>Click the ✏️ button on any caption to edit it. A modal will open showing all the caption's data,
-                    including its original context. You can modify any field, and changes won't affect your current
-                    piece context.</p>
-
-                <h3>Starting a New Piece</h3>
-                <p>Click the "🆕 New" button next to "Edit Piece Context" to clear the context and start a new piece.
-                    All existing captions are preserved - this is for adding subsequent pieces to the same recording.
-                </p>
-
-                <h3>Clickable Timestamps</h3>
-                <p>In both the Caption Timeline and Preview tab, you can click any timestamp to jump to that point in
-                    the audio. The audio will automatically start playing from that position.</p>
 
                 <h3>Keyboard Shortcuts</h3>
 
-                <p><strong>Audio Playback:</strong></p>
+                <p><strong>Media Playback:</strong></p>
                 <ul>
                     <li><kbd>Space/K</kbd> - Play/Pause</li>
                     <li><kbd>←/→</kbd> - Skip 1 second</li>
@@ -393,27 +323,23 @@ Set piece context and add captions...</textarea>
                 <p><strong>Application:</strong></p>
                 <ul>
                     <li><kbd>Ctrl/Cmd+S</kbd> - Save session</li>
-                    <li><kbd>Ctrl/Cmd+O</kbd> - Load session</li>
                     <li><kbd>Ctrl/Cmd+E</kbd> - Export WebVTT</li>
-                    <li><kbd>Ctrl/Cmd+N</kbd> - New Context</li>
+                    <li><kbd>Ctrl/Cmd+O</kbd> - Load session</li>
                     <li><kbd>ESC</kbd> - Close modals</li>
                 </ul>
 
                 <h3>Managing Your Work</h3>
 
                 <p><strong>Saving Sessions:</strong></p>
-                <p>Click "Save Session" or press Ctrl/Cmd+S. Each save creates a timestamped file (e.g.,
-                    "Symphony_No_5_2024-03-15T14-30-45.json") so you never accidentally overwrite previous work. The
-                    first time you save, choose a location (like Documents/Tessera_Sessions/). Your browser will
-                    remember this location for future saves.</p>
+                <p>Click "Save Session" or press Ctrl/Cmd+S to save your work as a .json file. This saves your piece
+                    context, all captions, and notes. Media files are NOT saved - you'll need to reload them.</p>
 
                 <p><strong>Loading Sessions:</strong></p>
-                <p>Click "Load Session" or press Ctrl/Cmd+O and select your .json file. All captions and context will be
-                    restored. Don't forget to reload your audio file!</p>
+                <p>Click "Load Session" and select your .json file. All captions and context will be restored. Don't
+                    forget to reload your media file!</p>
 
                 <p><strong>Exporting WebVTT:</strong></p>
-                <p>Click "Export VTT" or press Ctrl/Cmd+E to save your completed caption file with a timestamped
-                    filename (e.g., "Symphony_No_5_2024-03-15T14-30-45.vtt").</p>
+                <p>Click "Export VTT" or press Ctrl/Cmd+E to save your completed caption file as .vtt format.</p>
 
                 <h3>Tips &amp; Best Practices</h3>
                 <ul>
@@ -424,43 +350,36 @@ Set piece context and add captions...</textarea>
                     <li>Work chronologically from beginning to end</li>
                     <li>Save frequently (every 10-15 minutes)</li>
                     <li>Review the Preview tab before exporting</li>
-                    <li>Timestamped filenames prevent overwrites - save as often as you like!</li>
-                    <li>Use Notes field for additional context that should appear in captions</li>
                 </ul>
 
                 <h3>Troubleshooting</h3>
 
-                <p><strong>Audio won't load:</strong></p>
+                <p><strong>Media won't load:</strong></p>
                 <ul>
-                    <li>Check file format (MP3, WAV, OGG, M4A supported)</li>
-                    <li>For files &gt;2GB, confirm you want to proceed</li>
+                    <li>Check file format (Audio: MP3, WAV, OGG, M4A | Video: MP4, WEBM, MOV supported)</li>
+                    <li>For very large files, confirm you want to proceed</li>
                     <li>Check available system memory</li>
                 </ul>
 
                 <p><strong>Application closes unexpectedly:</strong></p>
-                <p>This is the memory protection system! Your work was automatically saved with a timestamp. Simply
-                    reopen Tessera, press Ctrl+O, and load your timestamped autosave file.</p>
+                <p>This is the memory protection system! Your work was automatically saved as
+                    <code>tessera_autosave_session.json</code>.
+                    Simply reopen Tessera and load the autosave file.
+                </p>
 
                 <p><strong>Can't add caption:</strong></p>
                 <ul>
-                    <li>"Please set piece context first" - Click "Edit Piece Context" and fill in Title</li>
+                    <li>"Please set piece context first" - Click "Edit Piece Context" and fill in Title
+                    </li>
                     <li>"Invalid time format" - Use HH:MM:SS.mmm format</li>
                     <li>"End time must be after start time" - Check your timestamps</li>
                 </ul>
 
                 <h3>Output Format</h3>
-                <p><strong>With movement name:</strong> Title. <em>Movement</em>. Performers. Conductor. Date. Location.
-                    Info. Notes</p>
+                <p>Each caption includes: Title. Movement. Performers. Conductor. Date</p>
                 <p class="example-text">
                     Example:
-                    <code>Symphony No. 5 in C minor, Op. 67. <i>I. Allegro con brio</i>. Chicago Symphony Orchestra. Riccardo Muti, Conductor. March 15, 2024. Carnegie Hall. Live recording. Opening night</code>
-                </p>
-
-                <p><strong>Without movement name (entire piece):</strong> Title. Performers. Conductor. Date. Location.
-                    Info. Notes</p>
-                <p class="example-text">
-                    Example:
-                    <code>Remarks by Director James Anderson. James Anderson. March 15, 2024. Northwestern University. Pre-concert talk</code>
+                    <code>Symphony No. 5 in C minor, Op. 67. I. Allegro con brio. Chicago Symphony Orchestra. Riccardo Muti, Conductor. March 15, 2024</code>
                 </p>
 
                 <hr>

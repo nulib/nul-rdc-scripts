@@ -6,18 +6,15 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentContext = null;
     let cueIdCounter = 0;
     let currentAudioURL = null;
-    let editingCueId = null;
+    let activeMedia = null; // Will be either audio or video element
 
     // Memory protection variables
     let sessionStartTime = Date.now();
     let totalAudioLoaded = 0;
     let hasShownMemoryWarning = false;
 
-    // Check if we're in Electron
-    const isElectron = typeof window.electronAPI !== 'undefined';
-    console.log('Running in Electron:', isElectron);
-
     const audio = document.getElementById('audio');
+    const video = document.getElementById('video');
     const audioFile = document.getElementById('audioFile');
     const audioUploadBox = document.getElementById('audioUploadBox');
     const timeDisplay = document.getElementById('timeDisplay');
@@ -29,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     console.log('Elements loaded:', {
         audio: !!audio,
+        video: !!video,
         themeBtn: !!document.getElementById('themeDropdownBtn'),
         hamburger: !!document.getElementById('hamburgerBtn')
     });
@@ -49,110 +47,158 @@ document.addEventListener('DOMContentLoaded', function () {
                 URL.revokeObjectURL(currentAudioURL);
             }
 
-            // Track total audio loaded for memory management
+            // Track total media loaded for memory management
             totalAudioLoaded += file.size;
             const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
             const totalLoadedMB = (totalAudioLoaded / (1024 * 1024)).toFixed(2);
-            console.log(`Loading audio file: ${file.name} (${fileSizeMB} MB)`);
-            console.log(`Total audio loaded this session: ${totalLoadedMB} MB`);
+            console.log(`Loading media file: ${file.name} (${fileSizeMB} MB)`);
+            console.log(`Total media loaded this session: ${totalLoadedMB} MB`);
 
-            // Warning for single large file (>2GB)
-            if (file.size > 2 * 1024 * 1024 * 1024) {
-                if (!confirm(`⚠️ Large File Warning\n\nThis file is ${fileSizeMB} MB, which may cause performance issues.\n\nContinue loading?`)) {
-                    e.target.value = '';
+            // Determine if it's audio or video
+            const isVideo = file.type.startsWith('video/');
+
+            // Hide both players first
+            audio.style.display = 'none';
+            video.style.display = 'none';
+
+            // Set active media element
+            activeMedia = isVideo ? video : audio;
+
+            // Warning for extremely large files (>10GB for video, >2GB for audio)
+            const sizeThreshold = isVideo ? 10 * 1024 * 1024 * 1024 : 2 * 1024 * 1024 * 1024;
+            if (file.size > sizeThreshold) {
+                if (!confirm(`This file is ${fileSizeMB} MB, which may cause performance issues. Continue?`)) {
                     return;
                 }
             }
 
-            // Memory warning if multiple large files loaded OR session is long (>3 hours)
+            // Memory warning - more lenient for video files
+            // For video: warn at 15GB total OR 4+ hours
+            // For audio: warn at 3GB total OR 3+ hours
             const sessionDurationHours = (Date.now() - sessionStartTime) / (1000 * 60 * 60);
-            if (!hasShownMemoryWarning && (totalAudioLoaded > 3 * 1024 * 1024 * 1024 || sessionDurationHours > 3)) {
+            const totalThreshold = isVideo ? 15 * 1024 * 1024 * 1024 : 3 * 1024 * 1024 * 1024;
+            const timeThreshold = isVideo ? 4 : 3;
+
+            if (!hasShownMemoryWarning && (totalAudioLoaded > totalThreshold || sessionDurationHours > timeThreshold)) {
                 hasShownMemoryWarning = true;
 
                 // Auto-save session before showing warning
                 if (cues.length > 0) {
                     const session = { cues, currentContext, cueIdCounter };
-                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
                     const blob = new Blob([JSON.stringify(session, null, 2)], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `tessera_autosave_${timestamp}.json`;
+                    a.download = 'tessera_autosave_session.json';
                     a.click();
                     URL.revokeObjectURL(url);
 
-                    const userResponse = confirm(
-                        '💾 Auto-Save Complete!\n\n' +
-                        'Your session has been automatically saved as:\n' +
-                        `"tessera_autosave_${timestamp}.json"\n\n` +
-                        '⚠️ MEMORY WARNING ⚠️\n' +
-                        'To prevent performance issues and potential data loss, this application will automatically close in 2 minutes.\n\n' +
-                        'Click OK to close now, or Cancel to continue working.\n' +
-                        '(Application will close automatically in 2 minutes if you continue working)'
-                    );
+                    // Use setTimeout to ensure alert happens after file download
+                    setTimeout(() => {
+                        const userResponse = confirm(
+                            '💾 Auto-Save Complete!\n\n' +
+                            'Your session has been automatically saved as:\n' +
+                            '"tessera_autosave_session.json"\n\n' +
+                            '⚠️ MEMORY WARNING ⚠️\n' +
+                            'To prevent performance issues and potential data loss, this application will automatically close in 2 minutes.\n\n' +
+                            'Click OK to close now, or Cancel to continue working.\n' +
+                            '(Application will close automatically in 2 minutes if you continue working)'
+                        );
 
-                    if (userResponse) {
-                        window.close();
-                    } else {
-                        let countdown = 120;
-                        const countdownInterval = setInterval(() => {
-                            countdown--;
-                            if (countdown === 60) {
-                                alert('⏱️ 1 minute until automatic close.\n\nYour work is saved. Please close the application and reopen to load your session.');
-                            } else if (countdown === 30) {
-                                alert('⏱️ 30 seconds until automatic close.\n\nYour work is saved.');
-                            } else if (countdown === 10) {
-                                alert('⏱️ 10 seconds until automatic close.\n\nClosing to protect your system memory...');
-                            } else if (countdown <= 0) {
-                                clearInterval(countdownInterval);
-                                window.close();
-                            }
-                        }, 1000);
-                    }
+                        if (userResponse) {
+                            // User clicked OK - close immediately
+                            window.close();
+                        } else {
+                            // User clicked Cancel - set 2 minute timer to auto-close
+                            let countdown = 120; // 2 minutes in seconds
+                            const countdownInterval = setInterval(() => {
+                                countdown--;
+
+                                // Show warning at 1 minute, 30 seconds, and 10 seconds
+                                if (countdown === 60) {
+                                    setTimeout(() => {
+                                        alert('⏱️ 1 minute until automatic close.\n\nYour work is saved. Please close the application and reopen to load your session.');
+                                    }, 0);
+                                } else if (countdown === 30) {
+                                    setTimeout(() => {
+                                        alert('⏱️ 30 seconds until automatic close.\n\nYour work is saved as: tessera_autosave_session.json');
+                                    }, 0);
+                                } else if (countdown === 10) {
+                                    setTimeout(() => {
+                                        alert('⏱️ 10 seconds until automatic close.\n\nClosing to protect your system memory...');
+                                    }, 0);
+                                } else if (countdown <= 0) {
+                                    clearInterval(countdownInterval);
+                                    window.close();
+                                }
+                            }, 1000);
+                        }
+                    }, 100);
                 } else {
-                    alert(
-                        '💾 Memory Tip: You\'ve been working for a while or loaded multiple large files.\n\n' +
-                        'For best performance:\n' +
-                        '1. Save your session (Ctrl/Cmd+S)\n' +
-                        '2. Close and reopen the application\n' +
-                        '3. Load your saved session to continue\n\n' +
-                        'This clears memory and prevents slowdowns.'
-                    );
+                    setTimeout(() => {
+                        alert(
+                            '💾 Memory Tip: You\'ve been working for a while or loaded multiple large files.\n\n' +
+                            'For best performance:\n' +
+                            '1. Save your session (Ctrl/Cmd+S)\n' +
+                            '2. Close and reopen the application\n' +
+                            '3. Load your saved session to continue\n\n' +
+                            'This clears memory and prevents slowdowns.'
+                        );
+                    }, 100);
                 }
             }
 
-            audioUploadBox.innerHTML = '<div>⏳ Loading audio file...</div>';
+            audioUploadBox.innerHTML = '<div>⏳ Loading media file...</div>';
             currentAudioURL = URL.createObjectURL(file);
-            audio.src = currentAudioURL;
+            activeMedia.src = currentAudioURL;
 
-            audio.addEventListener('loadedmetadata', () => {
-                audio.style.display = 'block';
+            activeMedia.addEventListener('loadedmetadata', () => {
+                activeMedia.style.display = 'block';
                 timeDisplay.style.display = 'block';
                 audioUploadBox.style.display = 'none';
-                const minutes = Math.floor(audio.duration / 60);
-                const seconds = Math.floor(audio.duration % 60);
-                console.log(`✅ Audio loaded successfully. Duration: ${minutes}m ${seconds}s`);
+
+                // Prevent media player from stealing focus
+                activeMedia.blur();
+
+                console.log(`Media loaded successfully. Duration: ${Math.floor(activeMedia.duration / 60)}m ${Math.floor(activeMedia.duration % 60)}s`);
             }, { once: true });
 
-            audio.addEventListener('error', (err) => {
-                console.error('❌ Error loading audio:', err);
-                alert('❌ Error loading audio file!\n\nPlease check:\n• File format (MP3, WAV, OGG, M4A)\n• File is not corrupted\n• Sufficient system memory');
+            activeMedia.addEventListener('error', (err) => {
+                console.error('Error loading media:', err);
+                alert('Error loading media file.');
                 audioUploadBox.innerHTML = `
-                <div><span style="color: var(--accent); font-size: 24px;">♪</span> Click or Drop Audio File</div>
-                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 5px;">MP3, WAV, OGG, M4A</div>
+                <div><span style="color: var(--accent); font-size: 24px;">♪</span> Click or Drop Media File</div>
+                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 5px;">Audio: MP3, WAV, OGG, M4A | Video: MP4, WEBM, MOV</div>
             `;
-                e.target.value = '';
             }, { once: true });
         }
     });
 
-    // Time update
-    audio.addEventListener('timeupdate', () => {
-        const t = audio.currentTime;
+    // Time update - works for both audio and video
+    const updateTime = () => {
+        if (!activeMedia) return;
+        const t = activeMedia.currentTime;
         const m = Math.floor(t / 60);
         const s = Math.floor(t % 60);
         const ms = Math.floor((t % 1) * 1000);
         timeDisplay.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
+
+        const startInput = document.getElementById('startTime');
+        const endInput = document.getElementById('endTime');
+        if (!startInput.value) startInput.value = formatTime(t);
+        if (!endInput.value) endInput.value = formatTime(t + 5);
+    };
+
+    audio.addEventListener('timeupdate', updateTime);
+    video.addEventListener('timeupdate', updateTime);
+
+    // Prevent media players from capturing focus when clicked
+    audio.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+    });
+
+    video.addEventListener('mousedown', (e) => {
+        e.preventDefault();
     });
 
     // Cleanup on unload
@@ -187,6 +233,7 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('themeDropdownBtn').setAttribute('aria-expanded', 'false');
         });
 
+        // Keyboard support
         opt.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
@@ -231,6 +278,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('hamburgerBtn').setAttribute('aria-expanded', 'false');
     });
 
+    // Keyboard support for hamburger menu
     document.querySelectorAll('.menu-option').forEach(opt => {
         opt.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -257,7 +305,6 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('contextTitle').value = currentContext.title || '';
             document.getElementById('contextPerformers').value = currentContext.performers || '';
             document.getElementById('contextDate').value = currentContext.date || '';
-            document.getElementById('contextLocation').value = currentContext.location || '';
             document.getElementById('contextConductor').value = currentContext.conductor || '';
             document.getElementById('contextComposer').value = currentContext.composer || '';
             document.getElementById('contextInfo').value = currentContext.info || '';
@@ -265,36 +312,10 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('contextTitle').value = '';
             document.getElementById('contextPerformers').value = '';
             document.getElementById('contextDate').value = '';
-            document.getElementById('contextLocation').value = '';
             document.getElementById('contextConductor').value = '';
             document.getElementById('contextComposer').value = '';
             document.getElementById('contextInfo').value = '';
         }
-        document.getElementById('contextModal').classList.add('show');
-    });
-
-    // New Context button - clears ONLY the context, NOT the captions
-    document.getElementById('newContextBtn').addEventListener('click', () => {
-        currentContext = null;
-        updateContextDisplay();
-
-        document.getElementById('movementName').value = '';
-        document.getElementById('startTime').value = '';
-        document.getElementById('endTime').value = '';
-        document.getElementById('overridePerformers').value = '';
-        document.getElementById('overrideDate').value = '';
-        document.getElementById('overrideLocation').value = '';
-        document.getElementById('overrideConductor').value = '';
-        document.getElementById('notes').value = '';
-        document.getElementById('overrideDetails').removeAttribute('open');
-
-        document.getElementById('contextTitle').value = '';
-        document.getElementById('contextPerformers').value = '';
-        document.getElementById('contextDate').value = '';
-        document.getElementById('contextLocation').value = '';
-        document.getElementById('contextConductor').value = '';
-        document.getElementById('contextComposer').value = '';
-        document.getElementById('contextInfo').value = '';
         document.getElementById('contextModal').classList.add('show');
     });
 
@@ -305,17 +326,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function saveContext() {
         const title = document.getElementById('contextTitle').value.trim();
+        const performers = document.getElementById('contextPerformers').value.trim();
 
         if (!title) {
-            alert('⚠️ Title is required!\n\nPlease enter the title of the piece.');
+            setTimeout(() => {
+                alert('Title is required');
+                document.getElementById('contextTitle').focus();
+            }, 0);
             return;
         }
 
         currentContext = {
             title,
-            performers: document.getElementById('contextPerformers').value.trim(),
+            performers,
             date: document.getElementById('contextDate').value.trim(),
-            location: document.getElementById('contextLocation').value.trim(),
             conductor: document.getElementById('contextConductor').value.trim(),
             composer: document.getElementById('contextComposer').value.trim(),
             info: document.getElementById('contextInfo').value.trim()
@@ -323,15 +347,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
         updateContextDisplay();
         closeModal('contextModal');
-        console.log('Context saved:', currentContext);
     }
 
+    // Modal close button handlers
     document.querySelectorAll('[data-modal-close]').forEach(btn => {
         btn.addEventListener('click', () => {
             closeModal(btn.getAttribute('data-modal-close'));
         });
     });
 
+    // Save context button
     document.getElementById('saveContextBtn').addEventListener('click', saveContext);
 
     function updateContextDisplay() {
@@ -349,9 +374,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         if (currentContext.date) {
             html += `<div class="context-row"><span class="context-label">Date:</span><span>${currentContext.date}</span></div>`;
-        }
-        if (currentContext.location) {
-            html += `<div class="context-row"><span class="context-label">Location:</span><span>${currentContext.location}</span></div>`;
         }
         if (currentContext.conductor) {
             html += `<div class="context-row"><span class="context-label">Conductor:</span><span>${currentContext.conductor}</span></div>`;
@@ -371,8 +393,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function addCue() {
         if (!currentContext) {
-            alert('⚠️ Please set piece context first!\n\nClick "Edit Piece Context" to enter the title and performers.');
-            document.getElementById('contextModal').classList.add('show');
+            setTimeout(() => {
+                alert('Please set piece context first');
+                document.getElementById('contextModal').classList.add('show');
+            }, 0);
             return;
         }
 
@@ -381,7 +405,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const end = document.getElementById('endTime').value.trim();
 
         if (!start || !end) {
-            alert('⚠️ Start and end times are required!\n\nUse the I and O keys to mark times while playing audio.');
+            setTimeout(() => {
+                alert('Start and end times are required');
+            }, 0);
             return;
         }
 
@@ -389,18 +415,22 @@ document.addEventListener('DOMContentLoaded', function () {
         const endSec = parseTime(end);
 
         if (startSec === null || endSec === null) {
-            alert('⚠️ Invalid time format!\n\nPlease use HH:MM:SS.mmm format\n\nExample: 00:03:45.250');
+            setTimeout(() => {
+                alert('Invalid time format. Use HH:MM:SS.mmm');
+            }, 0);
             return;
         }
 
         if (endSec <= startSec) {
-            alert('⚠️ End time must be after start time!\n\nStart: ' + start + '\nEnd: ' + end);
+            setTimeout(() => {
+                alert('End time must be after start time');
+            }, 0);
             return;
         }
 
+        // Use overrides if provided, otherwise use context
         const performers = document.getElementById('overridePerformers').value.trim() || currentContext.performers;
         const date = document.getElementById('overrideDate').value.trim() || currentContext.date;
-        const location = document.getElementById('overrideLocation').value.trim() || currentContext.location;
         const conductor = document.getElementById('overrideConductor').value.trim() || currentContext.conductor;
 
         const cue = {
@@ -413,7 +443,6 @@ document.addEventListener('DOMContentLoaded', function () {
             movement: movementName,
             performers,
             date,
-            location,
             conductor,
             composer: currentContext.composer,
             info: currentContext.info,
@@ -423,20 +452,18 @@ document.addEventListener('DOMContentLoaded', function () {
         cues.push(cue);
         cues.sort((a, b) => a.start - b.start);
 
+        // Clear form
         document.getElementById('movementName').value = '';
         document.getElementById('startTime').value = '';
         document.getElementById('endTime').value = '';
         document.getElementById('overridePerformers').value = '';
         document.getElementById('overrideDate').value = '';
-        document.getElementById('overrideLocation').value = '';
         document.getElementById('overrideConductor').value = '';
         document.getElementById('notes').value = '';
         document.getElementById('overrideDetails').removeAttribute('open');
 
         renderCues();
         generateVTT();
-
-        console.log('Caption added:', cue);
     }
 
     function parseTime(str) {
@@ -462,6 +489,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         cueCount.textContent = cues.length;
 
+        // Group by piece
         const groups = {};
         cues.forEach(cue => {
             const key = cue.title;
@@ -480,6 +508,7 @@ document.addEventListener('DOMContentLoaded', function () {
         cueList.innerHTML = '';
 
         Object.values(groups).forEach(group => {
+            // Piece header
             const header = document.createElement('div');
             header.className = 'piece-group';
             let metaText = group.performers;
@@ -491,24 +520,19 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
             cueList.appendChild(header);
 
+            // Cues
             group.cues.forEach(cue => {
                 const div = document.createElement('div');
                 div.className = 'cue';
-                let movementDisplay;
-                if (cue.movement) {
-                    movementDisplay = cue.movement;
-                } else {
-                    movementDisplay = '<em style="color: var(--accent-light);">Entire piece</em>';
-                }
                 div.innerHTML = `
                 <div class="cue-header">
-                    <span class="cue-time clickable-time" data-start-time="${cue.start}" title="Click to jump to ${cue.startStr}">${cue.startStr} → ${cue.endStr}</span>
+                    <span class="cue-time">${cue.startStr} → ${cue.endStr}</span>
                     <div style="display: flex; gap: 4px;">
                         <button class="btn-small btn-edit" data-cue-id="${cue.id}">✏️</button>
                         <button class="btn-small btn-danger btn-delete" data-cue-id="${cue.id}">✕</button>
                     </div>
                 </div>
-                <div class="cue-text">${movementDisplay}</div>
+                <div class="cue-text">${cue.movement || '[No movement name]'}</div>
             `;
                 cueList.appendChild(div);
             });
@@ -517,10 +541,12 @@ document.addEventListener('DOMContentLoaded', function () {
         renderPreview();
     }
 
+    // Event delegation for edit and delete buttons
     cueList.addEventListener('click', (e) => {
         const deleteBtn = e.target.closest('.btn-delete');
         const editBtn = e.target.closest('.btn-edit');
-        const timeStamp = e.target.closest('.clickable-time');
+        const cueTime = e.target.closest('.cue-time');
+        const cueElement = e.target.closest('.cue');
 
         if (deleteBtn) {
             e.stopPropagation();
@@ -530,12 +556,22 @@ document.addEventListener('DOMContentLoaded', function () {
             e.stopPropagation();
             const id = parseInt(editBtn.dataset.cueId);
             editCue(id);
-        } else if (timeStamp) {
+        } else if (cueTime && activeMedia && activeMedia.src) {
+            // Click on timestamp to seek to that time
             e.stopPropagation();
-            const startTime = parseFloat(timeStamp.dataset.startTime);
-            if (audio.src && !isNaN(startTime)) {
-                audio.currentTime = startTime;
-                audio.play();
+            const cueId = parseInt(cueTime.closest('.cue').querySelector('.btn-delete').dataset.cueId);
+            const cue = cues.find(c => c.id === cueId);
+            if (cue) {
+                activeMedia.currentTime = cue.start;
+                activeMedia.play();
+            }
+        } else if (cueElement && activeMedia && activeMedia.src) {
+            // Click anywhere on cue (except buttons) to seek to that time
+            const cueId = parseInt(cueElement.querySelector('.btn-delete').dataset.cueId);
+            const cue = cues.find(c => c.id === cueId);
+            if (cue) {
+                activeMedia.currentTime = cue.start;
+                activeMedia.play();
             }
         }
     });
@@ -552,84 +588,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const cue = cues.find(c => c.id === id);
         if (!cue) return;
 
-        editingCueId = id;
+        document.getElementById('movementName').value = cue.movement || '';
+        document.getElementById('startTime').value = cue.startStr;
+        document.getElementById('endTime').value = cue.endStr;
+        document.getElementById('notes').value = cue.notes || '';
 
-        document.getElementById('editMovementName').value = cue.movement || '';
-        document.getElementById('editStartTime').value = cue.startStr;
-        document.getElementById('editEndTime').value = cue.endStr;
-        document.getElementById('editTitle').value = cue.title || '';
-        document.getElementById('editPerformers').value = cue.performers || '';
-        document.getElementById('editDate').value = cue.date || '';
-        document.getElementById('editLocation').value = cue.location || '';
-        document.getElementById('editConductor').value = cue.conductor || '';
-        document.getElementById('editComposer').value = cue.composer || '';
-        document.getElementById('editInfo').value = cue.info || '';
-        document.getElementById('editNotes').value = cue.notes || '';
-
-        document.getElementById('editModal').classList.add('show');
+        deleteCue(id);
+        document.querySelector('.card:nth-child(2)').scrollIntoView({ behavior: 'smooth' });
     }
-
-    function saveEdit() {
-        if (editingCueId === null) return;
-
-        const movementName = document.getElementById('editMovementName').value.trim();
-        const start = document.getElementById('editStartTime').value.trim();
-        const end = document.getElementById('editEndTime').value.trim();
-        const title = document.getElementById('editTitle').value.trim();
-
-        if (!start || !end) {
-            alert('⚠️ Start and end times are required!');
-            return;
-        }
-
-        if (!title) {
-            alert('⚠️ Title is required!');
-            return;
-        }
-
-        const startSec = parseTime(start);
-        const endSec = parseTime(end);
-
-        if (startSec === null || endSec === null) {
-            alert('⚠️ Invalid time format!\n\nPlease use HH:MM:SS.mmm format\n\nExample: 00:03:45.250');
-            return;
-        }
-
-        if (endSec <= startSec) {
-            alert('⚠️ End time must be after start time!\n\nStart: ' + start + '\nEnd: ' + end);
-            return;
-        }
-
-        const cueIndex = cues.findIndex(c => c.id === editingCueId);
-        if (cueIndex !== -1) {
-            cues[cueIndex] = {
-                id: editingCueId,
-                start: startSec,
-                end: endSec,
-                startStr: start,
-                endStr: end,
-                title: title,
-                movement: movementName,
-                performers: document.getElementById('editPerformers').value.trim(),
-                date: document.getElementById('editDate').value.trim(),
-                location: document.getElementById('editLocation').value.trim(),
-                conductor: document.getElementById('editConductor').value.trim(),
-                composer: document.getElementById('editComposer').value.trim(),
-                info: document.getElementById('editInfo').value.trim(),
-                notes: document.getElementById('editNotes').value.trim()
-            };
-
-            cues.sort((a, b) => a.start - b.start);
-            renderCues();
-            generateVTT();
-            console.log('Caption updated:', cues[cueIndex]);
-        }
-
-        editingCueId = null;
-        closeModal('editModal');
-    }
-
-    document.getElementById('saveEditBtn').addEventListener('click', saveEdit);
 
     function generateVTT() {
         if (cues.length === 0) {
@@ -640,49 +606,17 @@ document.addEventListener('DOMContentLoaded', function () {
         let vtt = 'WEBVTT\n\n';
 
         cues.forEach((cue, i) => {
-            let text = '';
-
+            // Build caption text
+            let text = cue.title;
             if (cue.movement) {
-                text = cue.title;
-                text += `. <i>${cue.movement}</i>`;
-                if (cue.performers) {
-                    text += `. ${cue.performers}`;
-                }
-                if (cue.conductor) {
-                    text += `. ${cue.conductor}, Conductor`;
-                }
-                if (cue.date) {
-                    text += `. ${cue.date}`;
-                }
-                if (cue.location) {
-                    text += `. ${cue.location}`;
-                }
-                if (cue.info) {
-                    text += `. ${cue.info}`;
-                }
-                if (cue.notes) {
-                    text += `. ${cue.notes}`;
-                }
-            } else {
-                text = cue.title;
-                if (cue.performers) {
-                    text += `. ${cue.performers}`;
-                }
-                if (cue.conductor) {
-                    text += `. ${cue.conductor}, Conductor`;
-                }
-                if (cue.date) {
-                    text += `. ${cue.date}`;
-                }
-                if (cue.location) {
-                    text += `. ${cue.location}`;
-                }
-                if (cue.info) {
-                    text += `. ${cue.info}`;
-                }
-                if (cue.notes) {
-                    text += `. ${cue.notes}`;
-                }
+                text += `. ${cue.movement}`;
+            }
+            text += `. ${cue.performers}`;
+            if (cue.conductor) {
+                text += `. ${cue.conductor}, Conductor`;
+            }
+            if (cue.date) {
+                text += `. ${cue.date}`;
             }
 
             vtt += `${cue.startStr} --> ${cue.endStr}\n${text}\n\n`;
@@ -729,33 +663,14 @@ document.addEventListener('DOMContentLoaded', function () {
             group.cues.forEach(cue => {
                 const div = document.createElement('div');
                 div.className = 'cue';
-                let movementDisplay;
-                if (cue.movement) {
-                    movementDisplay = cue.movement;
-                } else {
-                    movementDisplay = '<em style="color: var(--accent-light);">Entire piece</em>';
-                }
                 div.innerHTML = `
-                <div class="cue-time clickable-time" data-start-time="${cue.start}" title="Click to jump to ${cue.startStr}">${cue.startStr} → ${cue.endStr}</div>
-                <div class="cue-text">${movementDisplay}</div>
+                <div class="cue-time">${cue.startStr} → ${cue.endStr}</div>
+                <div class="cue-text">${cue.movement || '[No movement name]'}</div>
             `;
                 previewContent.appendChild(div);
             });
         });
     }
-
-    // Add click handler for timestamps in Preview tab
-    previewContent.addEventListener('click', (e) => {
-        const timeStamp = e.target.closest('.clickable-time');
-        if (timeStamp) {
-            e.stopPropagation();
-            const startTime = parseFloat(timeStamp.dataset.startTime);
-            if (audio.src && !isNaN(startTime)) {
-                audio.currentTime = startTime;
-                audio.play();
-            }
-        }
-    });
 
     // Tabs
     document.querySelectorAll('.tab').forEach(tab => {
@@ -767,224 +682,55 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Fallback save function for older browsers
-    function fallbackSave(blob, filename) {
+    // Export
+    document.getElementById('exportBtn').addEventListener('click', () => {
+        const blob = new Blob([vttOutput.value], { type: 'text/vtt' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = filename;
+        a.download = 'captions.vtt';
         a.click();
         URL.revokeObjectURL(url);
-    }
-
-    // Helper to get basename for display
-    function getBasename(filepath) {
-        return filepath.split(/[\\/]/).pop();
-    }
-
-    // Save session with timestamp to prevent overwrites
-    document.getElementById('saveBtn').addEventListener('click', async () => {
-        try {
-            const session = { cues, currentContext, cueIdCounter };
-            const jsonString = JSON.stringify(session, null, 2);
-
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-            let baseFilename = 'tessera_session';
-
-            if (currentContext && currentContext.title) {
-                const cleanTitle = currentContext.title
-                    .replace(/[<>:"/\\|?*]/g, '')
-                    .replace(/\s+/g, '_')
-                    .substring(0, 40);
-                baseFilename = cleanTitle;
-            }
-
-            const suggestedName = `${baseFilename}_${timestamp}.json`;
-
-            if (isElectron) {
-                // Use Electron's native file dialog
-                const result = await window.electronAPI.saveFileDialog({
-                    title: 'Save Session',
-                    defaultPath: suggestedName,
-                    filters: [
-                        { name: 'JSON Files', extensions: ['json'] },
-                        { name: 'All Files', extensions: ['*'] }
-                    ]
-                });
-
-                if (!result.canceled && result.filePath) {
-                    const saveResult = await window.electronAPI.saveFile(result.filePath, jsonString);
-                    if (saveResult.success) {
-                        console.log('Session saved successfully as:', result.filePath);
-                        alert('✅ Session saved successfully!\n\nFile: ' + getBasename(result.filePath));
-                    } else {
-                        throw new Error(saveResult.error);
-                    }
-                }
-            } else if ('showSaveFilePicker' in window) {
-                // Browser API fallback
-                try {
-                    const handle = await window.showSaveFilePicker({
-                        suggestedName: suggestedName,
-                        types: [{
-                            description: 'JSON Session File',
-                            accept: { 'application/json': ['.json'] }
-                        }],
-                        startIn: 'documents'
-                    });
-                    const writable = await handle.createWritable();
-                    try {
-                        await writable.write(jsonString);
-                    } finally {
-                        await writable.close();
-                    }
-                    console.log('Session saved successfully as:', suggestedName);
-                    alert('✅ Session saved successfully!\n\nFile: ' + suggestedName);
-                } catch (err) {
-                    if (err.name === 'AbortError') {
-                        console.log('Save cancelled by user');
-                    } else {
-                        throw err;
-                    }
-                }
-            } else {
-                // Final fallback - download
-                const blob = new Blob([jsonString], { type: 'application/json' });
-                fallbackSave(blob, suggestedName);
-            }
-        } catch (err) {
-            console.error('Critical error in save function:', err);
-            alert('❌ Error saving session: ' + err.message + '\n\nPlease check console for details.');
-        }
     });
 
-    // Export VTT with timestamp to prevent overwrites
-    document.getElementById('exportBtn').addEventListener('click', async () => {
-        try {
-            if (cues.length === 0) {
-                alert('⚠️ No captions to export!\n\nPlease add at least one caption before exporting.');
-                return;
-            }
-
-            const vttContent = vttOutput.value;
-
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-            let baseFilename = 'captions';
-
-            if (currentContext && currentContext.title) {
-                const cleanTitle = currentContext.title
-                    .replace(/[<>:"/\\|?*]/g, '')
-                    .replace(/\s+/g, '_')
-                    .substring(0, 40);
-                baseFilename = cleanTitle;
-            }
-
-            const suggestedName = `${baseFilename}_${timestamp}.vtt`;
-
-            if (isElectron) {
-                // Use Electron's native file dialog
-                const result = await window.electronAPI.saveFileDialog({
-                    title: 'Export WebVTT',
-                    defaultPath: suggestedName,
-                    filters: [
-                        { name: 'WebVTT Files', extensions: ['vtt'] },
-                        { name: 'All Files', extensions: ['*'] }
-                    ]
-                });
-
-                if (!result.canceled && result.filePath) {
-                    const saveResult = await window.electronAPI.saveFile(result.filePath, vttContent);
-                    if (saveResult.success) {
-                        console.log('VTT exported successfully as:', result.filePath);
-                        alert('✅ WebVTT exported successfully!\n\nFile: ' + getBasename(result.filePath) + '\n\nCaptions: ' + cues.length);
-                    } else {
-                        throw new Error(saveResult.error);
-                    }
-                }
-            } else if ('showSaveFilePicker' in window) {
-                // Browser API fallback
-                try {
-                    const handle = await window.showSaveFilePicker({
-                        suggestedName: suggestedName,
-                        types: [{
-                            description: 'WebVTT Caption File',
-                            accept: { 'text/vtt': ['.vtt'] }
-                        }],
-                        startIn: 'documents'
-                    });
-                    const writable = await handle.createWritable();
-                    try {
-                        await writable.write(vttContent);
-                    } finally {
-                        await writable.close();
-                    }
-                    console.log('VTT exported successfully as:', suggestedName);
-                    alert('✅ WebVTT exported successfully!\n\nFile: ' + suggestedName + '\n\nCaptions: ' + cues.length);
-                } catch (err) {
-                    if (err.name === 'AbortError') {
-                        console.log('Export cancelled by user');
-                    } else {
-                        throw err;
-                    }
-                }
-            } else {
-                // Final fallback - download
-                const blob = new Blob([vttContent], { type: 'text/vtt' });
-                fallbackSave(blob, suggestedName);
-            }
-        } catch (err) {
-            console.error('Critical error in export function:', err);
-            alert('❌ Error exporting VTT: ' + err.message + '\n\nPlease check console for details.');
-        }
+    // Save/Load session
+    document.getElementById('saveBtn').addEventListener('click', () => {
+        const session = { cues, currentContext, cueIdCounter };
+        const blob = new Blob([JSON.stringify(session, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'session.json';
+        a.click();
+        URL.revokeObjectURL(url);
     });
 
-    // Load session button
     document.getElementById('loadBtn').addEventListener('click', () => {
         document.getElementById('loadFile').click();
     });
 
-    // Load session file handler
     document.getElementById('loadFile').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
-        if (!file.name.endsWith('.json')) {
-            alert('Please select a valid JSON session file');
-            return;
-        }
-
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
                 const session = JSON.parse(e.target.result);
-
-                if (!session.hasOwnProperty('cues') || !Array.isArray(session.cues)) {
-                    throw new Error('Invalid session file structure');
-                }
-
                 cues = session.cues || [];
                 currentContext = session.currentContext || null;
                 cueIdCounter = session.cueIdCounter || 0;
-
                 updateContextDisplay();
                 renderCues();
                 generateVTT();
-
-                alert(`Session loaded successfully!\n\n• ${cues.length} caption(s) loaded\n• Context: ${currentContext ? currentContext.title : 'None'}\n\nDon't forget to reload your audio file if needed.`);
-
-                console.log(`Session loaded: ${cues.length} cues, context: ${currentContext ? 'Yes' : 'No'}`);
+                alert('Session loaded successfully!');
             } catch (err) {
                 console.error('Error loading session:', err);
-                alert('Error loading session file. Please make sure this is a valid Tessera session file.\n\nError: ' + err.message);
+                setTimeout(() => {
+                    alert('Error loading session file');
+                }, 0);
             }
         };
-
-        reader.onerror = () => {
-            alert('Error reading file. Please try again.');
-        };
-
         reader.readAsText(file);
-        e.target.value = '';
     });
 
     // Sort & Clear
@@ -996,23 +742,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('clearBtn').addEventListener('click', () => {
         if (cues.length === 0) return;
-        if (confirm('Clear all captions? (Context will be preserved)')) {
-            cues = [];
-            renderCues();
-            generateVTT();
-        }
+        setTimeout(() => {
+            if (confirm('Clear all captions? (Context will be preserved)')) {
+                cues = [];
+                renderCues();
+                generateVTT();
+            }
+        }, 0);
     });
 
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
+        // Don't trigger shortcuts if user is typing in an input/textarea
         const isTyping = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
 
+        // ESC key to close modals and dropdowns (works always)
         if (e.key === 'Escape') {
+            // Close any open modals
             const modals = document.querySelectorAll('.modal.show');
             modals.forEach(modal => {
                 modal.classList.remove('show');
             });
 
+            // Close dropdowns
             const themeDropdown = document.getElementById('themeDropdown');
             const hamburgerDropdown = document.getElementById('hamburgerDropdown');
 
@@ -1028,125 +780,129 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        // Save session (works always)
         if ((e.ctrlKey || e.metaKey) && e.key === 's') {
             e.preventDefault();
             document.getElementById('saveBtn').click();
             return;
         }
-
-        if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
-            e.preventDefault();
-            document.getElementById('loadBtn').click();
-            return;
-        }
-
+        // Export VTT (works always)
         if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
             e.preventDefault();
             document.getElementById('exportBtn').click();
             return;
         }
 
-        if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
-            e.preventDefault();
-            document.getElementById('newContextBtn').click();
-            return;
-        }
-
-        if (!isTyping && audio.src) {
+        // Media controls (only when NOT typing)
+        if (!isTyping && activeMedia && activeMedia.src) {
+            // Spacebar: Play/Pause
             if (e.key === ' ') {
                 e.preventDefault();
-                if (audio.paused) {
-                    audio.play();
+                if (activeMedia.paused) {
+                    activeMedia.play();
                 } else {
-                    audio.pause();
+                    activeMedia.pause();
                 }
                 return;
             }
 
+            // Arrow Left: Rewind (1s normal, 0.1s with Shift, 5s with Ctrl)
             if (e.key === 'ArrowLeft') {
                 e.preventDefault();
-                let skipAmount = 1;
-                if (e.shiftKey) skipAmount = 0.1;
-                if (e.ctrlKey || e.metaKey) skipAmount = 5;
-                audio.currentTime = Math.max(0, audio.currentTime - skipAmount);
+                let skipAmount = 1; // Default: 1 second
+                if (e.shiftKey) skipAmount = 0.1; // Fine: 100ms
+                if (e.ctrlKey || e.metaKey) skipAmount = 5; // Coarse: 5 seconds
+                activeMedia.currentTime = Math.max(0, activeMedia.currentTime - skipAmount);
                 return;
             }
 
+            // Arrow Right: Forward (1s normal, 0.1s with Shift, 5s with Ctrl)
             if (e.key === 'ArrowRight') {
                 e.preventDefault();
-                let skipAmount = 1;
-                if (e.shiftKey) skipAmount = 0.1;
-                if (e.ctrlKey || e.metaKey) skipAmount = 5;
-                audio.currentTime = Math.min(audio.duration, audio.currentTime + skipAmount);
+                let skipAmount = 1; // Default: 1 second
+                if (e.shiftKey) skipAmount = 0.1; // Fine: 100ms
+                if (e.ctrlKey || e.metaKey) skipAmount = 5; // Coarse: 5 seconds
+                activeMedia.currentTime = Math.min(activeMedia.duration, activeMedia.currentTime + skipAmount);
                 return;
             }
 
+            // Arrow Up: Increase volume 10%
             if (e.key === 'ArrowUp') {
                 e.preventDefault();
-                audio.volume = Math.min(1, audio.volume + 0.1);
+                activeMedia.volume = Math.min(1, activeMedia.volume + 0.1);
                 return;
             }
 
+            // Arrow Down: Decrease volume 10%
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
-                audio.volume = Math.max(0, audio.volume - 0.1);
+                activeMedia.volume = Math.max(0, activeMedia.volume - 0.1);
                 return;
             }
 
+            // M: Mute/Unmute
             if (e.key === 'm' || e.key === 'M') {
                 e.preventDefault();
-                audio.muted = !audio.muted;
+                activeMedia.muted = !activeMedia.muted;
                 return;
             }
 
+            // I: Insert start time (current position)
             if (e.key === 'i' || e.key === 'I') {
                 e.preventDefault();
-                document.getElementById('startTime').value = formatTime(audio.currentTime);
+                document.getElementById('startTime').value = formatTime(activeMedia.currentTime);
                 return;
             }
 
+            // O: Insert end time (current position)
             if (e.key === 'o' || e.key === 'O') {
                 e.preventDefault();
-                document.getElementById('endTime').value = formatTime(audio.currentTime);
+                document.getElementById('endTime').value = formatTime(activeMedia.currentTime);
                 return;
             }
 
+            // J: Jump back 10 seconds
             if (e.key === 'j' || e.key === 'J') {
                 e.preventDefault();
-                audio.currentTime = Math.max(0, audio.currentTime - 10);
+                activeMedia.currentTime = Math.max(0, activeMedia.currentTime - 10);
                 return;
             }
 
+            // L: Jump forward 10 seconds
             if (e.key === 'l' || e.key === 'L') {
                 e.preventDefault();
-                audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+                activeMedia.currentTime = Math.min(activeMedia.duration, activeMedia.currentTime + 10);
                 return;
             }
 
+            // K: Toggle play/pause (alternative to spacebar)
             if (e.key === 'k' || e.key === 'K') {
                 e.preventDefault();
-                if (audio.paused) {
-                    audio.play();
+                if (activeMedia.paused) {
+                    activeMedia.play();
                 } else {
-                    audio.pause();
+                    activeMedia.pause();
                 }
                 return;
             }
 
+            // Comma (,): Frame back (0.033s ~1 frame at 30fps)
             if (e.key === ',') {
                 e.preventDefault();
-                audio.currentTime = Math.max(0, audio.currentTime - 0.033);
+                activeMedia.currentTime = Math.max(0, activeMedia.currentTime - 0.033);
                 return;
             }
 
+            // Period (.): Frame forward (0.033s ~1 frame at 30fps)
             if (e.key === '.') {
                 e.preventDefault();
-                audio.currentTime = Math.min(audio.duration, audio.currentTime + 0.033);
+                activeMedia.currentTime = Math.min(activeMedia.duration, activeMedia.currentTime + 0.033);
                 return;
             }
         }
     });
 
+    // Initial render
     updateContextDisplay();
 
-});
+}); // End DOMContentLoaded

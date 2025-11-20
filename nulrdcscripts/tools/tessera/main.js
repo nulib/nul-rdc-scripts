@@ -1,6 +1,5 @@
-const { app, BrowserWindow, Menu, dialog, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu } = require('electron');
 const path = require('path');
-const fs = require('fs');
 
 let mainWindow;
 
@@ -14,26 +13,30 @@ function createWindow() {
             nodeIntegration: false,
             contextIsolation: true,
             enableRemoteModule: false,
-            cache: false,
-            preload: path.join(__dirname, 'preload.js')
+            cache: false  // Disable cache entirely
         },
         icon: path.join(__dirname, 'icon.png')
     });
 
-    // Clear all cache on startup
+    // Clear all cache on startup (but keep localStorage for theme persistence)
     const session = mainWindow.webContents.session;
 
-    session.clearCache().then(() => {
-        console.log('Cache cleared');
+    // Clear cache and storage in sequence
+    Promise.all([
+        session.clearCache(),
+        session.clearStorageData({
+            storages: ['cachestorage', 'serviceworkers']  // Don't clear localStorage
+        })
+    ]).then(() => {
+        console.log('Cache cleared, localStorage preserved');
+        // Load the page only after cache is completely cleared
+        mainWindow.loadFile('index.html');
+    }).catch(err => {
+        console.error('Error clearing cache:', err);
+        mainWindow.loadFile('index.html');
     });
 
-    // Also clear storage data (includes cached files)
-    session.clearStorageData({
-        storages: ['cachestorage', 'serviceworkers']
-    });
-
-    mainWindow.loadFile('index.html');
-
+    // Rest of your code...
     // Optional: Open DevTools in development
     // mainWindow.webContents.openDevTools();
 
@@ -126,38 +129,6 @@ function createWindow() {
         mainWindow = null;
     });
 }
-
-// Handle save file dialog
-ipcMain.handle('save-file-dialog', async (event, options) => {
-    const result = await dialog.showSaveDialog(mainWindow, options);
-    return result;
-});
-
-// Handle save file
-ipcMain.handle('save-file', async (event, filePath, content) => {
-    try {
-        fs.writeFileSync(filePath, content, 'utf8');
-        return { success: true };
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
-});
-
-// Handle open file dialog
-ipcMain.handle('open-file-dialog', async (event, options) => {
-    const result = await dialog.showOpenDialog(mainWindow, options);
-    return result;
-});
-
-// Handle read file
-ipcMain.handle('read-file', async (event, filePath) => {
-    try {
-        const content = fs.readFileSync(filePath, 'utf8');
-        return { success: true, content };
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
-});
 
 app.whenReady().then(createWindow);
 
