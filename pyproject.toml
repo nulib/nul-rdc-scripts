@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nul-rdc-scripts"
-version = "0.6.0"
+version = "0.7.0"
 description = "Scripts for NUL RDC Digitization Team"
 authors = [
     "Northwestern University Libraries <repository@northwestern.edu>",
@@ -33,6 +33,7 @@ md5 = 'nulrdcscripts.tools.md5generation.main:main'
 trim = 'nulrdcscripts.tools.videotrimmer.main:main'
 micro = 'nulrdcscripts.ingestMicro.ingest:main'
 meta = 'nulrdcscripts.tools.generatemetadataTEMP.main:main'
+arcvproc = 'nulrdcscripts.archived_versions.vproc.main:main'
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
