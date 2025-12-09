@@ -498,6 +498,55 @@ def main():
                         "*" + base_filename + ac_identifier + access_extension,
                         file=f,
                     )
+            
+            # embed BWF metadata for access file
+            if args.transcode and args.write_bwf_metadata:
+                print("*embedding BWF metadata in access file*")
+                inventory_bwf_metadata = loaded_metadata[inventory_filename][
+                    "BWF Metadata"
+                ]
+                source_format = inventory_bwf_metadata["format"].lower()
+                bwf_dict["ISRF"]["write"] = source_format
+                
+                # Get metadata from access file
+                access_metadata = helpers.ffprobe_report(
+                    base_filename + ac_identifier + access_extension, ac_file_abspath
+                )
+                
+                coding_history = inventory_bwf_metadata["coding history"]
+                if access_metadata["file metadata"]["channels"] == 1:
+                    file_sound_mode = "mono"
+                elif access_metadata["file metadata"]["channels"] == 2:
+                    file_sound_mode = "stereo"
+                else:
+                    pass
+                # if coding history was created, add access file processing
+                if coding_history:
+                    coding_history_update = (
+                        "A=PCM,F="
+                        + access_metadata["file metadata"]["audio sample rate"]
+                        + ",W="
+                        + access_metadata["file metadata"]["audio bitrate"]
+                        + ",M="
+                        + file_sound_mode
+                        + ",T=BWFMetaEdit "
+                        + metaedit_version
+                    )
+                    coding_history = coding_history + "\r\n" + coding_history_update
+                    bwf_dict["CodingHistory"]["write"] = coding_history
+
+                bwf_command = [
+                    args.metaedit_path,
+                    ac_file_abspath,
+                    "--MD5-Embed",
+                    "--BextVersion=1",
+                ]
+                for key in bwf_dict:
+                    if bwf_dict[key]["write"]:
+                        bwf_command += [
+                            bwf_dict[key]["command"] + bwf_dict[key]["write"]
+                        ]
+                subprocess.run(bwf_command)
 
             # create folder for metadata if needed
             if args.spectrogram or args.write_json:
