@@ -8,8 +8,10 @@ import json
 import csv
 import datetime
 import time
-import nulrdcscripts.vproc.equipment_dict as equipment_dict
-from nulrdcscripts.vproc.params import args
+import tempfile
+import uuid
+import nulrdcscripts.archived_versions.vproc.equipment_dict as equipment_dict
+from nulrdcscripts.archived_versions.vproc.params import args
 
 
 def create_transcode_output_folders(baseOutput, outputFolderList):
@@ -358,6 +360,10 @@ def two_pass_h264_encoding(audioStreamCounter, outputAbsPath, acAbsPath):
         nullOut = "NUL"
     else:
         nullOut = "/dev/null"
+    
+    # Create unique passlogfile name for this thread
+    passlogfile = os.path.join(tempfile.gettempdir(), f"ffmpeg2pass_{uuid.uuid4().hex}")
+    
     pass1 = [args.ffmpeg_path]
     if not args.verbose:
         pass1 += ["-loglevel", "error"]
@@ -373,6 +379,8 @@ def two_pass_h264_encoding(audioStreamCounter, outputAbsPath, acAbsPath):
         "8000k",
         "-pix_fmt",
         "yuv420p",
+        "-passlogfile",
+        passlogfile,
         "-pass",
         "1",
     ]
@@ -413,6 +421,7 @@ def two_pass_h264_encoding(audioStreamCounter, outputAbsPath, acAbsPath):
                 "[a]",
             ]
     pass1 += ["-f", "mp4", nullOut]
+    
     pass2 = [args.ffmpeg_path]
     if not args.verbose:
         pass2 += ["-loglevel", "error"]
@@ -428,6 +437,8 @@ def two_pass_h264_encoding(audioStreamCounter, outputAbsPath, acAbsPath):
         "8000k",
         "-pix_fmt",
         "yuv420p",
+        "-passlogfile",
+        passlogfile,
         "-pass",
         "2",
     ]
@@ -468,15 +479,16 @@ def two_pass_h264_encoding(audioStreamCounter, outputAbsPath, acAbsPath):
                 "[a]",
             ]
     pass2 += [acAbsPath]
+    
     subprocess.run(pass1)
     subprocess.run(pass2)
 
-    # sometimes these files are created I'm not sure why
-    current_dir = os.getcwd()
-    if os.path.isfile(os.path.join(current_dir, "ffmpeg2pass-0.log")):
-        os.remove(os.path.join(current_dir, "ffmpeg2pass-0.log"))
-    if os.path.isfile(os.path.join(current_dir, "ffmpeg2pass-0.log.mbtree")):
-        os.remove(os.path.join(current_dir, "ffmpeg2pass-0.log.mbtree"))
+    # Clean up the pass log files
+    try:
+        os.remove(f"{passlogfile}-0.log")
+        os.remove(f"{passlogfile}-0.log.mbtree")
+    except FileNotFoundError:
+        pass
 
 
 def generate_spectrogram(input, channel_layout_list, outputFolder, outputName):
@@ -631,12 +643,12 @@ def import_csv(csvInventory):
                 ["box/folder alma number", "Box/Folder\nAlma number"],
                 ["barcode"],
                 ["description", "inventory_title"],
-                ["record date/time"],
-                ["housing/container markings"],
+                ["record date/time", "date created"],
+                ["housing/container markings", "container markings"],
                 ["condition notes"],
                 ["call number"],
                 ["format"],
-                ["capture date"],
+                ["capture date", "digitization date"],
                 ["staff initials", "Digitizer"],
                 ["VTR used"],
                 ["VTR output used"],

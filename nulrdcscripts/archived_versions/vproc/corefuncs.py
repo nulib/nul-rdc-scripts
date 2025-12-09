@@ -10,7 +10,7 @@ import os
 import hashlib
 import sys
 import subprocess
-from nulrdcscripts.vproc.params import args
+from nulrdcscripts.archived_versions.vproc.params import args
 
 
 def input_check():

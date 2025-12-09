@@ -8,10 +8,10 @@ import subprocess
 import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from multiprocessing import cpu_count
-from nulrdcscripts.vproc.params import args
-import nulrdcscripts.vproc.helpers as helpers
-import nulrdcscripts.vproc.corefuncs as corefuncs
-import nulrdcscripts.vproc.checks as checks
+from nulrdcscripts.archived_versions.vproc.params import args
+import nulrdcscripts.archived_versions.vproc.helpers as helpers
+import nulrdcscripts.archived_versions.vproc.corefuncs as corefuncs
+import nulrdcscripts.archived_versions.vproc.checks as checks
 
 # TO DO: general cleanup
 
@@ -116,14 +116,25 @@ def batch_video(input, output):
         print("No items to process")
         return
     
-    # Calculate safe thread count: use half of available CPUs, minimum 1, maximum 4
+    # Calculate safe thread count
     cpu_cores = cpu_count()
-    max_workers = max(1, min(4, cpu_cores // 2))
     
-    print(f"Detected {cpu_cores} CPU cores")
-    print(f"Processing {len(items_to_process)} items with {max_workers} threads")
+    # Check if working with network/external drive
+    is_network_drive = any(x in input for x in ['/Volumes/', '/media/', '/mnt/', '\\\\'])
     
-    # Multi-threaded processing
+    # For network drives, use only 1 thread to avoid I/O bottlenecks
+    if is_network_drive:
+        max_workers = 1  # Single thread for network drives
+        print(f"Detected {cpu_cores} CPU cores")
+        print(f"Network/external drive detected - using single thread to prevent I/O errors")
+    else:
+        max_workers = max(1, min(4, cpu_cores // 2))
+        print(f"Detected {cpu_cores} CPU cores")
+        print(f"Processing with {max_workers} threads")
+    
+    print(f"Processing {len(items_to_process)} items")
+    
+    # Multi-threaded processing (or single-threaded for network drives)
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         # Submit all jobs
         future_to_item = {
