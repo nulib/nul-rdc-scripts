@@ -69,6 +69,13 @@ parser.add_argument(
     dest="skip_spectrogram",
     help="Skip generating spectrograms (enabled by default)",
 )
+parser.add_argument(
+    "--reembed-only",
+    required=False,
+    action="store_true",
+    dest="reembed_only",
+    help="Only re-embed BWF metadata in existing files (skip transcoding, use existing access copies)",
+)
 
 # Tool paths
 parser.add_argument(
@@ -148,12 +155,24 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+# Handle --reembed-only flag FIRST (before converting skip flags)
+if args.reembed_only:
+    # Force these skip flags for reembed-only mode
+    args.skip_transcode = True    # Don't re-transcode
+    args.skip_json = True         # Don't regenerate JSON
+    args.skip_spectrogram = True  # Don't regenerate spectrograms
+    args.skip_metadata = False    # DO embed metadata (explicitly set to False)
+
 # Set processing flags (inverted from skip flags)
 # By default, everything is TRUE unless --skip flag is used
 args.transcode = not args.skip_transcode
 args.write_bwf_metadata = not args.skip_metadata
 args.write_json = not args.skip_json
 args.spectrogram = not args.skip_spectrogram
+
+# Print reembed warning AFTER flags are set
+if args.reembed_only:
+    print("\n⚠️  REEMBED-ONLY MODE: Will only re-embed BWF metadata in existing files\n")
 
 # Legacy compatibility
 args.all = args.transcode and args.write_bwf_metadata and args.write_json and args.spectrogram

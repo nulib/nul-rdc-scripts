@@ -1,4 +1,16 @@
-# aproc
+### "Access Format Policy: FAIL" or "Access BWF Policy: FAIL"
+
+**What it means:** Access copies don't have proper BWF metadata embedded.
+
+**Solution:**
+```bash
+# Re-embed BWF metadata in all files without re-transcoding
+poetry run aproc -i /path --reembed-only
+```
+
+This will update BWF metadata in both preservation and access files, then re-run MediaConch validation.
+
+**Note:** Make sure your inventory CSV has the correct information before running `--reembed-only`.# aproc
 A script for audio preservation file processing, quality control, and access copy generation.
 
 ## Prerequisites
@@ -155,6 +167,15 @@ Skip creating JSON metadata sidecar files.
 
 `--skip-spectrogram`  
 Skip generating spectrograms for QC (speeds up processing).
+
+`--reembed-only`  
+**Re-embed mode:** Only update BWF metadata in existing files without re-transcoding. This flag automatically:
+- Skips transcoding (uses existing access copies)
+- Enables BWF metadata embedding for both preservation and access files
+- Skips JSON and spectrogram generation
+- Regenerates QC log with fresh MediaConch validation
+
+Use this when you need to fix metadata without re-processing audio.
 
 `--verbose`, `-v`  
 Display detailed processing information (useful for debugging).
@@ -329,6 +350,8 @@ poetry run aproc -i /path --ffmpeg /custom/ffmpeg --sox /custom/sox
 5. **Use verbose mode** - Add `--verbose` when troubleshooting
 6. **Organize by object** - One folder per physical item/tape
 7. **Keep original files** - Until you've verified all outputs
+8. **Use `--reembed-only` to fix metadata** - Much faster than full re-processing
+9. **Backup QC logs** - The script overwrites them, so save copies if needed
 
 ## Common Workflows
 
@@ -355,6 +378,18 @@ Validates against MediaConch policies and creates QC log only.
 poetry run aproc -i /path --skip-transcode --skip-spectrogram --skip-metadata
 ```
 Only creates JSON metadata files and QC log.
+
+### Re-embed BWF Metadata (Fix Existing Files)
+```bash
+poetry run aproc -i /path --reembed-only
+```
+Updates BWF metadata in existing preservation and access files, regenerates QC log. **Does not re-transcode.**
+
+**Use `--reembed-only` when:**
+- You updated your inventory CSV with corrected metadata
+- Access copies are failing BWF MediaConch checks
+- Coding history needs to be regenerated
+- You need to fix metadata without waiting for re-transcoding
 
 ## Terminal Help
 
