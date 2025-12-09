@@ -1,21 +1,25 @@
 #!/usr/bin/env python3
 
 """
-Argument parser for in-house AJA v210/mov to ffv1/mkv script  
+Standardized argument parser for audio processing script
+Processes all steps by default unless flags disable them
 """
 
 import argparse
 import sys
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(
+    description="Audio preservation file processing and QC workflow (processes everything by default)"
+)
 
+# Core parameters
 parser.add_argument(
     "--input",
     "-i",
     action="store",
     dest="input_path",
     type=str,
-    help="full path to input folder",
+    help="Path to directory containing .wav files (auto-detects batch vs single object)",
 )
 parser.add_argument(
     "--output",
@@ -23,24 +27,57 @@ parser.add_argument(
     action="store",
     dest="output_path",
     type=str,
-    help="full path to output csv file for QC results. If not specified this will default to creating a file in the input directory",
+    help="Path to output CSV file for QC results (default: <input_dir>/<basename>-qc_log.csv)",
 )
 parser.add_argument(
-    "--load_inventory",
+    "--inventory",
     "-l",
     required=False,
     nargs="*",
     action="store",
     dest="source_inventory",
-    help="Use to specify a CSV inventory. If not specified the script will look in the base folder of the input for CSV inventories. If no inventories are found the script will leave some fields blank.",
+    help="Path to CSV inventory file (default: auto-detect .csv files in input directory)",
 )
+
+# Processing control
+# By default: transcode=YES, metadata=YES, json=YES, spectrogram=YES
+parser.add_argument(
+    "--skip-transcode",
+    required=False,
+    action="store_true",
+    dest="skip_transcode",
+    help="Skip creating access copies (enabled by default)",
+)
+parser.add_argument(
+    "--skip-metadata",
+    required=False,
+    action="store_true",
+    dest="skip_metadata",
+    help="Skip embedding BWF metadata (enabled by default)",
+)
+parser.add_argument(
+    "--skip-json",
+    required=False,
+    action="store_true",
+    dest="skip_json",
+    help="Skip creating JSON metadata files (enabled by default)",
+)
+parser.add_argument(
+    "--skip-spectrogram",
+    required=False,
+    action="store_true",
+    dest="skip_spectrogram",
+    help="Skip generating spectrograms (enabled by default)",
+)
+
+# Tool paths
 parser.add_argument(
     "--sox",
     action="store",
     dest="sox_path",
     default="sox",
     type=str,
-    help="For setting a custom sox path",
+    help="Path to sox executable (default: sox)",
 )
 parser.add_argument(
     "--bwfmetaedit",
@@ -48,7 +85,7 @@ parser.add_argument(
     dest="metaedit_path",
     default="bwfmetaedit",
     type=str,
-    help="For setting a custom BWF Metaedit path",
+    help="Path to BWF MetaEdit executable (default: bwfmetaedit)",
 )
 parser.add_argument(
     "--ffmpeg",
@@ -56,7 +93,7 @@ parser.add_argument(
     dest="ffmpeg_path",
     default="ffmpeg",
     type=str,
-    help="For setting a custom ffmpeg path",
+    help="Path to ffmpeg executable (default: ffmpeg)",
 )
 parser.add_argument(
     "--ffprobe",
@@ -64,7 +101,7 @@ parser.add_argument(
     dest="ffprobe_path",
     default="ffprobe",
     type=str,
-    help="For setting a custom ffprobe path",
+    help="Path to ffprobe executable (default: ffprobe)",
 )
 parser.add_argument(
     "--mediaconch",
@@ -72,78 +109,81 @@ parser.add_argument(
     dest="mediaconch_path",
     default="mediaconch",
     type=str,
-    help="For setting a custom mediaconch path",
+    help="Path to mediaconch executable (default: mediaconch)",
 )
-# parser.add_argument('--verbose', required=False, action='store_true', help='view ffmpeg output when transcoding')
+
+# Policy files
 parser.add_argument(
-    "--transcode",
-    "-t",
-    required=False,
-    action="store_true",
-    dest="transcode",
-    help="Transcode access files",
-)
-parser.add_argument(
-    "--write_metadata",
-    "-m",
-    required=False,
-    action="store_true",
-    dest="write_bwf_metadata",
-    help="Write Broadcast WAVE metadata to Preservation file",
-)
-# parser.add_argument('--reset_timereference', '-r', required=False, action='store_true', dest='reset_timereference', help='Reset the time reference of a BWF file to 00:00:00.000')
-parser.add_argument(
-    "--write_json",
-    "-j",
-    required=False,
-    action="store_true",
-    dest="write_json",
-    help="Write metadata to json file",
-)
-# parser.add_argument('--skipac', required=False, action='store_true', dest='skip_ac', help='skip access copy transcoding')
-parser.add_argument(
-    "--spectrogram",
-    "-s",
-    required=False,
-    action="store_true",
-    dest="spectrogram",
-    help="generate spectrograms",
-)
-parser.add_argument(
-    "--p_policy",
+    "--p-policy",
     required=False,
     action="store",
     dest="input_policy",
-    help="Mediaconch policy for preservation files",
+    help="Custom MediaConch policy for preservation files",
 )
 parser.add_argument(
-    "--a_policy",
+    "--a-policy",
     required=False,
     action="store",
     dest="output_policy",
-    help="Mediaconch policy for access files",
+    help="Custom MediaConch policy for access files",
 )
+
+# Advanced options
 parser.add_argument(
-    "--all",
-    "-a",
-    default=False,
-    required=False,
-    action="store_true",
-    dest="all",
-    help="This is equivalent to using -t -m -j -s",
-)
-parser.add_argument(
-    "--skip_coding_history",
+    "--skip-coding-history",
     default=False,
     required=False,
     action="store_true",
     dest="skip_coding_history",
-    help="To skip coding history creation",
+    help="Skip coding history creation in BWF metadata",
+)
+parser.add_argument(
+    "--verbose",
+    "-v",
+    required=False,
+    action="store_true",
+    dest="verbose",
+    help="Display detailed processing information",
 )
 
 args = parser.parse_args()
-if args.all:
-    args.transcode = True
-    args.write_bwf_metadata = True
-    args.write_json = True
-    args.spectrogram = True
+
+# Set processing flags (inverted from skip flags)
+# By default, everything is TRUE unless --skip flag is used
+args.transcode = not args.skip_transcode
+args.write_bwf_metadata = not args.skip_metadata
+args.write_json = not args.skip_json
+args.spectrogram = not args.skip_spectrogram
+
+# Legacy compatibility
+args.all = args.transcode and args.write_bwf_metadata and args.write_json and args.spectrogram
+
+# Print usage info when no args
+if len(sys.argv) == 1:
+    print("\n" + "="*80)
+    print("AUDIO PROCESSING - AUTO-DETECT MODE")
+    print("="*80)
+    print("\nAccepted input structures:")
+    print("  1. Single object with WAV files:")
+    print("     input_dir/*.wav")
+    print()
+    print("  2. Batch: Multiple object folders:")
+    print("     input_dir/object1/*.wav")
+    print("     input_dir/object2/*.wav")
+    print()
+    print("  3. Already organized (preserves structure):")
+    print("     input_dir/object1/p/*_p.wav")
+    print()
+    print("The script will:")
+    print("  ✓ Auto-detect batch vs single object mode")
+    print("  ✓ Create p/, a/, meta/ folders automatically")
+    print("  ✓ Process ALL steps by default (transcode, metadata, json, spectrogram)")
+    print("  ✓ Look for inventory.csv in the input directory")
+    print()
+    print("Quick start:")
+    print("  Process everything:           python aproc.py -i /path/to/audio")
+    print("  Skip access copies:           python aproc.py -i /path/to/audio --skip-transcode")
+    print("  Skip spectrograms:            python aproc.py -i /path/to/audio --skip-spectrogram")
+    print("  Custom inventory:             python aproc.py -i /path/to/audio -l /path/to/inventory.csv")
+    print("\n" + "="*80 + "\n")
+    parser.print_help()
