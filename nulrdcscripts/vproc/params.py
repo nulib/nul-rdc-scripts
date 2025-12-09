@@ -1,21 +1,25 @@
 #!/usr/bin/env python3
 
 """
-Argument parser for in-house AJA v210/mov to ffv1/mkv script
+Standardized argument parser for video processing script
+Auto-detects batch mode and processes everything by default
 """
 
 import argparse
 import sys
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(
+    description="Video preservation file processing and QC workflow (auto-detects batch mode)"
+)
 
+# Core parameters
 parser.add_argument(
     "--input",
     "-i",
     action="store",
     dest="input_path",
     type=str,
-    help="full path to input folder",
+    help="Path to directory containing .mkv files (auto-detects batch vs single object)",
 )
 parser.add_argument(
     "--output",
@@ -23,45 +27,38 @@ parser.add_argument(
     action="store",
     dest="output_path",
     type=str,
-    help="full path to output folder",
+    help="Path to output directory (default: same as input)",
 )
 parser.add_argument(
-    "--ffmpeg",
+    "--inventory",
+    "-l",
+    required=False,
     action="store",
-    dest="ffmpeg_path",
-    default="ffmpeg",
-    type=str,
-    help="For setting a custom ffmpeg path",
+    dest="source_inventory",
+    help="Path to CSV inventory file (default: auto-detect in input directory)",
 )
+
+# Processing control
 parser.add_argument(
-    "--ffprobe",
-    action="store",
-    dest="ffprobe_path",
-    default="ffprobe",
-    type=str,
-    help="For setting a custom ffprobe path",
-)
-parser.add_argument(
-    "--qcli",
-    action="store",
-    dest="qcli_path",
-    default="qcli",
-    type=str,
-    help="For setting a custom qcli path",
-)
-parser.add_argument(
-    "--mediaconch",
-    action="store",
-    dest="mediaconch_path",
-    default="mediaconch",
-    type=str,
-    help="For setting a custom mediaconch path",
-)
-parser.add_argument(
-    "--verbose",
+    "--skip-ac",
     required=False,
     action="store_true",
-    help="view ffmpeg output when transcoding",
+    dest="skip_ac",
+    help="Skip access copy transcoding",
+)
+parser.add_argument(
+    "--skip-spectrogram",
+    required=False,
+    action="store_true",
+    dest="skip_spectrogram",
+    help="Skip spectrogram generation",
+)
+parser.add_argument(
+    "--skip-qcli",
+    required=False,
+    action="store_true",
+    dest="skip_qcli",
+    help="Skip QCTools report generation",
 )
 parser.add_argument(
     "--mixdown",
@@ -69,8 +66,74 @@ parser.add_argument(
     dest="mixdown",
     default="copy",
     type=str,
-    help="How the audio streams will be mapped for the access copy. If excluded, this will default to copying the stream configuration of the input. Inputs include: copy, 4to3, and 4to2. 4to3 takes 4 mono tracks and mixes tracks 1&2 to stereo while leaving tracks 3&4 mono. 4to2 takes 4 mono tracks and mixes tracks 1&2 and 3&4 to stereo.",
+    help="Audio stream mapping: copy (default), 4to3, 4to2, 2to1",
 )
+parser.add_argument(
+    "--keep-filename",
+    required=False,
+    action="store_true",
+    dest="keep_filename",
+    help="Preserve original filename (don't add _p suffix)",
+)
+parser.add_argument(
+    "--embed-framemd5",
+    required=False,
+    action="store_true",
+    dest="embed_framemd5",
+    help="Remux preservation file to embed framemd5",
+)
+
+# Tool paths
+parser.add_argument(
+    "--ffmpeg",
+    action="store",
+    dest="ffmpeg_path",
+    default="ffmpeg",
+    type=str,
+    help="Path to ffmpeg executable (default: ffmpeg)",
+)
+parser.add_argument(
+    "--ffprobe",
+    action="store",
+    dest="ffprobe_path",
+    default="ffprobe",
+    type=str,
+    help="Path to ffprobe executable (default: ffprobe)",
+)
+parser.add_argument(
+    "--qcli",
+    action="store",
+    dest="qcli_path",
+    default="qcli",
+    type=str,
+    help="Path to qcli executable (default: qcli)",
+)
+parser.add_argument(
+    "--mediaconch",
+    action="store",
+    dest="mediaconch_path",
+    default="mediaconch",
+    type=str,
+    help="Path to mediaconch executable (default: mediaconch)",
+)
+
+# Policy files
+parser.add_argument(
+    "--input-policy",
+    required=False,
+    action="store",
+    dest="input_policy",
+    help="Custom MediaConch policy for input files",
+)
+parser.add_argument(
+    "--output-policy",
+    required=False,
+    action="store",
+    dest="output_policy",
+    help="Custom MediaConch policy for output files",
+)
+
+# Advanced options
 parser.add_argument(
     "--slices",
     action="store",
@@ -78,64 +141,57 @@ parser.add_argument(
     default="16",
     choices=[4, 6, 9, 12, 16, 24, 30],
     type=int,
-    help="Set the FFV1 slice count used by ffmpeg when losslessly transcoding files. Default is 16.",
+    help="FFV1 slice count for encoding (default: 16)",
 )
 parser.add_argument(
-    "--skipac",
+    "--verbose",
+    "-v",
     required=False,
     action="store_true",
-    dest="skip_ac",
-    help="skip access copy transcoding",
+    dest="verbose",
+    help="Display detailed ffmpeg output during transcoding",
 )
-parser.add_argument(
-    "--skipqcli",
-    required=False,
-    action="store_true",
-    dest="skip_qcli",
-    help="skip generating qc tools report",
-)
-parser.add_argument(
-    "--skipspectrogram",
-    required=False,
-    action="store_true",
-    dest="skip_spectrogram",
-    help="skip generating spectrograms",
-)
-parser.add_argument(
-    "--keep_filename",
-    required=False,
-    action="store_true",
-    dest="keep_filename",
-    help="MKV preservation master will have the same filename as the source MOV file",
-)
-parser.add_argument(
-    "--embed_framemd5",
-    required=False,
-    action="store_true",
-    dest="embed_framemd5",
-    help="remux preservation file to embed framemd5",
-)
-parser.add_argument(
-    "--input_policy",
-    required=False,
-    action="store",
-    dest="input_policy",
-    help="Mediaconch policy for input files",
-)
-parser.add_argument(
-    "--output_policy",
-    required=False,
-    action="store",
-    dest="output_policy",
-    help="Mediaconch policy for output files",
-)
+
+# Hidden flag for backwards compatibility
 parser.add_argument(
     "--batch",
     "-b",
     required=False,
     action="store_true",
     dest="batch",
-    help="For batches of video files"
+    help=argparse.SUPPRESS,  # Hidden - auto-detected now
 )
 
 args = parser.parse_args()
+# Set qcli flag (inverted - off by default, turned on with --run-qcli)
+args.skip_qcli = not args.run_qcli
+# Print usage info when no args
+if len(sys.argv) == 1:
+    print("\n" + "="*80)
+    print("VIDEO PROCESSING - AUTO-DETECT MODE")
+    print("="*80)
+    print("\nAccepted input structures:")
+    print("  1. Single object with MKV files:")
+    print("     input_dir/*.mkv")
+    print()
+    print("  2. Batch: Multiple object folders:")
+    print("     input_dir/object1/*.mkv")
+    print("     input_dir/object2/*.mkv")
+    print()
+    print("  3. Already organized (preserves structure):")
+    print("     input_dir/object1/p/*_p.mkv")
+    print()
+    print("The script will:")
+    print("  ✓ Auto-detect batch vs single object mode")
+    print("  ✓ Create p/, a/, meta/ folders automatically")
+    print("  ✓ Rename files to add _p suffix if needed")
+    print("  ✓ Process access copies, metadata, and spectrograms by default")
+    print("  ✓ Look for inventory.csv in the input directory")
+    print()
+    print("Quick start:")
+    print("  Process everything:           python vproc.py -i /path/to/video")
+    print("  Skip access copies:           python vproc.py -i /path/to/video --skip-ac")
+    print("  Custom audio mixdown:         python vproc.py -i /path/to/video --mixdown 4to2")
+    print("  Custom inventory:             python vproc.py -i /path/to/video -l /path/to/inventory.csv")
+    print("\n" + "="*80 + "\n")
+    parser.print_help()
