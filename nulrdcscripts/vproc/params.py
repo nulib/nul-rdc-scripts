@@ -39,26 +39,27 @@ parser.add_argument(
 )
 
 # Processing control
+# By default: access copies=YES, spectrograms=YES, json=YES, qcli=NO
 parser.add_argument(
     "--skip-ac",
     required=False,
     action="store_true",
     dest="skip_ac",
-    help="Skip access copy transcoding",
+    help="Skip access copy transcoding (enabled by default)",
 )
 parser.add_argument(
     "--skip-spectrogram",
     required=False,
     action="store_true",
     dest="skip_spectrogram",
-    help="Skip spectrogram generation",
+    help="Skip spectrogram generation (enabled by default)",
 )
 parser.add_argument(
-    "--skip-qcli",
+    "--run-qcli",
     required=False,
     action="store_true",
-    dest="skip_qcli",
-    help="Skip QCTools report generation",
+    dest="run_qcli",
+    help="Run QCTools report generation (disabled by default)",
 )
 parser.add_argument(
     "--mixdown",
@@ -163,8 +164,13 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
+
 # Set qcli flag (inverted - off by default, turned on with --run-qcli)
+# Default run_qcli to False if not set
+if not hasattr(args, 'run_qcli'):
+    args.run_qcli = False
 args.skip_qcli = not args.run_qcli
+
 # Print usage info when no args
 if len(sys.argv) == 1:
     print("\n" + "="*80)
@@ -186,11 +192,13 @@ if len(sys.argv) == 1:
     print("  ✓ Create p/, a/, meta/ folders automatically")
     print("  ✓ Rename files to add _p suffix if needed")
     print("  ✓ Process access copies, metadata, and spectrograms by default")
+    print("  ✓ QCTools reports are OFF by default (use --run-qcli to enable)")
     print("  ✓ Look for inventory.csv in the input directory")
     print()
     print("Quick start:")
     print("  Process everything:           python vproc.py -i /path/to/video")
     print("  Skip access copies:           python vproc.py -i /path/to/video --skip-ac")
+    print("  Enable QCTools reports:       python vproc.py -i /path/to/video --run-qcli")
     print("  Custom audio mixdown:         python vproc.py -i /path/to/video --mixdown 4to2")
     print("  Custom inventory:             python vproc.py -i /path/to/video -l /path/to/inventory.csv")
     print("\n" + "="*80 + "\n")
