@@ -10,7 +10,7 @@ Converts MediaPreserve XML delivery files into a flat TSV for OpenRefine process
 ## Usage
 
 ```bash
-python embedextract.py -i <folder> [-o <output.tsv>]
+poetry run convertMP -i <folder> [-o <output.tsv>]
 ```
 
 ### Arguments
