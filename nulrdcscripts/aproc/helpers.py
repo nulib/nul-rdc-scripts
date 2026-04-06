@@ -106,7 +106,7 @@ def ffprobe_report(filename, input_file_abspath):
     audio_codec_name_list = [
         stream.get("codec_long_name") for stream in (audio_output["streams"])
     ][0]
-    audio_bit_depth = [
+    audio_bitrate = [
         stream.get("bits_per_raw_sample") for stream in (audio_output["streams"])
     ][0]
     audio_sample_rate = [
@@ -122,7 +122,7 @@ def ffprobe_report(filename, input_file_abspath):
         "channels": audio_channels,
         "audio streams": audio_codec_name_list,
         "audio sample rate": audio_sample_rate,
-        "audio bit depth": audio_bit_depth,
+        "audio bitrate": audio_bitrate,
     }
 
     ffprobe_metadata = {"file metadata": file_metadata}
@@ -517,6 +517,15 @@ def parse_mediaconchResults(mediaconchResults_dict):
 def convert_runtime(duration):
     runtime = time.strftime("%H:%M:%S", time.gmtime(float(duration)))
     return runtime
+
+
+def log_message(log_file, message):
+    """
+    Appends a timestamped message to a plain text log file.
+    """
+    timestamp = datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S")
+    with open(log_file, "a", newline="\n") as f:
+        f.write("[{}] {}\n".format(timestamp, message))
 
 
 def write_output_csv(csv_file, csvHeaderList, csvWriteList, qcResults):

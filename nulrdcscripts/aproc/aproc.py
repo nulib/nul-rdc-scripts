@@ -43,10 +43,10 @@ def main():
     )
     # assign input and output
     indir = corefuncs.input_check()
+    base_folder_name = os.path.basename(indir)
     if args.output_path:
         qc_csv_file = args.output_path
     else:
-        base_folder_name = os.path.basename(indir)
         qc_csv_file = os.path.join(indir, base_folder_name + "-qc_log.csv")
     corefuncs.output_check(qc_csv_file)
     # check that required programs are present
@@ -112,6 +112,9 @@ def main():
 
     object_list = helpers.get_immediate_subdirectories(indir)
 
+    # log file for structural changes (e.g. folder creation and file moves)
+    structure_log_file = os.path.join(indir, base_folder_name + "-structure_log.txt")
+
     # load bwf metadata into dictionary
     if args.write_bwf_metadata:
         # TODO check that bwf_metaedit is installed
@@ -123,8 +126,30 @@ def main():
 
     for object in object_list:
         object_folder_abspath = os.path.join(indir, object)
-        if os.path.isdir(os.path.join(object_folder_abspath, pm_identifier)):
-            pm_folder_abspath = os.path.join(object_folder_abspath, pm_identifier)
+        pm_folder_abspath = os.path.join(object_folder_abspath, pm_identifier)
+
+        # if p/ folder doesn't exist, look for correctly named files loose in the object folder
+        if not os.path.isdir(pm_folder_abspath):
+            loose_wavs = glob.glob1(object_folder_abspath, "*" + preservation_extension)
+            if loose_wavs:
+                # validate all files are correctly named before moving any
+                bad_names = [f for f in loose_wavs if not f.endswith(pm_identifier + preservation_extension)]
+                if bad_names:
+                    print("ERROR: The following files in '{}' are not correctly named and cannot be processed:".format(object))
+                    for f in bad_names:
+                        print("  " + f)
+                    print("Files should end with '{}{}'. Please check file names before running.".format(pm_identifier, preservation_extension))
+                    quit()
+                # create p/ folder and move files in
+                os.mkdir(pm_folder_abspath)
+                helpers.log_message(structure_log_file, "Created folder: {}".format(pm_folder_abspath))
+                for f in loose_wavs:
+                    src = os.path.join(object_folder_abspath, f)
+                    dst = os.path.join(pm_folder_abspath, f)
+                    os.rename(src, dst)
+                    helpers.log_message(structure_log_file, "Moved {} to {}".format(src, dst))
+
+        if os.path.isdir(pm_folder_abspath):
             for file in glob.glob1(pm_folder_abspath, "*" + preservation_extension):
                 pm_file_abspath = os.path.join(pm_folder_abspath, file)
                 if not file.endswith(pm_identifier + preservation_extension):
@@ -383,22 +408,6 @@ def main():
                         output_metadata["Preservation Files"] = [file_dict]
                     else:
                         output_metadata["Preservation Files"].append(file_dict)
-
-                    # generate technical metadata for access file if it exists
-                    ac_filename = base_filename + ac_identifier + access_extension
-                    if os.path.isfile(ac_file_abspath):
-                        ac_metadata = helpers.ffprobe_report(ac_filename, ac_file_abspath)
-                        ac_bwf_meta_dict = helpers.get_bwf_metadata(ac_file_abspath)
-                        ac_file_dict = {ac_filename: {}}
-                        ac_file_dict[ac_filename].update(
-                            {"Technical Metadata": ac_metadata["file metadata"]}
-                        )
-                        ac_file_dict[ac_filename].update({"BWF Metadata": ac_bwf_meta_dict})
-                        if "Access Files" not in output_metadata:
-                            output_metadata["Access Files"] = [ac_file_dict]
-                        else:
-                            output_metadata["Access Files"].append(ac_file_dict)
-
                     with open(json_file_abspath, "w", newline="\n") as outfile:
                         json.dump(output_metadata, outfile, indent=4)
 
