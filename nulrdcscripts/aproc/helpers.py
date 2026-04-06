@@ -106,7 +106,7 @@ def ffprobe_report(filename, input_file_abspath):
     audio_codec_name_list = [
         stream.get("codec_long_name") for stream in (audio_output["streams"])
     ][0]
-    audio_bitrate = [
+    audio_bit_depth = [
         stream.get("bits_per_raw_sample") for stream in (audio_output["streams"])
     ][0]
     audio_sample_rate = [
@@ -122,7 +122,7 @@ def ffprobe_report(filename, input_file_abspath):
         "channels": audio_channels,
         "audio streams": audio_codec_name_list,
         "audio sample rate": audio_sample_rate,
-        "audio bitrate": audio_bitrate,
+        "audio bit depth": audio_bit_depth,
     }
 
     ffprobe_metadata = {"file metadata": file_metadata}

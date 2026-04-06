@@ -194,18 +194,7 @@ def main():
                             "A=PCM,F="
                             + input_metadata["file metadata"]["audio sample rate"]
                             + ",W="
-                            + input_metadata["file metadata"]["audio bitrate"]
-                            + ",M="
-                            + file_sound_mode
-                            + ",T=BWFMetaEdit "
-                            + metaedit_version
-                        )
-                        coding_history = coding_history + "\r\n" + coding_history_update
-                        bwf_dict["CodingHistory"]["write"] = coding_history
-
-                    bwf_command = [
-                        args.metaedit_path,
-                        pm_file_abspath,
+                            + input_metadata["file metadata"]["audio bit depth"]
                         "--MD5-Embed",
                         "--BextVersion=1",
                     ]
@@ -278,18 +267,7 @@ def main():
                             "A=PCM,F="
                             + input_metadata["file metadata"]["audio sample rate"]
                             + ",W="
-                            + input_metadata["file metadata"]["audio bitrate"]
-                            + ",M="
-                            + file_sound_mode
-                            + ",T=BWFMetaEdit "
-                            + metaedit_version
-                        )
-                        coding_history = coding_history + "\r\n" + coding_history_update
-                        bwf_dict["CodingHistory"]["write"] = coding_history
-
-                    bwf_command = [
-                        args.metaedit_path,
-                        ac_file_abspath,
+                            + input_metadata["file metadata"]["audio bit depth"]
                         "--MD5-Embed",
                         "--BextVersion=1",
                     ]
