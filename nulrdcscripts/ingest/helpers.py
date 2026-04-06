@@ -64,16 +64,38 @@ def output_check(outfile: str):
 def write_csv(outfile: str, csv_fields: list[str], csv_data: list[dict[str, str]]):
     """
     Writes ingest sheet data to a csv.
+    Rows for each item are sorted in the order:
+    asset front, asset side, asset back, tape front, tape side, tape back.
+    Files that don't match any pattern are written last, in their original order.
 
     :param str outfile: fullpath to output file including extension
     :param list csv_fields: fieldnames(headers) for csv file
     :param list csv_data: data to be written to csv
     """
+    # Order tokens checked against each file's label (case-insensitive).
+    # Earlier position in the list = earlier in the output.
+    _LABEL_ORDER = [
+        "asset front",
+        "asset side",
+        "asset back",
+        "tape front",
+        "tape side",
+        "tape back",
+    ]
+
+    def _sort_key(file_info: dict) -> int:
+        label = (file_info.get("label") or "").lower()
+        for idx, token in enumerate(_LABEL_ORDER):
+            if token in label:
+                return idx
+        return len(_LABEL_ORDER)  # unrecognised labels sort last
+
     with open(outfile, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=csv_fields)
         writer.writeheader()
         for item in csv_data:
-            for file_info in csv_data[item]:
+            sorted_files = sorted(csv_data[item], key=_sort_key)
+            for file_info in sorted_files:
                 writer.writerow(file_info)
 
 
@@ -119,6 +141,7 @@ def clean_files(files: list[str], skip: list[str]):
     files = [f for f in files if not f.endswith(".qctools.mkv")]
     files = [f for f in files if not f.endswith(".qctools.xmlpoetry")]
     files = [f for f in files if not f.endswith(".qctools.xml.gz")]
+    files = [f for f in files if not f.endswith(".mkv.xml.gz")]
     files = [f for f in files if not f.endswith(".framemd5")]
     files = [f for f in files if not f.endswith(".md5")]
     files = [f for f in files if not f.endswith(".csv")]
