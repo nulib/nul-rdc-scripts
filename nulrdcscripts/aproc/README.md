@@ -21,11 +21,18 @@ In the terminal, [navigate](#terminal-help) to the `nul-rdc-scripts` folder befo
 poetry run aproc -i INPUT_PATH
 ```
 
-All processing steps run by default: transcoding, BWF metadata embedding, JSON sidecar generation, and spectrogram generation. Individual flags can still be passed explicitly but are not required.
+All processing steps run by default: transcoding, BWF metadata embedding, JSON sidecar generation, and spectrogram generation. Individual steps can be disabled with `--no-` flags.
+
+### Disable specific steps
+```
+poetry run aproc -i INPUT_PATH --no-transcode
+poetry run aproc -i INPUT_PATH --no-spectrogram
+poetry run aproc -i INPUT_PATH --no-transcode --no-spectrogram
+```
 
 ### Generate QC log only
 ```
-poetry run aproc -i INPUT_PATH --skip_coding_history
+poetry run aproc -i INPUT_PATH --no-transcode --no-write_metadata --no-write_json --no-spectrogram
 ```
 
 ### Expected input file structure
@@ -51,10 +58,10 @@ project folder (script input)
 | `-i`, `--input INPUT_PATH` | Full path to input folder |
 | `-o`, `--output OUTPUT_PATH` | Full path to output CSV file for QC results. Defaults to a file in the input directory |
 | `-a`, `--all` | Equivalent to using `-t -m -j -s` together |
-| `-t`, `--transcode` | Transcode access files |
-| `-m`, `--write_metadata` | Write Broadcast WAVE metadata to preservation file |
-| `-j`, `--write_json` | Write metadata to JSON sidecar file |
-| `-s`, `--spectrogram` | Generate spectrograms |
+| `-t`, `--transcode` / `--no-transcode` | Transcode access files (default: on) |
+| `-m`, `--write_metadata` / `--no-write_metadata` | Write Broadcast WAVE metadata to preservation file (default: on) |
+| `-j`, `--write_json` / `--no-write_json` | Write metadata to JSON sidecar file (default: on) |
+| `-s`, `--spectrogram` / `--no-spectrogram` | Generate spectrograms (default: on) |
 | `--skip_coding_history` | Skip coding history creation |
 | `-l`, `--load_inventory INVENTORY_PATH` | Specify a CSV inventory file. If not provided, the script looks for CSV files in the input folder |
 | `--sox SOX_PATH` | Custom path to SoX |
