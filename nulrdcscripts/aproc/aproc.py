@@ -194,7 +194,18 @@ def main():
                             "A=PCM,F="
                             + input_metadata["file metadata"]["audio sample rate"]
                             + ",W="
-                            + input_metadata["file metadata"]["audio bit depth"]
+                            + input_metadata["file metadata"]["audio bitrate"]
+                            + ",M="
+                            + file_sound_mode
+                            + ",T=BWFMetaEdit "
+                            + metaedit_version
+                        )
+                        coding_history = coding_history + "\r\n" + coding_history_update
+                        bwf_dict["CodingHistory"]["write"] = coding_history
+
+                    bwf_command = [
+                        args.metaedit_path,
+                        pm_file_abspath,
                         "--MD5-Embed",
                         "--BextVersion=1",
                     ]
@@ -267,7 +278,18 @@ def main():
                             "A=PCM,F="
                             + input_metadata["file metadata"]["audio sample rate"]
                             + ",W="
-                            + input_metadata["file metadata"]["audio bit depth"]
+                            + input_metadata["file metadata"]["audio bitrate"]
+                            + ",M="
+                            + file_sound_mode
+                            + ",T=BWFMetaEdit "
+                            + metaedit_version
+                        )
+                        coding_history = coding_history + "\r\n" + coding_history_update
+                        bwf_dict["CodingHistory"]["write"] = coding_history
+
+                    bwf_command = [
+                        args.metaedit_path,
+                        ac_file_abspath,
                         "--MD5-Embed",
                         "--BextVersion=1",
                     ]
@@ -361,6 +383,22 @@ def main():
                         output_metadata["Preservation Files"] = [file_dict]
                     else:
                         output_metadata["Preservation Files"].append(file_dict)
+
+                    # generate technical metadata for access file if it exists
+                    ac_filename = base_filename + ac_identifier + access_extension
+                    if os.path.isfile(ac_file_abspath):
+                        ac_metadata = helpers.ffprobe_report(ac_filename, ac_file_abspath)
+                        ac_bwf_meta_dict = helpers.get_bwf_metadata(ac_file_abspath)
+                        ac_file_dict = {ac_filename: {}}
+                        ac_file_dict[ac_filename].update(
+                            {"Technical Metadata": ac_metadata["file metadata"]}
+                        )
+                        ac_file_dict[ac_filename].update({"BWF Metadata": ac_bwf_meta_dict})
+                        if "Access Files" not in output_metadata:
+                            output_metadata["Access Files"] = [ac_file_dict]
+                        else:
+                            output_metadata["Access Files"].append(ac_file_dict)
+
                     with open(json_file_abspath, "w", newline="\n") as outfile:
                         json.dump(output_metadata, outfile, indent=4)
 

@@ -80,6 +80,7 @@ parser.add_argument(
     "-t",
     required=False,
     action="store_true",
+    default=True,
     dest="transcode",
     help="Transcode access files",
 )
@@ -88,6 +89,7 @@ parser.add_argument(
     "-m",
     required=False,
     action="store_true",
+    default=True,
     dest="write_bwf_metadata",
     help="Write Broadcast WAVE metadata to Preservation file",
 )
@@ -97,6 +99,7 @@ parser.add_argument(
     "-j",
     required=False,
     action="store_true",
+    default=True,
     dest="write_json",
     help="Write metadata to json file",
 )
@@ -106,6 +109,7 @@ parser.add_argument(
     "-s",
     required=False,
     action="store_true",
+    default=True,
     dest="spectrogram",
     help="generate spectrograms",
 )

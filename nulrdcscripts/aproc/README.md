@@ -18,17 +18,14 @@ In the terminal, [navigate](#terminal-help) to the `nul-rdc-scripts` folder befo
 
 ### Basic usage
 ```
-poetry run aproc -i INPUT_PATH -a
+poetry run aproc -i INPUT_PATH
 ```
 
-### Generate spectrograms only
-```
-poetry run aproc -i INPUT_PATH -s
-```
+All processing steps run by default: transcoding, BWF metadata embedding, JSON sidecar generation, and spectrogram generation. Individual flags can still be passed explicitly but are not required.
 
 ### Generate QC log only
 ```
-poetry run aproc -i INPUT_PATH
+poetry run aproc -i INPUT_PATH --skip_coding_history
 ```
 
 ### Expected input file structure
