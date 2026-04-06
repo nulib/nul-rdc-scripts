@@ -3,6 +3,7 @@
 import argparse
 import sys
 import os
+import re
 import glob
 import subprocess
 import datetime
@@ -123,6 +124,44 @@ def main():
             bwf_dict = json.load(standard_metadata)
 
     # TODO add earlier failure to end process if all files do not have corresponding inventory entries
+
+    # handle files loose in the project folder — group by volume, create item/p/ structure
+    loose_project_wavs = glob.glob1(indir, "*" + preservation_extension)
+    if loose_project_wavs:
+        bad_names = [f for f in loose_project_wavs if not f.endswith(pm_identifier + preservation_extension)]
+        if bad_names:
+            print("ERROR: The following files in the project folder are not correctly named:")
+            for f in bad_names:
+                print("  " + f)
+            print("Files should end with '{}{}'. Please check file names before running.".format(pm_identifier, preservation_extension))
+            quit()
+        # group files by volume key — everything up to and including the volume number
+        # e.g. item_2_v01s01_p.wav and item_2_v01s02_p.wav both map to item_2_v01
+        volume_groups = {}
+        for f in loose_project_wavs:
+            match = re.match(r"(.+_v\d+)(?:s\d+)?_p\.wav$", f)
+            if match:
+                volume_key = match.group(1)
+            else:
+                volume_key = f.replace(pm_identifier + preservation_extension, "")
+            volume_groups.setdefault(volume_key, []).append(f)
+        # create item/p/ folder structure and move files
+        for volume_key, files in volume_groups.items():
+            item_folder = os.path.join(indir, volume_key)
+            item_pm_folder = os.path.join(item_folder, pm_identifier)
+            if not os.path.isdir(item_folder):
+                os.mkdir(item_folder)
+                helpers.log_message(structure_log_file, "Created folder: {}".format(item_folder))
+            if not os.path.isdir(item_pm_folder):
+                os.mkdir(item_pm_folder)
+                helpers.log_message(structure_log_file, "Created folder: {}".format(item_pm_folder))
+            for f in files:
+                src = os.path.join(indir, f)
+                dst = os.path.join(item_pm_folder, f)
+                os.rename(src, dst)
+                helpers.log_message(structure_log_file, "Moved {} to {}".format(src, dst))
+        # refresh object list to include newly created item folders
+        object_list = helpers.get_immediate_subdirectories(indir)
 
     for object in object_list:
         object_folder_abspath = os.path.join(indir, object)

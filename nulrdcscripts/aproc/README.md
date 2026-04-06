@@ -37,7 +37,7 @@ poetry run aproc -i INPUT_PATH --no-transcode --no-write_metadata --no-write_jso
 
 ### Expected input file structure
 
-The script accepts two input structures. If preservation files are loose in the item folder rather than inside a `p/` subfolder, the script will create the `p/` folder and move the files in automatically before processing.
+The script accepts three input structures. In all cases where files are not already inside a `p/` subfolder, the script will create the necessary folders and move the files in before processing.
 
 **With `p/` folder already present:**
 ```
@@ -63,7 +63,16 @@ project folder (script input)
     └── item_2_v01s02_p.wav
 ```
 
-In the second case the script creates the `p/` folder and moves the files in before processing. All folder creation and file moves are logged to `{input_folder}-structure_log.txt` in the input directory.
+**With files loose in project folder:**
+```
+project folder (script input)
+├── inventory.csv
+├── item_1_v01_p.wav
+├── item_2_v01s01_p.wav
+└── item_2_v01s02_p.wav
+```
+
+In the second and third cases the script creates the required folder structure and moves files in before processing. Files in the project folder are grouped by volume — `item_2_v01s01_p.wav` and `item_2_v01s02_p.wav` are treated as the same item (`item_2_v01`), while `item_2_v02_p.wav` would be a separate item. All folder creation and file moves are logged to `{input_folder}-structure_log.txt` in the input directory.
 
 > **Note:** Preservation files must end with `_p.wav`. If any files in an item folder do not follow this naming convention the script will print the offending filenames and quit without moving anything.
 
