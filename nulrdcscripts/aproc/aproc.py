@@ -148,6 +148,11 @@ def main():
                     dst = os.path.join(pm_folder_abspath, f)
                     os.rename(src, dst)
                     helpers.log_message(structure_log_file, "Moved {} to {}".format(src, dst))
+            else:
+                message = "WARNING: No preservation files found for item '{}' — skipping.".format(object)
+                print(message)
+                helpers.log_message(structure_log_file, message)
+                continue
 
         if os.path.isdir(pm_folder_abspath):
             for file in glob.glob1(pm_folder_abspath, "*" + preservation_extension):
