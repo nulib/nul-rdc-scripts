@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nul-rdc-scripts"
-version = "0.8.0"
+version = "0.9.0"
 description = "Scripts for NUL RDC Digitization Team"
 authors = [
     "Northwestern University Libraries <repository@northwestern.edu>",
@@ -24,6 +24,7 @@ pandas = "^2.3.2"
 
 [tool.poetry.scripts]
 aproc = 'nulrdcscripts.aproc.aproc:main'
+aqc = 'nulrdcscripts.aqc.aqc:main'
 vproc = 'nulrdcscripts.vproc.vproc:main'
 ingest = 'nulrdcscripts.ingest.ingest:main'
 embedExtract = 'nulrdcscripts.tools.EmbedExtract.runfile:main'
