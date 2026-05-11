@@ -22,7 +22,6 @@ if not args.keep_filename:
     pm_filename_identifier = "_p"
 else:
     pm_filename_identifier = None
-inventoryName = "transcode_inventory.csv"
 if not args.output_policy:
     mkvPolicy = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
@@ -41,7 +40,13 @@ corefuncs.mediaconch_check()
 corefuncs.ffprobe_check()
 ffvers = corefuncs.get_ffmpeg_version()
 corefuncs.mediaconch_policy_exists(mkvPolicy)
-csvInventory = os.path.join(indir, inventoryName)
+csv_files = glob.glob(os.path.join(indir, "*inventory*.csv"))
+if not csv_files:
+    print("No CSV inventory file found in input directory")
+    quit()
+if len(csv_files) > 1:
+    print(f"Multiple inventory CSV files found, using: {os.path.basename(csv_files[0])}")
+csvInventory = csv_files[0]
 csvDict = csvfunctions.import_csv(csvInventory)
 csvHeaderList = [
     "inventory check",
@@ -80,8 +85,6 @@ def main():
         pm_filename_identifier = "_p"
     else:
         pm_filename_identifier = None
-    global inventoryName
-    inventoryName = "transcode_inventory.csv"
     # assign mediaconch policies to use
     global mkvPolicy
     if not args.output_policy:
@@ -91,7 +94,7 @@ def main():
         )
     else:
         mkvPolicy = args.output_policy
- 
+
 
     print("***STARTING PROCESS***")
 
