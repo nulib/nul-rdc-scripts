@@ -3,6 +3,7 @@
 import argparse
 import sys
 import os
+import re
 import glob
 import subprocess
 import datetime
@@ -43,10 +44,10 @@ def main():
     )
     # assign input and output
     indir = corefuncs.input_check()
+    base_folder_name = os.path.basename(indir)
     if args.output_path:
         qc_csv_file = args.output_path
     else:
-        base_folder_name = os.path.basename(indir)
         qc_csv_file = os.path.join(indir, base_folder_name + "-qc_log.csv")
     corefuncs.output_check(qc_csv_file)
     # check that required programs are present
@@ -112,6 +113,9 @@ def main():
 
     object_list = helpers.get_immediate_subdirectories(indir)
 
+    # log file for structural changes (e.g. folder creation and file moves)
+    structure_log_file = os.path.join(indir, base_folder_name + "-structure_log.txt")
+
     # load bwf metadata into dictionary
     if args.write_bwf_metadata:
         # TODO check that bwf_metaedit is installed
@@ -121,10 +125,75 @@ def main():
 
     # TODO add earlier failure to end process if all files do not have corresponding inventory entries
 
+    # handle files loose in the project folder — group by volume, create item/p/ structure
+    loose_project_wavs = glob.glob1(indir, "*" + preservation_extension)
+    if loose_project_wavs:
+        bad_names = [f for f in loose_project_wavs if not f.endswith(pm_identifier + preservation_extension)]
+        if bad_names:
+            print("ERROR: The following files in the project folder are not correctly named:")
+            for f in bad_names:
+                print("  " + f)
+            print("Files should end with '{}{}'. Please check file names before running.".format(pm_identifier, preservation_extension))
+            quit()
+        # group files by volume key — everything up to and including the volume number
+        # e.g. item_2_v01s01_p.wav and item_2_v01s02_p.wav both map to item_2_v01
+        volume_groups = {}
+        for f in loose_project_wavs:
+            match = re.match(r"(.+_v\d+)(?:s\d+)?_p\.wav$", f)
+            if match:
+                volume_key = match.group(1)
+            else:
+                volume_key = f.replace(pm_identifier + preservation_extension, "")
+            volume_groups.setdefault(volume_key, []).append(f)
+        # create item/p/ folder structure and move files
+        for volume_key, files in volume_groups.items():
+            item_folder = os.path.join(indir, volume_key)
+            item_pm_folder = os.path.join(item_folder, pm_identifier)
+            if not os.path.isdir(item_folder):
+                os.mkdir(item_folder)
+                helpers.log_message(structure_log_file, "Created folder: {}".format(item_folder))
+            if not os.path.isdir(item_pm_folder):
+                os.mkdir(item_pm_folder)
+                helpers.log_message(structure_log_file, "Created folder: {}".format(item_pm_folder))
+            for f in files:
+                src = os.path.join(indir, f)
+                dst = os.path.join(item_pm_folder, f)
+                os.rename(src, dst)
+                helpers.log_message(structure_log_file, "Moved {} to {}".format(src, dst))
+        # refresh object list to include newly created item folders
+        object_list = helpers.get_immediate_subdirectories(indir)
+
     for object in object_list:
         object_folder_abspath = os.path.join(indir, object)
-        if os.path.isdir(os.path.join(object_folder_abspath, pm_identifier)):
-            pm_folder_abspath = os.path.join(object_folder_abspath, pm_identifier)
+        pm_folder_abspath = os.path.join(object_folder_abspath, pm_identifier)
+
+        # if p/ folder doesn't exist, look for correctly named files loose in the object folder
+        if not os.path.isdir(pm_folder_abspath):
+            loose_wavs = glob.glob1(object_folder_abspath, "*" + preservation_extension)
+            if loose_wavs:
+                # validate all files are correctly named before moving any
+                bad_names = [f for f in loose_wavs if not f.endswith(pm_identifier + preservation_extension)]
+                if bad_names:
+                    print("ERROR: The following files in '{}' are not correctly named and cannot be processed:".format(object))
+                    for f in bad_names:
+                        print("  " + f)
+                    print("Files should end with '{}{}'. Please check file names before running.".format(pm_identifier, preservation_extension))
+                    quit()
+                # create p/ folder and move files in
+                os.mkdir(pm_folder_abspath)
+                helpers.log_message(structure_log_file, "Created folder: {}".format(pm_folder_abspath))
+                for f in loose_wavs:
+                    src = os.path.join(object_folder_abspath, f)
+                    dst = os.path.join(pm_folder_abspath, f)
+                    os.rename(src, dst)
+                    helpers.log_message(structure_log_file, "Moved {} to {}".format(src, dst))
+            else:
+                message = "WARNING: No preservation files found for item '{}' — skipping.".format(object)
+                print(message)
+                helpers.log_message(structure_log_file, message)
+                continue
+
+        if os.path.isdir(pm_folder_abspath):
             for file in glob.glob1(pm_folder_abspath, "*" + preservation_extension):
                 pm_file_abspath = os.path.join(pm_folder_abspath, file)
                 if not file.endswith(pm_identifier + preservation_extension):

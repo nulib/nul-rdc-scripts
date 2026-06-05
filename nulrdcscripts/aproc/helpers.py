@@ -519,6 +519,15 @@ def convert_runtime(duration):
     return runtime
 
 
+def log_message(log_file, message):
+    """
+    Appends a timestamped message to a plain text log file.
+    """
+    timestamp = datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S")
+    with open(log_file, "a", newline="\n") as f:
+        f.write("[{}] {}\n".format(timestamp, message))
+
+
 def write_output_csv(csv_file, csvHeaderList, csvWriteList, qcResults):
     csvOutFileExists = os.path.isfile(csv_file)
     with open(csv_file, "a") as f:

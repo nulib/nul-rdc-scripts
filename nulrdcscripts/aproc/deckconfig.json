@@ -1,0 +1,28 @@
+{
+    "Yamaha C300 Rack 1": {
+        "Playback Deck": {
+            "deck_name": "Yamaha C300",
+            "deck_nuTag": "E034942RT",
+            "deck_algorithm": "ANALOG",
+            "deck_mode": "stereo"
+        },
+        "A/D": {
+            "ad_name": "Metric Halo LIO8 MKIV",
+            "ad_nuTag": "48276",
+            "ad_algorithm": "PCM",
+            "ad_samplerate": "96000",
+            "ad_wordlength": "24",
+            "ad_mode": "stereo",
+            "ad_type": "A/D"
+        },
+        "DIO": {
+            "dio_name": "Metric Halo LIO8 MKIV",
+            "dio_nuTag": "48276",
+            "dio_algorithm": "PCM",
+            "dio_samplerate": "96000",
+            "dio_wordlength": "24",
+            "dio_mode": "stereo",
+            "dio_type": "DIO"
+        }
+    }
+}

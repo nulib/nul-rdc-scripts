@@ -79,35 +79,39 @@ parser.add_argument(
     "--transcode",
     "-t",
     required=False,
-    action="store_true",
+    action=argparse.BooleanOptionalAction,
+    default=True,
     dest="transcode",
-    help="Transcode access files",
+    help="Transcode access files (default: on)",
 )
 parser.add_argument(
     "--write_metadata",
     "-m",
     required=False,
-    action="store_true",
+    action=argparse.BooleanOptionalAction,
+    default=True,
     dest="write_bwf_metadata",
-    help="Write Broadcast WAVE metadata to Preservation file",
+    help="Write Broadcast WAVE metadata to preservation file (default: on)",
 )
 # parser.add_argument('--reset_timereference', '-r', required=False, action='store_true', dest='reset_timereference', help='Reset the time reference of a BWF file to 00:00:00.000')
 parser.add_argument(
     "--write_json",
     "-j",
     required=False,
-    action="store_true",
+    action=argparse.BooleanOptionalAction,
+    default=True,
     dest="write_json",
-    help="Write metadata to json file",
+    help="Write metadata to JSON sidecar file (default: on)",
 )
 # parser.add_argument('--skipac', required=False, action='store_true', dest='skip_ac', help='skip access copy transcoding')
 parser.add_argument(
     "--spectrogram",
     "-s",
     required=False,
-    action="store_true",
+    action=argparse.BooleanOptionalAction,
+    default=True,
     dest="spectrogram",
-    help="generate spectrograms",
+    help="Generate spectrograms (default: on)",
 )
 parser.add_argument(
     "--p_policy",
@@ -142,8 +146,3 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
-if args.all:
-    args.transcode = True
-    args.write_bwf_metadata = True
-    args.write_json = True
-    args.spectrogram = True
