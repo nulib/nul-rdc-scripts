@@ -99,7 +99,7 @@ x_extension_dict = {
 # Contains rules for assigning x files based on filename patterns.
 x_parse_dict = {
     "front": {
-        "identifiers": ["front", "Front"],
+        "identifiers": ["front", "Front", '_encl_01','_carr_01'],
         "type": "pattern",
         "role": "X",
         "label": "asset front",
@@ -113,7 +113,7 @@ x_parse_dict = {
         "file_builder": "_auxiliary_",
     },
     "asset": {
-        "identifiers": ["_asset", "-asset", "_Asset", "-Asset"],
+        "identifiers": ["_asset", "-asset", "_Asset", "-Asset", '_carr'],
         "type": "pattern",
         "role": "X",
         "label": "asset",

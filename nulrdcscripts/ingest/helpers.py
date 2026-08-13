@@ -8,6 +8,10 @@ import os
 import posixpath
 import csv
 
+# CSV lookup table of ignore rules, expected to sit alongside this script.
+# Override by passing a different path to clean_files(ignore_csv=...).
+DEFAULT_IGNORE_CSV = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ignore_patterns.csv")
+
 
 def init_io(input_path: str, output_path: str):
     """
@@ -126,36 +130,90 @@ def clean_dirs(dirs: list[str]):
     return dirs
 
 
-def clean_files(files: list[str], skip: list[str]):
+# Hardcoded fallback, used only if the ignore_patterns.csv lookup table
+# can't be found/loaded, so clean_files() never silently stops filtering.
+_FALLBACK_STARTSWITH = ["."]
+_FALLBACK_EXACT = {"Thumbs.db"}
+_FALLBACK_ENDSWITH = [
+    ".qctools.mkv",
+    ".qctools.xmlpoetry",
+    ".qctools.xml.gz",
+    ".mkv.xml.gz",
+    ".framemd5",
+    ".md5",
+    ".csv",
+    ".py",
+    ".log",
+    "frame_eia608data.txt",
+    "capture_options.log",
+    "vrecord_input.tlog",
+    ".log-0.log.mbtree",
+    ".scc",
+    ".vtt",
+    ".mkv.qctools.xml",
+    "_failing_frames_by_criteria.txt",
+    "_video_level_report.txt",
+]
+
+
+def load_ignore_rules(csv_path: str = DEFAULT_IGNORE_CSV):
+    """
+    Loads the ignore-pattern lookup table from a CSV file.
+
+    Expected CSV columns: match_type (startswith/exact/endswith/contains), pattern.
+    Falls back to a hardcoded rule set if the file is missing or unreadable.
+
+    :param str csv_path: fullpath to the ignore_patterns.csv lookup table
+    :returns: (startswith patterns, exact filenames, endswith patterns, contains patterns)
+    :rtype: tuple(list, set, list, list)
+    """
+    startswith: list[str] = []
+    exact: set[str] = set()
+    endswith: list[str] = []
+    contains: list[str] = []
+    try:
+        with open(csv_path, newline="", encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                match_type = (row.get("match_type") or "").strip()
+                pattern = row.get("pattern") or ""
+                if match_type == "startswith":
+                    startswith.append(pattern)
+                elif match_type == "exact":
+                    exact.add(pattern)
+                elif match_type == "endswith":
+                    endswith.append(pattern)
+                elif match_type == "contains":
+                    contains.append(pattern)
+    except OSError:
+        print(f"\n--- WARNING: Could not read {csv_path}, using built-in defaults ---\n")
+        return list(_FALLBACK_STARTSWITH), set(_FALLBACK_EXACT), list(_FALLBACK_ENDSWITH), []
+
+    return startswith, exact, endswith, contains
+
+
+def clean_files(files: list[str], skip: list[str], ignore_csv: str = DEFAULT_IGNORE_CSV):
     """
     Removes files to be ignored when making ingest sheet.
-    By default skips ".", "Thumbs.db", ".md5", ".csv", ".py"
+    Default ignore patterns (hidden files, Thumbs.db, QC/report/log sidecar
+    files, etc.) are loaded from the ignore_patterns.csv lookup table so new
+    patterns can be added there instead of editing this function.
 
     :param list files: list of files in a directory
     :param list skip: list of files to skip in addition defaults
+    :param str ignore_csv: fullpath to the ignore_patterns.csv lookup table
     :returns: cleaned and sorted list of files
     :rtype: list of str
     """
-    files = [f for f in files if not f[0] == "."]
-    files = [f for f in files if not f == "Thumbs.db"]
-    files = [f for f in files if not f.endswith(".qctools.mkv")]
-    files = [f for f in files if not f.endswith(".qctools.xmlpoetry")]
-    files = [f for f in files if not f.endswith(".qctools.xml.gz")]
-    files = [f for f in files if not f.endswith(".mkv.xml.gz")]
-    files = [f for f in files if not f.endswith(".framemd5")]
-    files = [f for f in files if not f.endswith(".md5")]
-    files = [f for f in files if not f.endswith(".csv")]
-    files = [f for f in files if not f.endswith(".py")]
-    files = [f for f in files if not f.endswith(".log")]
-    files = [f for f in files if not f.endswith("frame_eia608data.txt")]
-    files = [f for f in files if not f.endswith("capture_options.log")]
-    files = [f for f in files if not f.endswith("vrecord_input.tlog")]
-    files = [f for f in files if not f.endswith(".log-0.log.mbtree")]
-    files = [f for f in files if not f.endswith(".scc")]
-    files = [f for f in files if not f.endswith(".vtt")]
-    files = [f for f in files if not f.endswith(".mkv.qctools.xml")]
-    files = [f for f in files if not f.endswith("_failing_frames_by_criteria.txt")]
-    files = [f for f in files if not f.endswith("_video_level_report.txt")]
+    startswith, exact, endswith, contains = load_ignore_rules(ignore_csv)
+
+    files = [
+        f
+        for f in files
+        if f not in exact
+        and not any(f.startswith(p) for p in startswith)
+        and not any(f.endswith(p) for p in endswith)
+        and not any(p in f for p in contains)
+    ]
 
     if skip:
         skip_list = skip

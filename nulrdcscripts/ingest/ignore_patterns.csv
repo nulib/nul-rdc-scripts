@@ -1,0 +1,31 @@
+match_type,pattern,description
+note,,"MATCH TYPE REFERENCE (rows with match_type=note are ignored by the script - keep or delete freely)"
+note,,"startswith = pattern must match the START of the filename. Example: '.' matches any hidden dotfile like .DS_Store"
+note,,"exact = filename must match the pattern EXACTLY, the whole string. Example: 'Thumbs.db' matches only Thumbs.db"
+note,,"endswith = pattern must match the END of the filename. Example: '.csv' matches report.csv, data.csv, etc."
+note,,"contains = pattern can appear ANYWHERE in the filename. Example: '_proxy_' matches show_proxy_v2.mov"
+note,,"match_type must be spelled exactly: startswith, exact, endswith, or contains - anything else (including these note rows) is skipped"
+startswith,.,hidden/dotfiles
+exact,Thumbs.db,Windows thumbnail cache file
+endswith,.qctools.mkv,QCTools output video
+endswith,.qctools.xmlpoetry,QCTools output (legacy/typo extension)
+endswith,.qctools.xml.gz,QCTools compressed XML report
+endswith,.mkv.xml.gz,compressed XML sidecar for mkv
+endswith,.framemd5,per-frame MD5 checksum file
+endswith,.md5,MD5 checksum file
+endswith,.csv,CSV file
+endswith,.py,Python script
+endswith,.log,log file
+endswith,frame_eia608data.txt,EIA-608 caption data report
+endswith,capture_options.log,vrecord capture options log
+endswith,vrecord_input.tlog,vrecord input log
+endswith,.log-0.log.mbtree,x264 mbtree log artifact
+endswith,.scc,Scenarist closed caption file
+endswith,.vtt,WebVTT caption file
+endswith,.mkv.qctools.xml,QCTools XML report for mkv
+endswith,_failing_frames_by_criteria.txt,QC failing-frames report
+endswith,_video_level_report.txt,QC video-level report
+contains,crop_after_sample,"crop sample image, matches anywhere in filename e.g. tape123_crop_after_sample12.png"
+contains,crop_before_sample,"crop sample image, matches anywhere in filename e.g. tape123_crop_before_sample12.png"
+contains,crop_detection_metadata, "metadata about the crop utilized, matches anywhere in filename e.g. tape123_crop_detection_metadata.json"
+endswoth, audio_report.txt, audio report text file
