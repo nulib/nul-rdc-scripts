@@ -28,4 +28,5 @@ endswith,_video_level_report.txt,QC video-level report
 contains,crop_after_sample,"crop sample image, matches anywhere in filename e.g. tape123_crop_after_sample12.png"
 contains,crop_before_sample,"crop sample image, matches anywhere in filename e.g. tape123_crop_before_sample12.png"
 contains,crop_detection_metadata, "metadata about the crop utilized, matches anywhere in filename e.g. tape123_crop_detection_metadata.json"
-endswoth, audio_report.txt, audio report text file
+endswith, audio_report.txt, audio report text file
+endswith, crop_metadata.json, crop metadata report
