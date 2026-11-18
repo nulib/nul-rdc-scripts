@@ -38,7 +38,7 @@ def image_load_inventory(inventory_path: str):
     :rtype: list of dicts
     """
     inventory_dictlist: list[dict[str, str]] = []
-    with open(inventory_path, encoding="utf-8") as f:
+    with open(inventory_path, encoding="utf-8-sig") as f:
         # skip non fieldname lines
         while True:
                 # save spot
@@ -72,7 +72,7 @@ def av_load_inventory(inventory_path: str, desc_arg: list[str]):
     :rtype: list of dicts
     """
     inventory_dictlist: list[dict[str, str]] = []
-    with open(inventory_path, encoding="utf-8") as f:
+    with open(inventory_path, encoding="utf-8-sig") as f:
         f = skip_non_fieldnames(f)
         reader = csv.DictReader(f, delimiter=",")
         description_fields = get_description_fields(desc_arg, reader.fieldnames)
@@ -141,7 +141,7 @@ def get_work_type(inventory_path: str):
     :returns: worktype as 'IMAGE', 'AUDIO', or 'VIDEO'
     :rtype: str
     """
-    with open(inventory_path, encoding="utf-8") as f:
+    with open(inventory_path, encoding="utf-8-sig") as f:
         f = skip_non_fieldnames(f)
         reader = csv.DictReader(f, delimiter=",")
         inventory_fields = reader.fieldnames

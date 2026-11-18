@@ -29,6 +29,7 @@ endswith,_audio_report.txt, audio report text file
 endswith,_crop_metadata.json, crop metadata report
 contains,crop_after_sample,"crop sample image, matches anywhere in filename e.g. tape123_crop_after_sample12.png"
 contains,crop_before_sample,"crop sample image, matches anywhere in filename e.g. tape123_crop_before_sample12.png"
-contains,crop_detection_metadata, "metadata about the crop utilized, matches anywhere in filename e.g. tape123_crop_detection_metadata.json"
+contains,crop_detection_metadata,"metadata about the crop utilized, matches anywhere in filename e.g. tape123_crop_detection_metadata.json"
 contains,.sha256,"Sha256 checksum file"
-contains,.jpg, "Jpg image files"
+contains,.jpg,"Jpg image files"
+endswith,.reapeaks,REAPER waveform peak cache file

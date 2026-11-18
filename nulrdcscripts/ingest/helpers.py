@@ -175,7 +175,9 @@ def load_ignore_rules(csv_path: str = DEFAULT_IGNORE_CSV):
         with open(csv_path, newline="", encoding="utf-8") as f:
             for row in csv.DictReader(f):
                 match_type = (row.get("match_type") or "").strip()
-                pattern = row.get("pattern") or ""
+                pattern = (row.get("pattern") or "").strip()
+                if not pattern:
+                    continue  # empty pattern would match every file
                 if match_type == "startswith":
                     startswith.append(pattern)
                 elif match_type == "exact":

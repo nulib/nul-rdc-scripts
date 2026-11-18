@@ -24,8 +24,7 @@ def input_check():
         indir = os.getcwd()
 
     if not os.path.isdir(indir):
-        print("input is not a directory")
-        quit()
+        sys.exit(f"ERROR: Input is not an existing directory: {indir}")
     return indir
 
 

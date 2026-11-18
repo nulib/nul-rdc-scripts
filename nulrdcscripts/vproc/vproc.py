@@ -7,6 +7,7 @@ import glob
 import subprocess
 import datetime
 import concurrent.futures
+from collections import Counter
 from nulrdcscripts.vproc.params import args
 import nulrdcscripts.vproc.helpers as helpers
 import nulrdcscripts.vproc.corefuncs as corefuncs
@@ -42,8 +43,7 @@ ffvers = corefuncs.get_ffmpeg_version()
 corefuncs.mediaconch_policy_exists(mkvPolicy)
 csv_files = glob.glob(os.path.join(indir, "*inventory*.csv"))
 if not csv_files:
-    print("No CSV inventory file found in input directory")
-    quit()
+    sys.exit(f"ERROR: No *inventory*.csv file found in {indir}")
 if len(csv_files) > 1:
     print(f"Multiple inventory CSV files found, using: {os.path.basename(csv_files[0])}")
 csvInventory = csv_files[0]
@@ -98,10 +98,49 @@ def main():
 
     print("***STARTING PROCESS***")
 
-    if args.batch:
+    mode = "batch" if args.batch else detect_mode(indir)
+    print(f"Mode: {mode}")
+    if mode == "batch":
         batch_video(indir, outdir)
     else:
         single_video(indir, outdir)
+
+
+def find_mkvs(path):
+    """Return non-hidden .mkv filenames directly inside path."""
+    return sorted(f for f in glob.glob1(path, "*.mkv") if not f.startswith("."))
+
+
+def detect_mode(input):
+    """
+    Pick single or batch mode from where the MKVs are.
+    single: .mkv files directly in the input folder
+    batch:  .mkv files one level down, in per-item subfolders
+    Exits with a description of the folder contents if neither is found.
+    """
+    if find_mkvs(input):
+        return "single"
+
+    subdirs = [
+        os.path.join(input, d)
+        for d in sorted(os.listdir(input))
+        if not d.startswith(".") and os.path.isdir(os.path.join(input, d))
+    ]
+    if any(find_mkvs(d) for d in subdirs):
+        return "batch"
+
+    files = [
+        f for f in os.listdir(input)
+        if not f.startswith(".") and os.path.isfile(os.path.join(input, f))
+    ]
+    exts = Counter(os.path.splitext(f)[1].lower() or "(no extension)" for f in files)
+    found = ", ".join(f"{n} {e}" for e, n in exts.most_common()) or "no files"
+    sys.exit(
+        f"ERROR: No .mkv files found in {input} or its immediate subfolders.\n"
+        f"  Top level contains: {found}; {len(subdirs)} subfolder(s).\n"
+        f"  vproc expects FFV1/MKV preservation files, either loose in the input folder\n"
+        f"  or one per item subfolder."
+    )
 
 
 def batch_video(input, output):
