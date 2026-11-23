@@ -103,6 +103,64 @@ def write_csv(outfile: str, csv_fields: list[str], csv_data: list[dict[str, str]
                 writer.writerow(file_info)
 
 
+# Extensions used to detect work_type from the files being ingested.
+# Priority when a work has mixed types: VIDEO > AUDIO > IMAGE
+WORK_TYPE_EXTENSIONS: dict[str, set[str]] = {
+    "VIDEO": {".mkv", ".mp4", ".mov", ".m4v", ".avi", ".mxf", ".dv", ".mpg", ".mpeg", ".webm"},
+    "AUDIO": {".wav", ".flac", ".mp3", ".m4a", ".aif", ".aiff", ".bwf"},
+    "IMAGE": {".tif", ".tiff", ".png", ".jpg", ".jpeg", ".jp2"},
+}
+
+
+def get_work_type_from_files(filenames: list[str]):
+    """
+    Determines work_type from file extensions.
+    If any video file is present the result is VIDEO, then AUDIO, then IMAGE.
+
+    :param list[str] filenames: names or paths of files
+    :returns: 'VIDEO', 'AUDIO', 'IMAGE', or None if no media files are recognized
+    :rtype: str
+    """
+    exts = {os.path.splitext(f)[1].lower() for f in filenames}
+    for work_type in ("VIDEO", "AUDIO", "IMAGE"):
+        if exts & WORK_TYPE_EXTENSIONS[work_type]:
+            return work_type
+    return None
+
+
+def assign_work_types(ingest_dictlist: dict[str, list[dict[str, str]]]):
+    """
+    Sets work_type on every row, per work_accession_number, based on the files in that work.
+    Rows keep their existing work_type if no media files are recognized for the work.
+
+    :param dict ingest_dictlist: ingest sheet data
+    """
+    works: dict[str, list[dict[str, str]]] = {}
+    for rows in ingest_dictlist.values():
+        for row in rows:
+            works.setdefault(row["work_accession_number"], []).append(row)
+    for work_rows in works.values():
+        work_type = get_work_type_from_files([r["filename"] for r in work_rows])
+        if work_type:
+            for row in work_rows:
+                row["work_type"] = work_type
+
+
+def list_files(indir: str, skip: list[str] = None):
+    """
+    Lists all cleaned filenames under indir.
+
+    :param str indir: fullpath to input directory
+    :param list[str] skip: patterns to skip
+    :returns: filenames
+    :rtype: list of str
+    """
+    found: list[str] = []
+    for _, _, files in os.walk(indir):
+        found.extend(clean_files(files, skip))
+    return found
+
+
 def clean_subdir(subdir: str, indir: str):
     """
     Cleans up subdir to easier use in analyzing file.

@@ -75,7 +75,7 @@ class Ingest_Sheet_Maker:
             print("Inventory found")
 
         self.inventory_dictlist, self.work_type = inv_helpers.load_inventory(
-            inventory_path, description_fields
+            inventory_path, description_fields, self.indir
         )
 
     def run(self, skip: list[str], prepend: str):
@@ -95,6 +95,8 @@ class Ingest_Sheet_Maker:
                     helpers.clean_subdir(subdir, self.indir), 
                     prepend
                 )
+        # set work_type per work from its files (VIDEO > AUDIO > IMAGE)
+        helpers.assign_work_types(self.ingest_dictlist)
         helpers.write_csv(
             self.outfile, 
             ing_helpers.get_fields(), 
@@ -200,4 +202,4 @@ class Ingest_Sheet_Maker:
             #append label if role has extra info
             if self.role_dict[role_index]["label"]:
                 label += " " + self.role_dict[role_index]["label"]
-        return label, role, file_builder
+        return label, role, file_builder

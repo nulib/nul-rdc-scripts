@@ -9,7 +9,7 @@ import os
 import csv
 import nulrdcscripts.ingest.helpers as helpers
 
-def load_inventory(inventory_path: str, desc_arg: list[str]):
+def load_inventory(inventory_path: str, desc_arg: list[str], indir: str = None):
     """
     Finds work type to call image_load_inventory() or av_load_inventory().
 
@@ -17,11 +17,12 @@ def load_inventory(inventory_path: str, desc_arg: list[str]):
 
     :param str inventory_path: fullpath to inventory csv
     :param list[str] desc_arg: inventory fields to use for making description
+    :param str indir: fullpath to input directory, used as a fallback for work type
     :returns: inventory data and worktype
     :rtype: tuple of list[dict] and str
     """
     inventory_dictlist: list[dict[str, str]]
-    work_type = get_work_type(inventory_path)
+    work_type = get_work_type(inventory_path, indir)
     if work_type == "IMAGE":
         inventory_dictlist = image_load_inventory(inventory_path)
     else:
@@ -133,11 +134,16 @@ def get_inventory_description(row: dict[str: str], description_fields: list[str]
     description = "; ".join(i for i in description_list if i)
     return description
 
-def get_work_type(inventory_path: str):
+def get_work_type(inventory_path: str, indir: str = None):
     """
     Determines work type based on inventory fieldnames.
+    Falls back to the files in indir if no format-specific columns are found.
+
+    .. note:: this sets how the inventory is read. The work_type written to the
+        ingest sheet is set per work from its files (see helpers.assign_work_types).
 
     :param str inventory_path: fullpath to inventory csv
+    :param str indir: fullpath to input directory
     :returns: worktype as 'IMAGE', 'AUDIO', or 'VIDEO'
     :rtype: str
     """
@@ -151,6 +157,10 @@ def get_work_type(inventory_path: str):
         return "AUDIO"
     elif any(x in ["video standard", "Region", "stock", "Stock"] for x in inventory_fields):
         return "VIDEO"
+    work_type = helpers.get_work_type_from_files(helpers.list_files(indir)) if indir else None
+    if work_type:
+        print("work_type " + work_type + " detected from files in input folder")
+        return work_type
     else:
         print("\n---ERROR: Unable to determine work_type. ---\n")
         print("make sure that your inventory has the necessary format-specific columns")
@@ -209,4 +219,4 @@ def skip_non_fieldnames(f):
             # go back one line and break out of loop once fieldnames are found
             f.seek(stream_index, os.SEEK_SET)
             break
-    return f
+    return f
