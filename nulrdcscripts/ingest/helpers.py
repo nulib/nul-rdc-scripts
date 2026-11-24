@@ -257,6 +257,7 @@ def clean_files(files: list[str], skip: list[str], ignore_csv: str = DEFAULT_IGN
     Default ignore patterns (hidden files, Thumbs.db, QC/report/log sidecar
     files, etc.) are loaded from the ignore_patterns.csv lookup table so new
     patterns can be added there instead of editing this function.
+    .jpg ignore rules only apply when the folder also contains a .tif/.tiff.
 
     :param list files: list of files in a directory
     :param list skip: list of files to skip in addition defaults
@@ -265,6 +266,13 @@ def clean_files(files: list[str], skip: list[str], ignore_csv: str = DEFAULT_IGN
     :rtype: list of str
     """
     startswith, exact, endswith, contains = load_ignore_rules(ignore_csv)
+
+    # jpgs are only ignored when a tif is present in the same folder,
+    # so folders with only jpgs still get ingested
+    if not any(f.lower().endswith((".tif", ".tiff")) for f in files):
+        startswith = [p for p in startswith if ".jpg" not in p.lower()]
+        endswith = [p for p in endswith if ".jpg" not in p.lower()]
+        contains = [p for p in contains if ".jpg" not in p.lower()]
 
     files = [
         f
