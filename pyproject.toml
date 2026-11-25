@@ -17,6 +17,7 @@ dependencies = [
     "ffmpeg>=1.4,<2",
     "lxml>=6.0.1,<7",
     "pandas>=2.3.2,<3",
+    "openpyxl>=3.1,<4",
     "openai-whisper>=20240930",
     "torch>=2.9",
 ]
@@ -33,6 +34,7 @@ trim = "nulrdcscripts.tools.videotrimmer.main:main"
 micro = "nulrdcscripts.ingestMicro.ingest:main"
 meta = "nulrdcscripts.tools.generatemetadataTEMP.main:main"
 langdetect = "nulrdcscripts.tools.langdetect.main:main"
+convertMP = "nulrdcscripts.tools.convertXMLVendor.convertMP:main"
 
 [tool.poetry]
 packages = [{ include = "nulrdcscripts" }]
