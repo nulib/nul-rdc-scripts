@@ -1,40 +1,46 @@
-[tool.poetry]
+[project]
 name = "nul-rdc-scripts"
-version = "0.8.0"
+version = "0.9.0"
 description = "Scripts for NUL RDC Digitization Team"
 authors = [
-    "Northwestern University Libraries <repository@northwestern.edu>",
-    "Sophia Francis",
-    "Alec Bertoy (until May 2024)",
-    "Joshua Yocum (until Oct 2022)",
-    "Quinn Sluzenski-Rose",
+    { name = "Northwestern University Libraries", email = "repository@northwestern.edu" },
+    { name = "Sophia Francis" },
+    { name = "Alec Bertoy (until May 2024)" },
+    { name = "Joshua Yocum (until Oct 2022)" },
+    { name = "Quinn Sluzenski-Rose" },
 ]
-packages = [{include = "nulrdcscripts"}]
 license = "MIT"
 readme = "README.md"
+requires-python = ">=3.10,<3.15"
+dependencies = [
+    "progressbar2>=4.5.0,<5",
+    "ffmpeg>=1.4,<2",
+    "lxml>=6.0.1,<7",
+    "pandas>=2.3.2,<3",
+    "openpyxl>=3.1,<4",
+    "openai-whisper>=20240930",
+    "torch>=2.9",
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-progressbar2 = "^4.5.0"
-ffmpeg = "^1.4"
-lxml = "^6.0.1"
-pandas = "^2.3.2"
-openpyxl = "^3.1"
+[project.scripts]
+aproc = "nulrdcscripts.aproc.aproc:main"
+vproc = "nulrdcscripts.vproc.vproc:main"
+ingest = "nulrdcscripts.ingest.ingest:main"
+embedExtract = "nulrdcscripts.tools.EmbedExtract.runfile:main"
+ffplaywindow = "nulrdcscripts.tools.ffplaywindow.main:main"
+spectrograms = "nulrdcscripts.tools.spectrogramgeneration.main:main"
+md5 = "nulrdcscripts.tools.md5generation.main:main"
+trim = "nulrdcscripts.tools.videotrimmer.main:main"
+micro = "nulrdcscripts.ingestMicro.ingest:main"
+meta = "nulrdcscripts.tools.generatemetadataTEMP.main:main"
+langdetect = "nulrdcscripts.tools.langdetect.main:main"
+convertMP = "nulrdcscripts.tools.convertXMLVendor.convertMP:main"
+
+[tool.poetry]
+packages = [{ include = "nulrdcscripts" }]
 
 [tool.poetry.group.dev.dependencies]
 
-[tool.poetry.scripts]
-aproc = 'nulrdcscripts.aproc.aproc:main'
-vproc = 'nulrdcscripts.vproc.vproc:main'
-ingest = 'nulrdcscripts.ingest.ingest:main'
-embedExtract = 'nulrdcscripts.tools.EmbedExtract.runfile:main'
-ffplaywindow = 'nulrdcscripts.tools.ffplaywindow.main:main'
-spectrograms = 'nulrdcscripts.tools.spectrogramgeneration.main:main'
-md5 = 'nulrdcscripts.tools.md5generation.main:main'
-trim = 'nulrdcscripts.tools.videotrimmer.main:main'
-micro = 'nulrdcscripts.ingestMicro.ingest:main'
-meta = 'nulrdcscripts.tools.generatemetadataTEMP.main:main'
-convertMP = "nulrdcscripts.tools.convertXMLVendor.convertMP:main"
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
