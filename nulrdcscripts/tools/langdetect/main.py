@@ -9,7 +9,7 @@ per-point results plus a majority call. No transcription is done.
 Requires: ffmpeg/ffprobe on PATH (whisper is installed via poetry)
 
 Usage:
-  poetry run langdetect file.mkv
+  poetry run langdetect -i file.mkv
   poetry run langdetect *.wav -n 6 --model medium --csv results.csv
 """
 import argparse
@@ -105,16 +105,20 @@ def process(path, model, n, min_conf):
 
 def main():
     ap = argparse.ArgumentParser(description="Whisper language ID at multiple points per file.")
-    ap.add_argument("files", nargs="+", help="audio or video files")
+    ap.add_argument("files", nargs="*", help="audio or video files")
+    ap.add_argument("-i", "--input", nargs="+", default=[], help="audio or video files (same as positional)")
     ap.add_argument("-n", "--points", type=int, default=5, help="sample points per file (default 5)")
     ap.add_argument("--model", default="small", help="whisper model (tiny/base/small/medium/large-v3)")
     ap.add_argument("--min-conf", type=float, default=0.7, help="flag detections below this (default 0.7)")
     ap.add_argument("--csv", help="also write results to this CSV")
     args = ap.parse_args()
+    files = args.files + args.input
+    if not files:
+        ap.error("no input files given")
 
     model = whisper.load_model(args.model)
     all_rows = []
-    for f in args.files:
+    for f in files:
         try:
             all_rows += process(f, model, args.points, args.min_conf)
         except subprocess.CalledProcessError as e:

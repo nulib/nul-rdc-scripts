@@ -14,12 +14,13 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.10,<3.15"
 progressbar2 = "^4.5.0"
 ffmpeg = "^1.4"
 lxml = "^6.0.1"
 pandas = "^2.3.2"
 openai-whisper = ">=20240930"
+torch = ">=2.9"
 
 [tool.poetry.group.dev.dependencies]
 

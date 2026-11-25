@@ -31,6 +31,8 @@ Scripts used by the RDC Digitization Team.
 
 [Spectrogram Generation](/nulrdcscripts/tools/spectrogramgeneration/)
 
+[Language Detection - langdetect](/nulrdcscripts/tools/langdetect/)
+
 []
 
 ### Text Workflow:
