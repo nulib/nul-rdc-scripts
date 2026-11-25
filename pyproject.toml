@@ -19,6 +19,7 @@ progressbar2 = "^4.5.0"
 ffmpeg = "^1.4"
 lxml = "^6.0.1"
 pandas = "^2.3.2"
+openpyxl = "^3.1"
 
 [tool.poetry.group.dev.dependencies]
 
@@ -33,6 +34,7 @@ md5 = 'nulrdcscripts.tools.md5generation.main:main'
 trim = 'nulrdcscripts.tools.videotrimmer.main:main'
 micro = 'nulrdcscripts.ingestMicro.ingest:main'
 meta = 'nulrdcscripts.tools.generatemetadataTEMP.main:main'
+convertMP = "nulrdcscripts.tools.convertXMLVendor.convertMP:main"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
